@@ -12,7 +12,7 @@ type User struct {
 
 // 動作確認用。のちに削除する。
 func UserHandler(w http.ResponseWriter, r *http.Request) {
-	user := User{"John"}
+	user := User{"Joseph Joestar"}
 	if err := json.NewEncoder(w).Encode(user); err != nil {
 		log.Fatal("json encode error: ", err)
 	}
