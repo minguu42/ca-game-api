@@ -10,7 +10,7 @@ services:
     stdin_open: true
     tty: true
     volumes:
-      - .:/go/src/ca-game-api
+      - .:/go/src/github.com/minguu42/ca-game-api
     ports:
       - 8080:8080
     depends_on:

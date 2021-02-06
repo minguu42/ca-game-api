@@ -1,9 +1,9 @@
 package main
 
 import (
-	"ca-game-api/database"
-	"ca-game-api/handlers"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/minguu42/ca-game-api/database"
+	"github.com/minguu42/ca-game-api/handlers"
 	"log"
 	"net/http"
 )
