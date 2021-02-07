@@ -20,6 +20,7 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     container_name: mysql-container
+    tty: true
     ports:
       - 3336:3336
     volumes:
