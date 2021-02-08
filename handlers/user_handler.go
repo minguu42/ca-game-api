@@ -51,3 +51,13 @@ func UserCreateHandler(w http.ResponseWriter, r *http.Request) {
 		log.Fatal("json encode error: ", err)
 	}
 }
+
+func UserGetHandler(w http.ResponseWriter, r *http.Request)  {
+	if r.Method != http.MethodGet {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
+	xToken := r.Header.Get("x-token")
+	log.Println(xToken)
+}
