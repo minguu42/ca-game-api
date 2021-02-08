@@ -17,7 +17,7 @@ func main() {
 		log.Fatal("database ping error: ", err)
 	}
 
-	http.HandleFunc("/", handlers.UserHandler)
+	http.HandleFunc("/user/create", handlers.UserCreateHandler)
 	if err := http.ListenAndServe(":8080", nil); err != nil {
 		log.Fatal("server error: ", err)
 	}
