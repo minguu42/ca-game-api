@@ -22,3 +22,22 @@ func GetUserName(db *sql.DB, digestToken string) (string, error) {
 	}
 	return name, nil
 }
+
+func GetUserId(db *sql.DB, digestToken string) (int, error) {
+	const selectSql = "SELECT id FROM users WHERE token_digest = ?"
+	row := db.QueryRow(selectSql, digestToken)
+	var id int
+	if err := row.Scan(&id); err != nil {
+		return 0, err
+	}
+	return id, nil
+}
+
+func UpdateUser(db *sql.DB, id int, newName string) error {
+	const updateSql = "UPDATE users SET name = ? WHERE id = ?"
+	_, err := db.Exec(updateSql, newName, id)
+	if err != nil {
+		return err
+	}
+	return nil
+}

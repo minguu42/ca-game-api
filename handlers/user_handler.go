@@ -16,6 +16,14 @@ type Token struct {
 	Token string `json:"token"`
 }
 
+type UserCreateRequestJson struct {
+	Name string `json:"name"`
+}
+
+type UserCreateResponseJson struct {
+	Token string `json:"token"`
+}
+
 func UserCreateHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusMethodNotAllowed)
@@ -87,5 +95,14 @@ func UserUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 		log.Fatal("user decode error: ", err)
 	}
-	log.Println(digestXToken, user.Name)
+
+	db := database.Connect()
+	defer db.Close()
+	id, err := database.GetUserId(db, digestXToken)
+	if err != nil {
+		log.Fatal("database get user id error: ", err)
+	}
+	if 	err := database.UpdateUser(db, id, user.Name); err != nil {
+		log.Fatal("database user update error: ", err)
+	}
 }
