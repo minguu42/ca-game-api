@@ -45,7 +45,6 @@ func UserCreateHandler(w http.ResponseWriter, r *http.Request) {
 	if err := database.InsertUser(db, user.Name, digestToken); err != nil {
 		log.Fatal("database create user error: ", err)
 	}
-	log.Println(digestToken)
 
 	if err := json.NewEncoder(w).Encode(token); err != nil {
 		log.Fatal("json encode error: ", err)
@@ -74,4 +73,19 @@ func UserGetHandler(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(user); err != nil {
 		log.Fatal("json encode error: ", err)
 	}
+}
+
+func UserUpdateHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPut {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
+	xToken := r.Header.Get("x-token")
+	digestXToken := helper.HashToken(xToken)
+	var user User
+	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+		log.Fatal("user decode error: ", err)
+	}
+	log.Println(digestXToken, user.Name)
 }

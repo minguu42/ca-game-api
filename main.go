@@ -19,6 +19,7 @@ func main() {
 
 	http.HandleFunc("/user/create", handlers.UserCreateHandler)
 	http.HandleFunc("/user/get", handlers.UserGetHandler)
+	http.HandleFunc("/user/update", handlers.UserUpdateHandler)
 
 	if err := http.ListenAndServe(":8080", nil); err != nil {
 		log.Fatal("server error: ", err)
