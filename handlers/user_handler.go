@@ -33,7 +33,7 @@ func UserCreateHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal("token generate error: ", err)
 	}
-	token := Token {
+	token := Token{
 		Token: randomStr,
 	}
 
@@ -52,12 +52,26 @@ func UserCreateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func UserGetHandler(w http.ResponseWriter, r *http.Request)  {
+func UserGetHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
 
 	xToken := r.Header.Get("x-token")
-	log.Println(xToken)
+	digestXToken := helper.HashToken(xToken)
+
+	db := database.Connect()
+	defer db.Close()
+	name, err := database.GetUserName(db, digestXToken)
+	if err != nil {
+		log.Fatal("database get user name error: ", err)
+	}
+
+	user := User{
+		Name: name,
+	}
+	if err := json.NewEncoder(w).Encode(user); err != nil {
+		log.Fatal("json encode error: ", err)
+	}
 }
