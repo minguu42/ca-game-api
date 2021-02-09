@@ -5,7 +5,7 @@ import (
 )
 
 func InsertUser(db *sql.DB, name string, digestToken string) error {
-	const createSql = "INSERT INTO users (name, token_digest) VALUES (?, ?)"
+	const createSql = "INSERT INTO users (name, digest_token) VALUES (?, ?)"
 	_, err := db.Exec(createSql, name, digestToken)
 	if err != nil {
 		return err
@@ -14,7 +14,7 @@ func InsertUser(db *sql.DB, name string, digestToken string) error {
 }
 
 func GetUserName(db *sql.DB, digestToken string) (string, error) {
-	const selectSql = "SELECT name FROM users WHERE token_digest = ?"
+	const selectSql = "SELECT name FROM users WHERE digest_token = ?"
 	row := db.QueryRow(selectSql, digestToken)
 	var name string
 	if err := row.Scan(&name); err != nil {
@@ -24,7 +24,7 @@ func GetUserName(db *sql.DB, digestToken string) (string, error) {
 }
 
 func GetUserId(db *sql.DB, digestToken string) (int, error) {
-	const selectSql = "SELECT id FROM users WHERE token_digest = ?"
+	const selectSql = "SELECT id FROM users WHERE digest_token = ?"
 	row := db.QueryRow(selectSql, digestToken)
 	var id int
 	if err := row.Scan(&id); err != nil {
