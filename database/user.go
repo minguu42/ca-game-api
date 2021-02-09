@@ -6,8 +6,7 @@ import (
 
 func InsertUser(db *sql.DB, name string, digestToken string) error {
 	const createSql = "INSERT INTO users (name, digest_token) VALUES (?, ?)"
-	_, err := db.Exec(createSql, name, digestToken)
-	if err != nil {
+	if _, err := db.Exec(createSql, name, digestToken); err != nil {
 		return err
 	}
 	return nil
@@ -35,8 +34,7 @@ func GetUserId(db *sql.DB, digestToken string) (int, error) {
 
 func UpdateUser(db *sql.DB, id int, newName string) error {
 	const updateSql = "UPDATE users SET name = ? WHERE id = ?"
-	_, err := db.Exec(updateSql, newName, id)
-	if err != nil {
+	if _, err := db.Exec(updateSql, newName, id); err != nil {
 		return err
 	}
 	return nil
