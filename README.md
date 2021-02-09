@@ -23,9 +23,9 @@ $ docker-compose up -d db
 $ docker-compose exec db mysql -u root -p
 
 # ユーザとデータベースを作成し、ユーザに権限を与える
-mysql> CREATE USER <上のユーザ名>@'%' IDENTIFIED BY '<上のユーザのパスワード>';
+mysql> CREATE USER '<上のユーザ名>'@'%' IDENTIFIED BY '<上のユーザのパスワード>';
 mysql> CREATE DATABASE ca_game_api_db;
-mysql> GRANT ALL ON ca_game_api_db.* TO <上のユーザ名>;
+mysql> GRANT ALL ON ca_game_api_db.* TO '<上のユーザ名>'@'%';
 mysql> exit
 
 # テーブルを作成する
