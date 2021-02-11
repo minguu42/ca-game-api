@@ -1,8 +1,6 @@
 package database
 
-import (
-	"database/sql"
-)
+import "database/sql"
 
 func InsertUser(db *sql.DB, name string, digestToken string) error {
 	const createSql = "INSERT INTO users (name, digest_token) VALUES (?, ?)"
