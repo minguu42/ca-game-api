@@ -84,5 +84,4 @@ func GachaDrawHandler(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(jsonResponse); err != nil {
 		log.Fatal("json encode error: ", err)
 	}
-	println(digestXToken, times)
 }
