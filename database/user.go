@@ -14,8 +14,8 @@ func InsertUser(db *sql.DB, name string, digestToken string) error {
 
 func GetUserName(db *sql.DB, digestToken string) (string, error) {
 	const selectSql = "SELECT name FROM users WHERE digest_token = ?"
-	row := db.QueryRow(selectSql, digestToken)
 	var name string
+	row := db.QueryRow(selectSql, digestToken)
 	if err := row.Scan(&name); err != nil {
 		return "", err
 	}
