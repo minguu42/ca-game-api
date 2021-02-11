@@ -21,6 +21,8 @@ func main() {
 	http.HandleFunc("/user/get", handlers.UserGetHandler)
 	http.HandleFunc("/user/update", handlers.UserUpdateHandler)
 
+	http.HandleFunc("/gacha/draw", handlers.GachaDrawHandler)
+
 	if err := http.ListenAndServe(":8080", nil); err != nil {
 		log.Fatal("server error: ", err)
 	}
