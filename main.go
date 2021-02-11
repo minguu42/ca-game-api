@@ -23,6 +23,8 @@ func main() {
 
 	http.HandleFunc("/gacha/draw", handlers.GachaDrawHandler)
 
+	http.HandleFunc("/character/list", handlers.CharacterListHandler)
+
 	if err := http.ListenAndServe(":8080", nil); err != nil {
 		log.Fatal("server error: ", err)
 	}
