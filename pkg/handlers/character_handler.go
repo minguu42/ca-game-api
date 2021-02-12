@@ -2,14 +2,15 @@ package handlers
 
 import (
 	"encoding/json"
-	"github.com/minguu42/ca-game-api/database"
-	"github.com/minguu42/ca-game-api/helper"
+	"github.com/minguu42/ca-game-api/pkg/database"
+	"github.com/minguu42/ca-game-api/pkg/helper"
+	"github.com/minguu42/ca-game-api/pkg/user"
 	"log"
 	"net/http"
 )
 
 type CharacterListJsonResponse struct {
-	Characters []database.Character `json:"characters"`
+	Characters []user.Character `json:"characters"`
 }
 
 func CharacterListHandler(w http.ResponseWriter, r *http.Request) {
@@ -23,7 +24,7 @@ func CharacterListHandler(w http.ResponseWriter, r *http.Request) {
 	db := database.Connect()
 	defer db.Close()
 
-	characters, err := database.GetCharacterList(db, digestXToken)
+	characters, err := user.GetCharacterList(db, digestXToken)
 	if err != nil {
 		log.Fatal("get character list error: ", err)
 	}

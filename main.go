@@ -2,7 +2,7 @@ package main
 
 import (
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/minguu42/ca-game-api/handlers"
+	"github.com/minguu42/ca-game-api/pkg/handlers"
 	"log"
 	"net/http"
 )

@@ -2,8 +2,11 @@ package handlers
 
 import (
 	"encoding/json"
-	"github.com/minguu42/ca-game-api/database"
-	"github.com/minguu42/ca-game-api/helper"
+	"github.com/minguu42/ca-game-api/pkg/character"
+	"github.com/minguu42/ca-game-api/pkg/database"
+	"github.com/minguu42/ca-game-api/pkg/gacha"
+	"github.com/minguu42/ca-game-api/pkg/helper"
+	"github.com/minguu42/ca-game-api/pkg/user"
 	"log"
 	"net/http"
 	"strconv"
@@ -31,7 +34,7 @@ func GachaDrawHandler(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 	xToken := r.Header.Get("x-token")
 	digestXToken := helper.HashToken(xToken)
-	userId, err := database.GetUserId(db, digestXToken);
+	userId, err := user.GetUserId(db, digestXToken);
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
@@ -45,15 +48,15 @@ func GachaDrawHandler(w http.ResponseWriter, r *http.Request) {
 
 	var results []GachaResult
 	for i := 0; i < times; i++ {
-		rarity3CharacterNum, err := database.CountCharacterPerRarity(db, 3)
+		rarity3CharacterNum, err := character.CountCharacterPerRarity(db, 3)
 		if err != nil {
 			log.Fatal("database get count error: ", err)
 		}
-		rarity4CharacterNum, err := database.CountCharacterPerRarity(db, 3)
+		rarity4CharacterNum, err := character.CountCharacterPerRarity(db, 3)
 		if err != nil {
 			log.Fatal("database get count error: ", err)
 		}
-		rarity5CharacterNum, err := database.CountCharacterPerRarity(db, 3)
+		rarity5CharacterNum, err := character.CountCharacterPerRarity(db, 3)
 		if err != nil {
 			log.Fatal("database get count error: ", err)
 		}
@@ -66,11 +69,11 @@ func GachaDrawHandler(w http.ResponseWriter, r *http.Request) {
 		case 5:
 			selectedCharacterId = helper.SelectCharacterId(rarity5CharacterNum) + 50000000
 		}
-		name, err := database.GetCharacterName(db, selectedCharacterId)
+		name, err := character.GetCharacterName(db, selectedCharacterId)
 		if err != nil {
 			log.Fatal("database get character name error: ", err)
 		}
-		if err := database.ApplyGachaResult(db, userId, selectedCharacterId); err != nil {
+		if err := gacha.ApplyGachaResult(db, userId, selectedCharacterId); err != nil {
 			log.Fatal("database insert GachaResult error: ", err)
 		}
 		results = append(results, GachaResult{
