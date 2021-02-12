@@ -33,8 +33,7 @@ func GachaDrawHandler(w http.ResponseWriter, r *http.Request) {
 	db := database.Connect()
 	defer db.Close()
 	xToken := r.Header.Get("x-token")
-	digestXToken := helper.HashToken(xToken)
-	userId, err := user.GetUserId(db, digestXToken);
+	userId, err := user.GetId(db, xToken)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
 		return

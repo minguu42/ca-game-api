@@ -3,7 +3,6 @@ package handlers
 import (
 	"encoding/json"
 	"github.com/minguu42/ca-game-api/pkg/database"
-	"github.com/minguu42/ca-game-api/pkg/helper"
 	"github.com/minguu42/ca-game-api/pkg/user"
 	"log"
 	"net/http"
@@ -20,11 +19,10 @@ func CharacterListHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	xToken := r.Header.Get("x-token")
-	digestXToken := helper.HashToken(xToken)
 	db := database.Connect()
 	defer db.Close()
 
-	characters, err := user.GetCharacterList(db, digestXToken)
+	characters, err := user.GetCharacterList(db, xToken)
 	if err != nil {
 		log.Fatal("get character list error: ", err)
 	}
