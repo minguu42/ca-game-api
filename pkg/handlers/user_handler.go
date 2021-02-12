@@ -27,16 +27,16 @@ func UserCreateHandler(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewDecoder(r.Body).Decode(&jsonRequest); err != nil {
 		log.Fatal("user decode error: ", err)
 	}
+	name := jsonRequest.Name
 
 	token, err := helper.GenerateRandomString(22)
 	if err != nil {
 		log.Fatal("token generate error: ", err)
 	}
 
-
 	db := database.Connect()
 	defer db.Close()
-	if err := user.Insert(db, jsonRequest.Name, token); err != nil {
+	if err := user.Insert(db, name, token); err != nil {
 		log.Fatal("database create user error: ", err)
 	}
 
@@ -90,10 +90,11 @@ func UserUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewDecoder(r.Body).Decode(&jsonRequest); err != nil {
 		log.Fatal("user decode error: ", err)
 	}
+	name := jsonRequest.Name
 
 	db := database.Connect()
 	defer db.Close()
-	if err := user.Update(db, xToken, jsonRequest.Name); err != nil {
+	if err := user.Update(db, xToken, name); err != nil {
 		log.Fatal("database user update error: ", err)
 	}
 }

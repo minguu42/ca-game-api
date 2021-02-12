@@ -36,15 +36,6 @@ func GetId(db *sql.DB, token string) (int, error) {
 	return id, nil
 }
 
-func Update(db *sql.DB, token, newName string) error {
-	const updateSql = "UPDATE users SET name = ? WHERE digest_token = ?"
-	digestToken := helper.HashToken(token)
-	if _, err := db.Exec(updateSql, newName, digestToken); err != nil {
-		return err
-	}
-	return nil
-}
-
 type Character struct {
 	UserCharacterId string `json:"userCharacterID"`
 	CharacterId string `json:"characterID"`
@@ -73,4 +64,13 @@ WHERE U.digest_token = ?
 		characters = append(characters, c)
 	}
 	return characters, nil
+}
+
+func Update(db *sql.DB, token, newName string) error {
+	const updateSql = "UPDATE users SET name = ? WHERE digest_token = ?"
+	digestToken := helper.HashToken(token)
+	if _, err := db.Exec(updateSql, newName, digestToken); err != nil {
+		return err
+	}
+	return nil
 }

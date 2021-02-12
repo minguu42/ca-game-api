@@ -19,13 +19,14 @@ func CharacterListHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	xToken := r.Header.Get("x-token")
+
 	db := database.Connect()
 	defer db.Close()
-
 	characters, err := user.GetCharacterList(db, xToken)
 	if err != nil {
 		log.Fatal("get character list error: ", err)
 	}
+
 	jsonResponse := CharacterListJsonResponse{
 		Characters: characters,
 	}

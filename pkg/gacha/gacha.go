@@ -15,32 +15,33 @@ type Result struct {
 
 func Draw(db *sql.DB, userId, times int) ([]Result, error) {
 	var results []Result
-	for i := 0; i < times; i++ {
-		rarity3SumNum, err := character.CountPerRarity(db, 3)
-		if err != nil {
-			return nil, err
-		}
-		rarity4SumNum, err := character.CountPerRarity(db, 4)
-		if err != nil {
-			return nil, err
-		}
-		rarity5SumNum, err := character.CountPerRarity(db, 5)
-		if err != nil {
-			return nil, err
-		}
-		characterId := selectCharacterId(rarity3SumNum, rarity4SumNum, rarity5SumNum)
 
+	rarity3SumNum, err := character.CountPerRarity(db, 3)
+	if err != nil {
+		return nil, err
+	}
+	rarity4SumNum, err := character.CountPerRarity(db, 4)
+	if err != nil {
+		return nil, err
+	}
+	rarity5SumNum, err := character.CountPerRarity(db, 5)
+	if err != nil {
+		return nil, err
+	}
+
+	for i := 0; i < times; i++ {
+		characterId := selectCharacterId(rarity3SumNum, rarity4SumNum, rarity5SumNum)
 		name, err := character.GetName(db, characterId)
 		if err != nil {
-			return nil, err
-		}
-		if err := applyResult(db, userId, characterId); err != nil {
 			return nil, err
 		}
 		results = append(results, Result{
 			CharacterId: strconv.Itoa(characterId),
 			Name:        name,
 		})
+		if err := applyResult(db, userId, characterId); err != nil {
+			return nil, err
+		}
 	}
 	return results, nil
 }
