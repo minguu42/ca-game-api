@@ -3,8 +3,9 @@ package gacha
 import (
 	"database/sql"
 	"github.com/minguu42/ca-game-api/pkg/character"
-	"github.com/minguu42/ca-game-api/pkg/helper"
+	"math/rand"
 	"strconv"
+	"time"
 )
 
 type Result struct {
@@ -12,7 +13,63 @@ type Result struct {
 	Name        string `json:"name"`
 }
 
-func ApplyGachaResult(db *sql.DB, userId, CharacterId int) error {
+func Draw(db *sql.DB, userId, times int) ([]Result, error) {
+	var results []Result
+	for i := 0; i < times; i++ {
+		rarity3SumNum, err := character.CountPerRarity(db, 3)
+		if err != nil {
+			return nil, err
+		}
+		rarity4SumNum, err := character.CountPerRarity(db, 4)
+		if err != nil {
+			return nil, err
+		}
+		rarity5SumNum, err := character.CountPerRarity(db, 5)
+		if err != nil {
+			return nil, err
+		}
+		characterId := selectCharacterId(rarity3SumNum, rarity4SumNum, rarity5SumNum)
+
+		name, err := character.GetName(db, characterId)
+		if err != nil {
+			return nil, err
+		}
+		if err := applyResult(db, userId, characterId); err != nil {
+			return nil, err
+		}
+		results = append(results, Result{
+			CharacterId: strconv.Itoa(characterId),
+			Name:        name,
+		})
+	}
+	return results, nil
+}
+
+func selectRarity() int {
+	rand.Seed(time.Now().UnixNano())
+	if num := rand.Intn(1000) + 1; num >= 900 {
+		return 5
+	} else if num >= 600 {
+		return 4
+	} else {
+		return 3
+	}
+}
+
+func selectCharacterId(rarity3SumNum, rarity4SumNum, rarity5SumNum int) int {
+	var characterId int
+	switch rarity := selectRarity(); rarity {
+	case 3:
+		characterId = rand.Intn(rarity3SumNum) + 30000001
+	case 4:
+		characterId = rand.Intn(rarity4SumNum) + 40000001
+	case 5:
+		characterId = rand.Intn(rarity5SumNum) + 50000001
+	}
+	return characterId
+}
+
+func applyResult(db *sql.DB, userId, CharacterId int) error {
 	const insertSql = "INSERT INTO gacha_results (user_id, character_id) VALUES (?, ?)"
 	if _, err := db.Exec(insertSql, userId, CharacterId); err != nil {
 		return err
@@ -22,43 +79,4 @@ func ApplyGachaResult(db *sql.DB, userId, CharacterId int) error {
 		return err
 	}
 	return nil
-}
-
-func Draw(db *sql.DB, userId, times int) ([]Result, error) {
-	var results []Result
-	for i := 0; i < times; i++ {
-		rarity3CharacterNum, err := character.CountPerRarity(db, 3)
-		if err != nil {
-			return nil, err
-		}
-		rarity4CharacterNum, err := character.CountPerRarity(db, 4)
-		if err != nil {
-			return nil, err
-		}
-		rarity5CharacterNum, err := character.CountPerRarity(db, 5)
-		if err != nil {
-			return nil, err
-		}
-		var characterId int
-		switch selectedRarity := helper.SelectRarity(); selectedRarity{
-		case 3:
-			characterId = helper.SelectCharacterId(rarity3CharacterNum) +  + 30000000
-		case 4:
-			characterId = helper.SelectCharacterId(rarity4CharacterNum) + 40000000
-		case 5:
-			characterId = helper.SelectCharacterId(rarity5CharacterNum) + 50000000
-		}
-		name, err := character.GetName(db, characterId)
-		if err != nil {
-			return nil, err
-		}
-		if err := ApplyGachaResult(db, userId, characterId); err != nil {
-			return nil, err
-		}
-		results = append(results, Result{
-			CharacterId: strconv.Itoa(characterId),
-			Name:        name,
-		})
-	}
-	return results, nil
 }
