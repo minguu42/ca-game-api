@@ -1,19 +1,22 @@
-package database
+package user
 
 import (
 	"database/sql"
+	"github.com/minguu42/ca-game-api/pkg/helper"
 )
 
-func InsertUser(db *sql.DB, name string, digestToken string) error {
+func Insert(db *sql.DB, name string, token string) error {
 	const createSql = "INSERT INTO users (name, digest_token) VALUES (?, ?)"
+	digestToken := helper.HashToken(token)
 	if _, err := db.Exec(createSql, name, digestToken); err != nil {
 		return err
 	}
 	return nil
 }
 
-func GetUserName(db *sql.DB, digestToken string) (string, error) {
+func GetName(db *sql.DB, token string) (string, error) {
 	const selectSql = "SELECT name FROM users WHERE digest_token = ?"
+	digestToken := helper.HashToken(token)
 	var name string
 	row := db.QueryRow(selectSql, digestToken)
 	if err := row.Scan(&name); err != nil {
@@ -22,8 +25,9 @@ func GetUserName(db *sql.DB, digestToken string) (string, error) {
 	return name, nil
 }
 
-func GetUserId(db *sql.DB, digestToken string) (int, error) {
+func GetId(db *sql.DB, token string) (int, error) {
 	const selectSql = "SELECT id FROM users WHERE digest_token = ?"
+	digestToken := helper.HashToken(token)
 	row := db.QueryRow(selectSql, digestToken)
 	var id int
 	if err := row.Scan(&id); err != nil {
@@ -32,21 +36,13 @@ func GetUserId(db *sql.DB, digestToken string) (int, error) {
 	return id, nil
 }
 
-func UpdateUser(db *sql.DB, id int, newName string) error {
-	const updateSql = "UPDATE users SET name = ? WHERE id = ?"
-	if _, err := db.Exec(updateSql, newName, id); err != nil {
-		return err
-	}
-	return nil
-}
-
 type Character struct {
 	UserCharacterId string `json:"userCharacterID"`
 	CharacterId string `json:"characterID"`
 	Name string `json:"name"`
 }
 
-func GetCharacterList(db *sql.DB, digestToken string) ([]Character, error) {
+func GetCharacterList(db *sql.DB, token string) ([]Character, error) {
 	var characters []Character
 	const selectSql = `
 SELECT UOC.id, C.id, C.name
@@ -55,6 +51,7 @@ INNER JOIN users AS U ON UOC.user_id = U.id
 INNER JOIN characters AS C ON UOC.character_id = C.id
 WHERE U.digest_token = ?
 `
+	digestToken := helper.HashToken(token)
 	rows, err := db.Query(selectSql, digestToken)
 	if err != nil {
 		return nil, err
@@ -67,4 +64,13 @@ WHERE U.digest_token = ?
 		characters = append(characters, c)
 	}
 	return characters, nil
+}
+
+func Update(db *sql.DB, token, newName string) error {
+	const updateSql = "UPDATE users SET name = ? WHERE digest_token = ?"
+	digestToken := helper.HashToken(token)
+	if _, err := db.Exec(updateSql, newName, digestToken); err != nil {
+		return err
+	}
+	return nil
 }

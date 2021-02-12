@@ -1,8 +1,8 @@
-package database
+package character
 
 import "database/sql"
 
-func GetCharacterName(db *sql.DB, characterId int) (string, error) {
+func GetName(db *sql.DB, characterId int) (string, error) {
 	const selectSql = "SELECT name FROM characters WHERE id = ?"
 	var name string
 	row := db.QueryRow(selectSql, characterId)
@@ -12,7 +12,7 @@ func GetCharacterName(db *sql.DB, characterId int) (string, error) {
 	return name, nil
 }
 
-func CountCharacterPerRarity(db *sql.DB, rarity int) (int, error) {
+func CountPerRarity(db *sql.DB, rarity int) (int, error) {
 	const countSql = "SELECT COUNT(*) FROM characters WHERE rarity = ?"
 	var count int
 	row := db.QueryRow(countSql, rarity)

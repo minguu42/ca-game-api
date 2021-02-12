@@ -5,4 +5,4 @@ COPY . .
 
 RUN go get -u github.com/go-sql-driver/mysql
 
-CMD ["go", "run", "main.go"]
+CMD ["go", "run", "cmd/main/main.go"]
