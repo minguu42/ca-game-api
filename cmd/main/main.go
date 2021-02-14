@@ -17,6 +17,6 @@ func main() {
 	http.HandleFunc("/character/list", handlers.CharacterListHandler)
 
 	if err := http.ListenAndServe(":8080", nil); err != nil {
-		log.Fatal("server error: ", err)
+		log.Fatal("server listen error: ", err)
 	}
 }

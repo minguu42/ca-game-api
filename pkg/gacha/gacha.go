@@ -3,6 +3,7 @@ package gacha
 import (
 	"database/sql"
 	"github.com/minguu42/ca-game-api/pkg/character"
+	"log"
 	"math/rand"
 	"strconv"
 	"time"
@@ -29,19 +30,32 @@ func Draw(db *sql.DB, userId, times int) ([]Result, error) {
 		return nil, err
 	}
 
+	tx, err := db.Begin()
+	if err != nil {
+		log.Fatal("db begin error: ", err)
+	}
 	for i := 0; i < times; i++ {
 		characterId := selectCharacterId(rarity3SumNum, rarity4SumNum, rarity5SumNum)
 		name, err := character.GetName(db, characterId)
 		if err != nil {
+			if err := tx.Rollback(); err != nil {
+				log.Fatal("rollback error: ", err)
+			}
 			return nil, err
 		}
 		results = append(results, Result{
 			CharacterId: strconv.Itoa(characterId),
 			Name:        name,
 		})
-		if err := applyResult(db, userId, characterId); err != nil {
+		if err := applyResult(tx, userId, characterId); err != nil {
+			if err := tx.Rollback(); err != nil {
+				log.Fatal("rollback error: ", err)
+			}
 			return nil, err
 		}
+	}
+	if err := tx.Commit(); err != nil {
+		log.Fatal("commit error: ", err)
 	}
 	return results, nil
 }
@@ -70,13 +84,13 @@ func selectCharacterId(rarity3SumNum, rarity4SumNum, rarity5SumNum int) int {
 	return characterId
 }
 
-func applyResult(db *sql.DB, userId, CharacterId int) error {
+func applyResult(tx *sql.Tx, userId, CharacterId int) error {
 	const insertSql = "INSERT INTO gacha_results (user_id, character_id) VALUES (?, ?)"
-	if _, err := db.Exec(insertSql, userId, CharacterId); err != nil {
+	if _, err := tx.Exec(insertSql, userId, CharacterId); err != nil {
 		return err
 	}
 	const createSql = "INSERT INTO user_ownership_characters (user_id, character_id) VALUES (?, ?)"
-	if _, err := db.Exec(createSql, userId, CharacterId); err != nil {
+	if _, err := tx.Exec(createSql, userId, CharacterId); err != nil {
 		return err
 	}
 	return nil
