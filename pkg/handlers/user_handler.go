@@ -53,6 +53,7 @@ type UserGetJsonResponse struct {
 }
 
 func UserGetHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("INFO START %v request to %v came from %v", r.Method, "/user/get", r.Header.Get("User-Agent"))
 	if r.Method != http.MethodGet {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
@@ -64,15 +65,21 @@ func UserGetHandler(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 	name, err := user.GetName(db, xToken)
 	if err != nil {
-		log.Fatal("database get user name error: ", err)
+		log.Println("ERROR x-token is invalid")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
 	}
+	log.Println("INFO Get user name - Success")
 
 	jsonResponse := UserGetJsonResponse{
 		Name: name,
 	}
 	if err := json.NewEncoder(w).Encode(jsonResponse); err != nil {
-		log.Fatal("json encode error: ", err)
+		log.Println("ERROR Json encode err ", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
+	log.Printf("INFO END %v request to %v came from %v", r.Method, "/user/get", r.Header.Get("User-Agent"))
 }
 
 type UserUpdateJsonRequest struct {
