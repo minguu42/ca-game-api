@@ -3,7 +3,6 @@ package gacha
 import (
 	"database/sql"
 	"github.com/minguu42/ca-game-api/pkg/character"
-	"log"
 	"math/rand"
 	"strconv"
 	"time"
@@ -32,14 +31,14 @@ func Draw(db *sql.DB, userId, times int) ([]Result, error) {
 
 	tx, err := db.Begin()
 	if err != nil {
-		log.Fatal("db begin error: ", err)
+		return nil, err
 	}
 	for i := 0; i < times; i++ {
 		characterId := selectCharacterId(rarity3SumNum, rarity4SumNum, rarity5SumNum)
 		name, err := character.GetName(db, characterId)
 		if err != nil {
 			if err := tx.Rollback(); err != nil {
-				log.Fatal("rollback error: ", err)
+				return nil, err
 			}
 			return nil, err
 		}
@@ -49,13 +48,13 @@ func Draw(db *sql.DB, userId, times int) ([]Result, error) {
 		})
 		if err := applyResult(tx, userId, characterId); err != nil {
 			if err := tx.Rollback(); err != nil {
-				log.Fatal("rollback error: ", err)
+				return nil, err
 			}
 			return nil, err
 		}
 	}
 	if err := tx.Commit(); err != nil {
-		log.Fatal("commit error: ", err)
+		return nil, err
 	}
 	return results, nil
 }
