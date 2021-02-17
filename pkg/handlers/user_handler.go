@@ -18,34 +18,47 @@ type UserCreateJsonResponse struct {
 }
 
 func UserCreateHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("INFO START %v request to %v came from %v", r.Method, r.URL, r.Header.Get("User-Agent"))
 	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusMethodNotAllowed)
+		log.Println("ERROR Status method is not allowed")
 		return
 	}
 
 	var jsonRequest UserCreateJsonRequest
 	if err := json.NewDecoder(r.Body).Decode(&jsonRequest); err != nil {
-		log.Fatal("user decode error: ", err)
+		log.Println("ERROR Json decode error:", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 	name := jsonRequest.Name
+	log.Println("INFO Get user name - Success")
 
 	token, err := helper.GenerateRandomString(22)
 	if err != nil {
-		log.Fatal("token generate error: ", err)
+		log.Println("ERROR Token generate error:", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
+	log.Println("INFO Generate token - Success")
 
 	db := database.Connect()
 	defer db.Close()
 	if err := user.Insert(db, name, token); err != nil {
-		log.Fatal("database create user error: ", err)
+		log.Println("ERROR Create user error:", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
 	jsonResponse := UserCreateJsonResponse{
 		Token: token,
 	}
 	if err := json.NewEncoder(w).Encode(jsonResponse); err != nil {
-		log.Fatal("json encode error: ", err)
+		log.Println("ERROR Json encode error:", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
+	log.Printf("INFO END %v request to %v came from %v", r.Method, r.URL, r.Header.Get("User-Agent"))
 }
 
 type UserGetJsonResponse struct {
@@ -53,9 +66,10 @@ type UserGetJsonResponse struct {
 }
 
 func UserGetHandler(w http.ResponseWriter, r *http.Request) {
-	log.Printf("INFO START %v request to %v came from %v", r.Method, "/user/get", r.Header.Get("User-Agent"))
+	log.Printf("INFO START %v request to %v came from %v", r.Method, r.URL, r.Header.Get("User-Agent"))
 	if r.Method != http.MethodGet {
 		w.WriteHeader(http.StatusMethodNotAllowed)
+		log.Println("ERROR Status method is not allowed")
 		return
 	}
 
@@ -75,11 +89,11 @@ func UserGetHandler(w http.ResponseWriter, r *http.Request) {
 		Name: name,
 	}
 	if err := json.NewEncoder(w).Encode(jsonResponse); err != nil {
-		log.Println("ERROR Json encode err ", err)
+		log.Println("ERROR Json encode error:", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	log.Printf("INFO END %v request to %v came from %v", r.Method, "/user/get", r.Header.Get("User-Agent"))
+	log.Printf("INFO END %v request to %v came from %v", r.Method, r.URL, r.Header.Get("User-Agent"))
 }
 
 type UserUpdateJsonRequest struct {
