@@ -27,8 +27,8 @@ func UserCreateHandler(w http.ResponseWriter, r *http.Request) {
 
 	var jsonRequest UserCreateJsonRequest
 	if err := json.NewDecoder(r.Body).Decode(&jsonRequest); err != nil {
-		log.Println("ERROR Json decode error:", err)
 		w.WriteHeader(http.StatusInternalServerError)
+		log.Println("ERROR Json decode error:", err)
 		return
 	}
 	name := jsonRequest.Name
@@ -36,8 +36,8 @@ func UserCreateHandler(w http.ResponseWriter, r *http.Request) {
 
 	token, err := helper.GenerateRandomString(22)
 	if err != nil {
-		log.Println("ERROR Token generate error:", err)
 		w.WriteHeader(http.StatusInternalServerError)
+		log.Println("ERROR Token generate error:", err)
 		return
 	}
 	log.Println("INFO Generate token - Success")
@@ -45,8 +45,8 @@ func UserCreateHandler(w http.ResponseWriter, r *http.Request) {
 	db := database.Connect()
 	defer db.Close()
 	if err := user.Insert(db, name, token); err != nil {
-		log.Println("ERROR Create user error:", err)
 		w.WriteHeader(http.StatusInternalServerError)
+		log.Println("ERROR Create user error:", err)
 		return
 	}
 	log.Println("INFO Create user - Success")
@@ -55,8 +55,8 @@ func UserCreateHandler(w http.ResponseWriter, r *http.Request) {
 		Token: token,
 	}
 	if err := json.NewEncoder(w).Encode(jsonResponse); err != nil {
-		log.Println("ERROR Json encode error:", err)
 		w.WriteHeader(http.StatusInternalServerError)
+		log.Println("ERROR Json encode error:", err)
 		return
 	}
 	log.Printf("INFO END %v request to %v came from %v", r.Method, r.URL, r.Header.Get("User-Agent"))
@@ -81,8 +81,8 @@ func UserGetHandler(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 	name, err := user.GetName(db, xToken)
 	if err != nil {
-		log.Println("ERROR x-token is invalid")
 		w.WriteHeader(http.StatusUnauthorized)
+		log.Println("ERROR x-token is invalid")
 		return
 	}
 	log.Println("INFO Get user name - Success")
@@ -91,8 +91,8 @@ func UserGetHandler(w http.ResponseWriter, r *http.Request) {
 		Name: name,
 	}
 	if err := json.NewEncoder(w).Encode(jsonResponse); err != nil {
-		log.Println("ERROR Json encode error:", err)
 		w.WriteHeader(http.StatusInternalServerError)
+		log.Println("ERROR Json encode error:", err)
 		return
 	}
 	log.Printf("INFO END %v request to %v came from %v", r.Method, r.URL, r.Header.Get("User-Agent"))
@@ -115,8 +115,8 @@ func UserUpdateHandler(w http.ResponseWriter, r *http.Request) {
 
 	var jsonRequest UserUpdateJsonRequest
 	if err := json.NewDecoder(r.Body).Decode(&jsonRequest); err != nil {
-		log.Println("ERROR Json decode error: ", err)
 		w.WriteHeader(http.StatusInternalServerError)
+		log.Println("ERROR Json decode error: ", err)
 		return
 	}
 	name := jsonRequest.Name
@@ -125,8 +125,8 @@ func UserUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	db := database.Connect()
 	defer db.Close()
 	if err := user.Update(db, xToken, name); err != nil {
-		log.Println("ERROR Update user error:", err)
 		w.WriteHeader(http.StatusInternalServerError)
+		log.Println("ERROR Update user error:", err)
 		return
 	}
 	log.Println("INFO Update user - Success")
