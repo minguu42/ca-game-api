@@ -18,34 +18,48 @@ type UserCreateJsonResponse struct {
 }
 
 func UserCreateHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("INFO START %v request to %v came from %v", r.Method, r.URL, r.Header.Get("User-Agent"))
 	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusMethodNotAllowed)
+		log.Println("ERROR Status method is not allowed")
 		return
 	}
 
 	var jsonRequest UserCreateJsonRequest
 	if err := json.NewDecoder(r.Body).Decode(&jsonRequest); err != nil {
-		log.Fatal("user decode error: ", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Println("ERROR Json decode error:", err)
+		return
 	}
 	name := jsonRequest.Name
+	log.Println("INFO Get user name - Success")
 
 	token, err := helper.GenerateRandomString(22)
 	if err != nil {
-		log.Fatal("token generate error: ", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Println("ERROR Token generate error:", err)
+		return
 	}
+	log.Println("INFO Generate token - Success")
 
 	db := database.Connect()
 	defer db.Close()
 	if err := user.Insert(db, name, token); err != nil {
-		log.Fatal("database create user error: ", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Println("ERROR Create user error:", err)
+		return
 	}
+	log.Println("INFO Create user - Success")
 
 	jsonResponse := UserCreateJsonResponse{
 		Token: token,
 	}
 	if err := json.NewEncoder(w).Encode(jsonResponse); err != nil {
-		log.Fatal("json encode error: ", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Println("ERROR Json encode error:", err)
+		return
 	}
+	log.Printf("INFO END %v request to %v came from %v", r.Method, r.URL, r.Header.Get("User-Agent"))
 }
 
 type UserGetJsonResponse struct {
@@ -53,26 +67,35 @@ type UserGetJsonResponse struct {
 }
 
 func UserGetHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("INFO START %v request to %v came from %v", r.Method, r.URL, r.Header.Get("User-Agent"))
 	if r.Method != http.MethodGet {
 		w.WriteHeader(http.StatusMethodNotAllowed)
+		log.Println("ERROR Status method is not allowed")
 		return
 	}
 
 	xToken := r.Header.Get("x-token")
+	log.Println("INFO Get x-token - Success")
 
 	db := database.Connect()
 	defer db.Close()
 	name, err := user.GetName(db, xToken)
 	if err != nil {
-		log.Fatal("database get user name error: ", err)
+		w.WriteHeader(http.StatusUnauthorized)
+		log.Println("ERROR x-token is invalid")
+		return
 	}
+	log.Println("INFO Get user name - Success")
 
 	jsonResponse := UserGetJsonResponse{
 		Name: name,
 	}
 	if err := json.NewEncoder(w).Encode(jsonResponse); err != nil {
-		log.Fatal("json encode error: ", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Println("ERROR Json encode error:", err)
+		return
 	}
+	log.Printf("INFO END %v request to %v came from %v", r.Method, r.URL, r.Header.Get("User-Agent"))
 }
 
 type UserUpdateJsonRequest struct {
@@ -80,21 +103,33 @@ type UserUpdateJsonRequest struct {
 }
 
 func UserUpdateHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("INFO START %v request to %v came from %v", r.Method, r.URL, r.Header.Get("User-Agent"))
 	if r.Method != http.MethodPut {
 		w.WriteHeader(http.StatusMethodNotAllowed)
+		log.Println("ERROR Status method is not allowed")
 		return
 	}
 
 	xToken := r.Header.Get("x-token")
+	log.Println("INFO Get x-token - Success")
+
 	var jsonRequest UserUpdateJsonRequest
 	if err := json.NewDecoder(r.Body).Decode(&jsonRequest); err != nil {
-		log.Fatal("user decode error: ", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Println("ERROR Json decode error: ", err)
+		return
 	}
 	name := jsonRequest.Name
+	log.Println("INFO Get user name - Success")
 
 	db := database.Connect()
 	defer db.Close()
 	if err := user.Update(db, xToken, name); err != nil {
-		log.Fatal("database user update error: ", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Println("ERROR Update user error:", err)
+		return
 	}
+	log.Println("INFO Update user - Success")
+
+	log.Printf("INFO END %v request to %v came from %v", r.Method, r.URL, r.Header.Get("User-Agent"))
 }
