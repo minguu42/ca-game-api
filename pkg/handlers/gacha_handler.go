@@ -18,35 +18,50 @@ type GachaDrawJsonResponse struct {
 }
 
 func GachaDrawHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("INFO START %v request to %v came from %v", r.Method, r.URL, r.Header.Get("User-Agent"))
 	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusMethodNotAllowed)
+		log.Println("ERROR Status method is not allowed")
 		return
 	}
 
 	xToken := r.Header.Get("x-token")
+	log.Println("INFO Get x-token - Success")
+
 	var jsonRequest GachaDrawJsonRequest
 	if err := json.NewDecoder(r.Body).Decode(&jsonRequest); err != nil {
-		log.Fatal("user decode error: ", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Println("ERROR Json decode error:", err)
+		return
 	}
 	times := jsonRequest.Times
+	log.Println("INFO Get gacha times - Success")
 
 	db := database.Connect()
 	defer db.Close()
 	userId, err := user.GetId(db, xToken)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
+		log.Println("ERROR x-token is invalid")
 		return
 	}
+	log.Println("INFO Get userId - Success")
 
 	results, err := gacha.Draw(db, userId, times)
 	if err != nil {
-		log.Fatal("gacha draw error")
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Println("ERROR Draw gacha error:", err)
+		return
 	}
+	log.Println("INFO Draw gacha - Success")
 
 	jsonResponse := GachaDrawJsonResponse{
 		Results: results,
 	}
 	if err := json.NewEncoder(w).Encode(jsonResponse); err != nil {
-		log.Fatal("json encode error: ", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Println("INFO Json encode error:", err)
+		return
 	}
+	log.Printf("INFO END %v request to %v came from %v", r.Method, r.URL, r.Header.Get("User-Agent"))
 }
