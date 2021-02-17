@@ -18,10 +18,8 @@ type UserCreateJsonResponse struct {
 }
 
 func UserCreateHandler(w http.ResponseWriter, r *http.Request) {
-	log.Printf("INFO START %v request to %v came from %v", r.Method, r.URL, r.Header.Get("User-Agent"))
-	if r.Method != http.MethodPost {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		log.Println("ERROR Status method is not allowed")
+	outputStartLog(r)
+	if isStatusMethodInvalid(w, r, http.MethodPost) {
 		return
 	}
 
@@ -59,7 +57,7 @@ func UserCreateHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println("ERROR Json encode error:", err)
 		return
 	}
-	log.Printf("INFO END %v request to %v came from %v", r.Method, r.URL, r.Header.Get("User-Agent"))
+	outputSuccessfulEndLog(r)
 }
 
 type UserGetJsonResponse struct {
@@ -67,10 +65,8 @@ type UserGetJsonResponse struct {
 }
 
 func UserGetHandler(w http.ResponseWriter, r *http.Request) {
-	log.Printf("INFO START %v request to %v came from %v", r.Method, r.URL, r.Header.Get("User-Agent"))
-	if r.Method != http.MethodGet {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		log.Println("ERROR Status method is not allowed")
+	outputStartLog(r)
+	if isStatusMethodInvalid(w, r, http.MethodGet) {
 		return
 	}
 
@@ -95,7 +91,7 @@ func UserGetHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println("ERROR Json encode error:", err)
 		return
 	}
-	log.Printf("INFO END %v request to %v came from %v", r.Method, r.URL, r.Header.Get("User-Agent"))
+	outputSuccessfulEndLog(r)
 }
 
 type UserUpdateJsonRequest struct {
@@ -103,10 +99,8 @@ type UserUpdateJsonRequest struct {
 }
 
 func UserUpdateHandler(w http.ResponseWriter, r *http.Request) {
-	log.Printf("INFO START %v request to %v came from %v", r.Method, r.URL, r.Header.Get("User-Agent"))
-	if r.Method != http.MethodPut {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		log.Println("ERROR Status method is not allowed")
+	outputStartLog(r)
+	if isStatusMethodInvalid(w, r, http.MethodPut) {
 		return
 	}
 
@@ -131,5 +125,5 @@ func UserUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Println("INFO Update user - Success")
 
-	log.Printf("INFO END %v request to %v came from %v", r.Method, r.URL, r.Header.Get("User-Agent"))
+	outputSuccessfulEndLog(r)
 }

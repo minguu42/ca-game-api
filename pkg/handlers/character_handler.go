@@ -13,10 +13,8 @@ type CharacterListJsonResponse struct {
 }
 
 func CharacterListHandler(w http.ResponseWriter, r *http.Request) {
-	log.Printf("INFO START %v request to %v came from %v", r.Method, r.URL, r.Header.Get("User-Agent"))
-	if r.Method != http.MethodGet {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		log.Println("ERROR Status method is not allowed")
+	outputStartLog(r)
+	if isStatusMethodInvalid(w, r, http.MethodGet) {
 		return
 	}
 
@@ -41,5 +39,5 @@ func CharacterListHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	log.Printf("INFO END %v request to %v came from %v", r.Method, r.URL, r.Header.Get("User-Agent"))
+	outputSuccessfulEndLog(r)
 }

@@ -18,10 +18,8 @@ type GachaDrawJsonResponse struct {
 }
 
 func GachaDrawHandler(w http.ResponseWriter, r *http.Request) {
-	log.Printf("INFO START %v request to %v came from %v", r.Method, r.URL, r.Header.Get("User-Agent"))
-	if r.Method != http.MethodPost {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		log.Println("ERROR Status method is not allowed")
+	outputStartLog(r)
+	if isStatusMethodInvalid(w, r, http.MethodPost) {
 		return
 	}
 
@@ -63,5 +61,5 @@ func GachaDrawHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println("INFO Json encode error:", err)
 		return
 	}
-	log.Printf("INFO END %v request to %v came from %v", r.Method, r.URL, r.Header.Get("User-Agent"))
+	outputSuccessfulEndLog(r)
 }
