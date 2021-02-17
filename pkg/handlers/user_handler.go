@@ -49,6 +49,7 @@ func UserCreateHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+	log.Println("INFO Create user - Success")
 
 	jsonResponse := UserCreateJsonResponse{
 		Token: token,
@@ -74,6 +75,7 @@ func UserGetHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	xToken := r.Header.Get("x-token")
+	log.Println("INFO Get x-token - Success")
 
 	db := database.Connect()
 	defer db.Close()
@@ -101,21 +103,33 @@ type UserUpdateJsonRequest struct {
 }
 
 func UserUpdateHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("INFO START %v request to %v came from %v", r.Method, r.URL, r.Header.Get("User-Agent"))
 	if r.Method != http.MethodPut {
 		w.WriteHeader(http.StatusMethodNotAllowed)
+		log.Println("ERROR Status method is not allowed")
 		return
 	}
 
 	xToken := r.Header.Get("x-token")
+	log.Println("INFO Get x-token - Success")
+
 	var jsonRequest UserUpdateJsonRequest
 	if err := json.NewDecoder(r.Body).Decode(&jsonRequest); err != nil {
-		log.Fatal("user decode error: ", err)
+		log.Println("ERROR Json decode error: ", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 	name := jsonRequest.Name
+	log.Println("INFO Get user name - Success")
 
 	db := database.Connect()
 	defer db.Close()
 	if err := user.Update(db, xToken, name); err != nil {
-		log.Fatal("database user update error: ", err)
+		log.Println("ERROR Update user error:", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
+	log.Println("INFO Update user - Success")
+
+	log.Printf("INFO END %v request to %v came from %v", r.Method, r.URL, r.Header.Get("User-Agent"))
 }
