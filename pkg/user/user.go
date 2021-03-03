@@ -3,6 +3,8 @@ package user
 import (
 	"database/sql"
 	"github.com/minguu42/ca-game-api/pkg/helper"
+	"log"
+	"net/http"
 )
 
 func Insert(db *sql.DB, name string, token string) error {
@@ -66,11 +68,11 @@ WHERE U.digest_token = ?
 	return characters, nil
 }
 
-func Update(db *sql.DB, token, newName string) error {
+func Update(db *sql.DB, token, newName string, w http.ResponseWriter) {
 	const updateSql = "UPDATE users SET name = ? WHERE digest_token = ?"
 	digestToken := helper.HashToken(token)
 	if _, err := db.Exec(updateSql, newName, digestToken); err != nil {
-		return err
+		w.WriteHeader(http.StatusBadRequest)
+		log.Println("ERROR Update user error:", err)
 	}
-	return nil
 }

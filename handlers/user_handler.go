@@ -43,7 +43,7 @@ func UserCreateHandler(w http.ResponseWriter, r *http.Request) {
 	db := database.Connect()
 	defer db.Close()
 	if err := user.Insert(db, name, token); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(http.StatusBadRequest)
 		log.Println("ERROR Create user error:", err)
 		return
 	}
@@ -118,12 +118,8 @@ func UserUpdateHandler(w http.ResponseWriter, r *http.Request) {
 
 	db := database.Connect()
 	defer db.Close()
-	if err := user.Update(db, xToken, name); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		log.Println("ERROR Update user error:", err)
-		return
-	}
-	log.Println("INFO Update user - Success")
+	user.Update(db, xToken, name, w)
+	log.Println("INFO END Update user")
 
 	outputSuccessfulEndLog(r)
 }
