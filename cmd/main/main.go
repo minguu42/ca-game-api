@@ -17,6 +17,6 @@ func main() {
 	http.HandleFunc("/character/list", ca_game_api.CharacterListHandler)
 
 	if err := http.ListenAndServe(":8080", nil); err != nil {
-		log.Fatal("server listen error: ", err)
+		log.Fatal("Server listen error: ", err)
 	}
 }
