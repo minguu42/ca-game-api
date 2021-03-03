@@ -2,9 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
-	"github.com/minguu42/ca-game-api/pkg/database"
-	"github.com/minguu42/ca-game-api/pkg/helper"
-	"github.com/minguu42/ca-game-api/pkg/user"
+	"github.com/minguu42/ca-game-api"
 	"log"
 	"net/http"
 )
@@ -31,16 +29,16 @@ func PostUser(w http.ResponseWriter, r *http.Request) {
 	}
 	name := jsonRequest.Name
 
-	token, err := helper.GenerateRandomString(22)
+	token, err := ca_game_api.GenerateRandomString(22)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Println("ERROR Token generate error:", err)
 		return
 	}
 
-	db := database.Connect()
+	db := ca_game_api.Connect()
 	defer db.Close()
-	if err := user.Insert(db, name, token); err != nil {
+	if err := ca_game_api.InsertUser(db, name, token); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		log.Println("ERROR Create user error:", err)
 		return
@@ -69,9 +67,9 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 
 	xToken := r.Header.Get("x-token")
 
-	db := database.Connect()
+	db := ca_game_api.Connect()
 	defer db.Close()
-	name, err := user.GetName(db, xToken)
+	name, err := ca_game_api.GetUserName(db, xToken)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
 		log.Println("ERROR x-token is invalid")
@@ -109,9 +107,9 @@ func PutUser(w http.ResponseWriter, r *http.Request) {
 	}
 	name := jsonRequest.Name
 
-	db := database.Connect()
+	db := ca_game_api.Connect()
 	defer db.Close()
-	user.Update(db, xToken, name, w)
+	ca_game_api.UpdateUser(db, xToken, name, w)
 
 	outputSuccessfulEndLog(r)
 }

@@ -1,4 +1,4 @@
-package database
+package ca_game_api
 
 import (
 	"database/sql"

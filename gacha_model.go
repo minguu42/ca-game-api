@@ -1,8 +1,7 @@
-package gacha
+package ca_game_api
 
 import (
 	"database/sql"
-	"github.com/minguu42/ca-game-api/pkg/character"
 	"math/rand"
 	"strconv"
 	"time"
@@ -16,15 +15,15 @@ type Result struct {
 func Draw(db *sql.DB, userId, times int) ([]Result, error) {
 	var results []Result
 
-	rarity3SumNum, err := character.CountPerRarity(db, 3)
+	rarity3SumNum, err := CountPerRarity(db, 3)
 	if err != nil {
 		return nil, err
 	}
-	rarity4SumNum, err := character.CountPerRarity(db, 4)
+	rarity4SumNum, err := CountPerRarity(db, 4)
 	if err != nil {
 		return nil, err
 	}
-	rarity5SumNum, err := character.CountPerRarity(db, 5)
+	rarity5SumNum, err := CountPerRarity(db, 5)
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +34,7 @@ func Draw(db *sql.DB, userId, times int) ([]Result, error) {
 	}
 	for i := 0; i < times; i++ {
 		characterId := selectCharacterId(rarity3SumNum, rarity4SumNum, rarity5SumNum)
-		name, err := character.GetName(db, characterId)
+		name, err := GetCharacterName(db, characterId)
 		if err != nil {
 			if err := tx.Rollback(); err != nil {
 				return nil, err

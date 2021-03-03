@@ -1,4 +1,4 @@
-package helper
+package ca_game_api
 
 import (
 	"crypto/sha256"

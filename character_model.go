@@ -1,8 +1,8 @@
-package character
+package ca_game_api
 
 import "database/sql"
 
-func GetName(db *sql.DB, characterId int) (string, error) {
+func GetCharacterName(db *sql.DB, characterId int) (string, error) {
 	const selectSql = "SELECT name FROM characters WHERE id = ?"
 	var name string
 	row := db.QueryRow(selectSql, characterId)
