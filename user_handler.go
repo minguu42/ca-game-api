@@ -15,7 +15,6 @@ type PostUserResponse struct {
 }
 
 func PostUser(w http.ResponseWriter, r *http.Request) {
-	outputStartLog(r)
 	if isStatusMethodInvalid(w, r, http.MethodPost) {
 		return
 	}
@@ -37,7 +36,7 @@ func PostUser(w http.ResponseWriter, r *http.Request) {
 
 	db := Connect()
 	defer db.Close()
-	if err := InsertUser(db, name, token); err != nil {
+	if err := insertUser(db, name, token); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		log.Println("ERROR Create user error:", err)
 		return
@@ -51,7 +50,6 @@ func PostUser(w http.ResponseWriter, r *http.Request) {
 		log.Println("ERROR Json encode error:", err)
 		return
 	}
-	outputSuccessfulEndLog(r)
 }
 
 type GetUserResponse struct {
@@ -59,7 +57,6 @@ type GetUserResponse struct {
 }
 
 func GetUser(w http.ResponseWriter, r *http.Request) {
-	outputStartLog(r)
 	if isStatusMethodInvalid(w, r, http.MethodGet) {
 		return
 	}
@@ -68,7 +65,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 
 	db := Connect()
 	defer db.Close()
-	name, err := GetUserName(db, xToken)
+	name, err := selectUserName(db, xToken)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
 		log.Println("ERROR x-token is invalid")
@@ -83,7 +80,6 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 		log.Println("ERROR Json encode error:", err)
 		return
 	}
-	outputSuccessfulEndLog(r)
 }
 
 type PutUserRequest struct {
@@ -91,7 +87,6 @@ type PutUserRequest struct {
 }
 
 func PutUser(w http.ResponseWriter, r *http.Request) {
-	outputStartLog(r)
 	if isStatusMethodInvalid(w, r, http.MethodPut) {
 		return
 	}
@@ -108,7 +103,5 @@ func PutUser(w http.ResponseWriter, r *http.Request) {
 
 	db := Connect()
 	defer db.Close()
-	UpdateUser(db, xToken, name, w)
-
-	outputSuccessfulEndLog(r)
+	updateUser(db, xToken, name, w)
 }

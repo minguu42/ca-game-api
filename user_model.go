@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func InsertUser(db *sql.DB, name string, token string) error {
+func insertUser(db *sql.DB, name string, token string) error {
 	const createSql = "INSERT INTO users (name, digest_token) VALUES (?, ?)"
 	digestToken := HashToken(token)
 	if _, err := db.Exec(createSql, name, digestToken); err != nil {
@@ -15,7 +15,7 @@ func InsertUser(db *sql.DB, name string, token string) error {
 	return nil
 }
 
-func GetUserName(db *sql.DB, token string) (string, error) {
+func selectUserName(db *sql.DB, token string) (string, error) {
 	const selectSql = "SELECT name FROM users WHERE digest_token = ?"
 	digestToken := HashToken(token)
 	var name string
@@ -26,7 +26,7 @@ func GetUserName(db *sql.DB, token string) (string, error) {
 	return name, nil
 }
 
-func GetUserId(db *sql.DB, token string) (int, error) {
+func selectUserId(db *sql.DB, token string) (int, error) {
 	const selectSql = "SELECT id FROM users WHERE digest_token = ?"
 	digestToken := HashToken(token)
 	row := db.QueryRow(selectSql, digestToken)
@@ -39,11 +39,11 @@ func GetUserId(db *sql.DB, token string) (int, error) {
 
 type Character struct {
 	UserCharacterId string `json:"userCharacterID"`
-	CharacterId string `json:"characterID"`
-	Name string `json:"name"`
+	CharacterId     string `json:"characterID"`
+	Name            string `json:"name"`
 }
 
-func GetCharacterList(db *sql.DB, token string) ([]Character, error) {
+func selectCharacterList(db *sql.DB, token string) ([]Character, error) {
 	var characters []Character
 	const selectSql = `
 SELECT UOC.id, C.id, C.name
@@ -67,11 +67,11 @@ WHERE U.digest_token = ?
 	return characters, nil
 }
 
-func UpdateUser(db *sql.DB, token, newName string, w http.ResponseWriter) {
+func updateUser(db *sql.DB, token, newName string, w http.ResponseWriter) {
 	const updateSql = "UPDATE users SET name = ? WHERE digest_token = ?"
 	digestToken := HashToken(token)
 	if _, err := db.Exec(updateSql, newName, digestToken); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		log.Println("ERROR UpdateUser user error:", err)
+		log.Println("ERROR updateUser user error:", err)
 	}
 }

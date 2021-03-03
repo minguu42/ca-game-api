@@ -6,12 +6,11 @@ import (
 	"net/http"
 )
 
-type CharacterListJsonResponse struct {
+type GetCharacterListResponse struct {
 	Characters []Character `json:"characters"`
 }
 
-func CharacterListHandler(w http.ResponseWriter, r *http.Request) {
-	outputStartLog(r)
+func GetCharacterList(w http.ResponseWriter, r *http.Request) {
 	if isStatusMethodInvalid(w, r, http.MethodGet) {
 		return
 	}
@@ -21,7 +20,7 @@ func CharacterListHandler(w http.ResponseWriter, r *http.Request) {
 
 	db := Connect()
 	defer db.Close()
-	characters, err := GetCharacterList(db, xToken)
+	characters, err := selectCharacterList(db, xToken)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Println("ERROR Get character list error:", err)
@@ -29,7 +28,7 @@ func CharacterListHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Println("INFO Get character list - Success")
 
-	jsonResponse := CharacterListJsonResponse{
+	jsonResponse := GetCharacterListResponse{
 		Characters: characters,
 	}
 	if err := json.NewEncoder(w).Encode(jsonResponse); err != nil {
@@ -37,5 +36,4 @@ func CharacterListHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	outputSuccessfulEndLog(r)
 }

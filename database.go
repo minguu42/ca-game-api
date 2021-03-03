@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	DRIVER = os.Getenv("DRIVER")
+	DRIVER     = os.Getenv("DRIVER")
 	DATASOURCE = os.Getenv("DATASOURCE")
 )
 
