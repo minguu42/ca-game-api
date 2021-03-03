@@ -1,8 +1,7 @@
-package handlers
+package ca_game_api
 
 import (
 	"encoding/json"
-	"github.com/minguu42/ca-game-api"
 	"log"
 	"net/http"
 )
@@ -12,7 +11,7 @@ type GachaDrawJsonRequest struct {
 }
 
 type GachaDrawJsonResponse struct {
-	Results []ca_game_api.Result `json:"results"`
+	Results []Result `json:"results"`
 }
 
 func GachaDrawHandler(w http.ResponseWriter, r *http.Request) {
@@ -33,9 +32,9 @@ func GachaDrawHandler(w http.ResponseWriter, r *http.Request) {
 	times := jsonRequest.Times
 	log.Println("INFO Get gacha times - Success")
 
-	db := ca_game_api.Connect()
+	db := Connect()
 	defer db.Close()
-	userId, err := ca_game_api.GetUserId(db, xToken)
+	userId, err := GetUserId(db, xToken)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
 		log.Println("ERROR x-token is invalid")
@@ -43,7 +42,7 @@ func GachaDrawHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Println("INFO Get userId - Success")
 
-	results, err := ca_game_api.Draw(db, userId, times)
+	results, err := Draw(db, userId, times)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Println("ERROR Draw gacha error:", err)
