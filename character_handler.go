@@ -16,7 +16,6 @@ func GetCharacterList(w http.ResponseWriter, r *http.Request) {
 	}
 
 	xToken := r.Header.Get("x-token")
-	log.Println("INFO Get x-token - Success")
 
 	db := Connect()
 	defer db.Close()
@@ -26,7 +25,6 @@ func GetCharacterList(w http.ResponseWriter, r *http.Request) {
 		log.Println("ERROR Get character list error:", err)
 		return
 	}
-	log.Println("INFO Get character list - Success")
 
 	jsonResponse := GetCharacterListResponse{
 		Characters: characters,

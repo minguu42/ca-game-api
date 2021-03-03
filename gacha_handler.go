@@ -20,7 +20,6 @@ func PostGachaDraw(w http.ResponseWriter, r *http.Request) {
 	}
 
 	xToken := r.Header.Get("x-token")
-	log.Println("INFO Get x-token - Success")
 
 	var jsonRequest PostGachaDrawRequest
 	if err := json.NewDecoder(r.Body).Decode(&jsonRequest); err != nil {
@@ -29,7 +28,6 @@ func PostGachaDraw(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	times := jsonRequest.Times
-	log.Println("INFO Get gacha times - Success")
 
 	db := Connect()
 	defer db.Close()
@@ -39,7 +37,6 @@ func PostGachaDraw(w http.ResponseWriter, r *http.Request) {
 		log.Println("ERROR x-token is invalid")
 		return
 	}
-	log.Println("INFO Get userId - Success")
 
 	results, err := Draw(db, userId, times)
 	if err != nil {
@@ -47,7 +44,6 @@ func PostGachaDraw(w http.ResponseWriter, r *http.Request) {
 		log.Println("ERROR Draw gacha error:", err)
 		return
 	}
-	log.Println("INFO Draw gacha - Success")
 
 	jsonResponse := PostGachaDrawResponse{
 		Results: results,
