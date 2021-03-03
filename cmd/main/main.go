@@ -8,9 +8,9 @@ import (
 )
 
 func main() {
-	http.HandleFunc("/user/create", handlers.UserCreateHandler)
-	http.HandleFunc("/user/get", handlers.UserGetHandler)
-	http.HandleFunc("/user/update", handlers.UserUpdateHandler)
+	http.HandleFunc("/user/create", handlers.PostUser)
+	http.HandleFunc("/user/get", handlers.GetUser)
+	http.HandleFunc("/user/update", handlers.PutUser)
 
 	http.HandleFunc("/gacha/draw", handlers.GachaDrawHandler)
 

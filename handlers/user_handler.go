@@ -9,28 +9,27 @@ import (
 	"net/http"
 )
 
-type UserCreateJsonRequest struct {
+type PostUserRequest struct {
 	Name string `json:"name"`
 }
 
-type UserCreateJsonResponse struct {
+type PostUserResponse struct {
 	Token string `json:"token"`
 }
 
-func UserCreateHandler(w http.ResponseWriter, r *http.Request) {
+func PostUser(w http.ResponseWriter, r *http.Request) {
 	outputStartLog(r)
 	if isStatusMethodInvalid(w, r, http.MethodPost) {
 		return
 	}
 
-	var jsonRequest UserCreateJsonRequest
+	var jsonRequest PostUserRequest
 	if err := json.NewDecoder(r.Body).Decode(&jsonRequest); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Println("ERROR Json decode error:", err)
 		return
 	}
 	name := jsonRequest.Name
-	log.Println("INFO Get user name - Success")
 
 	token, err := helper.GenerateRandomString(22)
 	if err != nil {
@@ -38,7 +37,6 @@ func UserCreateHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println("ERROR Token generate error:", err)
 		return
 	}
-	log.Println("INFO Generate token - Success")
 
 	db := database.Connect()
 	defer db.Close()
@@ -47,9 +45,8 @@ func UserCreateHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println("ERROR Create user error:", err)
 		return
 	}
-	log.Println("INFO Create user - Success")
 
-	jsonResponse := UserCreateJsonResponse{
+	jsonResponse := PostUserResponse{
 		Token: token,
 	}
 	if err := json.NewEncoder(w).Encode(jsonResponse); err != nil {
@@ -60,18 +57,17 @@ func UserCreateHandler(w http.ResponseWriter, r *http.Request) {
 	outputSuccessfulEndLog(r)
 }
 
-type UserGetJsonResponse struct {
+type GetUserResponse struct {
 	Name string `json:"name"`
 }
 
-func UserGetHandler(w http.ResponseWriter, r *http.Request) {
+func GetUser(w http.ResponseWriter, r *http.Request) {
 	outputStartLog(r)
 	if isStatusMethodInvalid(w, r, http.MethodGet) {
 		return
 	}
 
 	xToken := r.Header.Get("x-token")
-	log.Println("INFO Get x-token - Success")
 
 	db := database.Connect()
 	defer db.Close()
@@ -81,9 +77,8 @@ func UserGetHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println("ERROR x-token is invalid")
 		return
 	}
-	log.Println("INFO Get user name - Success")
 
-	jsonResponse := UserGetJsonResponse{
+	jsonResponse := GetUserResponse{
 		Name: name,
 	}
 	if err := json.NewEncoder(w).Encode(jsonResponse); err != nil {
@@ -94,32 +89,29 @@ func UserGetHandler(w http.ResponseWriter, r *http.Request) {
 	outputSuccessfulEndLog(r)
 }
 
-type UserUpdateJsonRequest struct {
+type PutUserRequest struct {
 	Name string `json:"name"`
 }
 
-func UserUpdateHandler(w http.ResponseWriter, r *http.Request) {
+func PutUser(w http.ResponseWriter, r *http.Request) {
 	outputStartLog(r)
 	if isStatusMethodInvalid(w, r, http.MethodPut) {
 		return
 	}
 
 	xToken := r.Header.Get("x-token")
-	log.Println("INFO Get x-token - Success")
 
-	var jsonRequest UserUpdateJsonRequest
+	var jsonRequest PutUserRequest
 	if err := json.NewDecoder(r.Body).Decode(&jsonRequest); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Println("ERROR Json decode error: ", err)
 		return
 	}
 	name := jsonRequest.Name
-	log.Println("INFO Get user name - Success")
 
 	db := database.Connect()
 	defer db.Close()
 	user.Update(db, xToken, name, w)
-	log.Println("INFO END Update user")
 
 	outputSuccessfulEndLog(r)
 }
