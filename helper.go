@@ -1,7 +1,9 @@
-package helper
+package ca_game_api
 
 import (
 	"crypto/rand"
+	"crypto/sha256"
+	"encoding/hex"
 	"math/big"
 )
 
@@ -16,4 +18,10 @@ func GenerateRandomString(n int) (string, error) {
 		ret[i] = letters[num.Int64()]
 	}
 	return string(ret), nil
+}
+
+func HashToken(token string) string {
+	digestTokenByte := sha256.Sum256([]byte(token))
+	digestToken := hex.EncodeToString(digestTokenByte[:])
+	return digestToken
 }

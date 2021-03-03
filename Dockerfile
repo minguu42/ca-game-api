@@ -1,8 +1,8 @@
-FROM golang:1.15.8-buster
+FROM golang:1.16.0-buster
 
 WORKDIR /go/src/github.com/minguu42/ca-game-api
 COPY . .
 
-RUN go get -u github.com/go-sql-driver/mysql
+RUN go mod tidy
 
 CMD ["go", "run", "cmd/main/main.go"]
