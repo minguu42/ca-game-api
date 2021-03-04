@@ -21,8 +21,8 @@ func PostUser(w http.ResponseWriter, r *http.Request) {
 
 	var jsonRequest PostUserRequest
 	if err := json.NewDecoder(r.Body).Decode(&jsonRequest); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		log.Println("ERROR Json decode error:", err)
+		w.WriteHeader(http.StatusBadRequest)
+		log.Println("ERROR Return 403:", err)
 		return
 	}
 	name := jsonRequest.Name

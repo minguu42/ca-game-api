@@ -21,8 +21,8 @@ func GetCharacterList(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 	characters, err := selectCharacterList(db, xToken)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		log.Println("ERROR Get character list error:", err)
+		w.WriteHeader(http.StatusBadRequest)
+		log.Println("ERROR Return 403:", err)
 		return
 	}
 
@@ -30,8 +30,8 @@ func GetCharacterList(w http.ResponseWriter, r *http.Request) {
 		Characters: characters,
 	}
 	if err := json.NewEncoder(w).Encode(jsonResponse); err != nil {
-		log.Println("ERROR Json encode error: ", err)
 		w.WriteHeader(http.StatusInternalServerError)
+		log.Println("ERROR Return 500:", err)
 		return
 	}
 }
