@@ -39,7 +39,7 @@ func PostGachaDraw(w http.ResponseWriter, r *http.Request) {
 	userId, err := selectUserId(db, xToken)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
-		log.Println("ERROR Ruturn 401: x-token is invalid")
+		log.Println("ERROR Return 401: x-token is invalid")
 		return
 	}
 
