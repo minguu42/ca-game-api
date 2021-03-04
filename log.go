@@ -5,10 +5,10 @@ import (
 	"net/http"
 )
 
-func outputStartLog(r *http.Request) {
-	log.Printf("INFO START %v request to %v came from %v", r.Method, r.URL, r.Header.Get("User-Agent"))
-}
-
-func outputSuccessfulEndLog(r *http.Request) {
-	log.Printf("INFO END %v request to %v came from %v", r.Method, r.URL, r.Header.Get("User-Agent"))
+func Log(h http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		log.Printf("INFO START %v requeest to %v came from %v", r.Method, r.URL, r.Header.Get("User-Agent"))
+		h(w, r)
+		log.Printf("INFO END %v request to %v came from %v", r.Method, r.URL, r.Header.Get("User-Agent"))
+	}
 }

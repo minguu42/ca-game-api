@@ -6,57 +6,55 @@ import (
 	"net/http"
 )
 
-type GachaDrawJsonRequest struct {
+type PostGachaDrawRequest struct {
 	Times int `json:"times"`
 }
 
-type GachaDrawJsonResponse struct {
+type PostGachaDrawResponse struct {
 	Results []Result `json:"results"`
 }
 
-func GachaDrawHandler(w http.ResponseWriter, r *http.Request) {
-	outputStartLog(r)
+func PostGachaDraw(w http.ResponseWriter, r *http.Request) {
 	if isStatusMethodInvalid(w, r, http.MethodPost) {
 		return
 	}
 
 	xToken := r.Header.Get("x-token")
-	log.Println("INFO Get x-token - Success")
 
-	var jsonRequest GachaDrawJsonRequest
+	var jsonRequest PostGachaDrawRequest
 	if err := json.NewDecoder(r.Body).Decode(&jsonRequest); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		log.Println("ERROR Json decode error:", err)
+		w.WriteHeader(http.StatusBadRequest)
+		log.Println("ERROR Return 403:", err)
 		return
 	}
 	times := jsonRequest.Times
-	log.Println("INFO Get gacha times - Success")
+	if times <= 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		log.Println("ERROR Return 403: Times is 0 or negative number")
+		return
+	}
 
 	db := Connect()
 	defer db.Close()
-	userId, err := GetUserId(db, xToken)
+	userId, err := selectUserId(db, xToken)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
-		log.Println("ERROR x-token is invalid")
+		log.Println("ERROR Return 401: x-token is invalid")
 		return
 	}
-	log.Println("INFO Get userId - Success")
 
 	results, err := Draw(db, userId, times)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		log.Println("ERROR Draw gacha error:", err)
+		log.Println("ERROR Return 500:", err)
 		return
 	}
-	log.Println("INFO Draw gacha - Success")
 
-	jsonResponse := GachaDrawJsonResponse{
+	jsonResponse := PostGachaDrawResponse{
 		Results: results,
 	}
 	if err := json.NewEncoder(w).Encode(jsonResponse); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		log.Println("INFO Json encode error:", err)
-		return
+		log.Println("INFO Return 500:", err)
 	}
-	outputSuccessfulEndLog(r)
 }
