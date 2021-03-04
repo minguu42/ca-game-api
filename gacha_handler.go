@@ -23,25 +23,30 @@ func PostGachaDraw(w http.ResponseWriter, r *http.Request) {
 
 	var jsonRequest PostGachaDrawRequest
 	if err := json.NewDecoder(r.Body).Decode(&jsonRequest); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		log.Println("ERROR Json decode error:", err)
+		w.WriteHeader(http.StatusBadRequest)
+		log.Println("ERROR Return 403:", err)
 		return
 	}
 	times := jsonRequest.Times
+	if times <= 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		log.Println("ERROR Return 403: Times is 0 or negative number")
+		return
+	}
 
 	db := Connect()
 	defer db.Close()
 	userId, err := selectUserId(db, xToken)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
-		log.Println("ERROR x-token is invalid")
+		log.Println("ERROR Ruturn 401: x-token is invalid")
 		return
 	}
 
 	results, err := Draw(db, userId, times)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		log.Println("ERROR Draw gacha error:", err)
+		log.Println("ERROR Return 500:", err)
 		return
 	}
 
@@ -50,7 +55,6 @@ func PostGachaDraw(w http.ResponseWriter, r *http.Request) {
 	}
 	if err := json.NewEncoder(w).Encode(jsonResponse); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		log.Println("INFO Json encode error:", err)
-		return
+		log.Println("INFO Return 500:", err)
 	}
 }
