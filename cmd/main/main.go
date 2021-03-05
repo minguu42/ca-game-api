@@ -24,9 +24,9 @@ func main() {
 
 func logging(h http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("INFO START %v requeest to %v came from %v", r.Method, r.URL, r.Header.Get("User-Agent"))
+		log.Printf("INFO START %v requeest to %v\n", r.Method, r.URL)
 		h(w, r)
-		log.Printf("INFO END %v request to %v came from %v", r.Method, r.URL, r.Header.Get("User-Agent"))
+		log.Printf("INFO END %v request to %v\n", r.Method, r.URL)
 	}
 }
 
