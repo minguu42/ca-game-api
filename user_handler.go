@@ -27,27 +27,25 @@ func PostUser(w http.ResponseWriter, r *http.Request) {
 	}
 	name := jsonRequest.Name
 
-	token, err := GenerateRandomString(22)
+	token, err := GenerateRandomString(22, w)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		log.Println("ERROR Token generate error:", err)
 		return
 	}
 
 	db := Connect()
 	defer db.Close()
-	if err := insertUser(db, name, token); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		log.Println("ERROR Create user error:", err)
+	if err := insertUser(db, name, token, w); err != nil {
 		return
 	}
 
 	jsonResponse := PostUserResponse{
 		Token: token,
 	}
-	if err := json.NewEncoder(w).Encode(jsonResponse); err != nil {
+	encoder := json.NewEncoder(w)
+	encoder.SetIndent("", "  ")
+	if err := encoder.Encode(jsonResponse); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		log.Println("ERROR Json encode error:", err)
+		log.Println("INFO Return 500:", err)
 		return
 	}
 }
@@ -65,19 +63,19 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 
 	db := Connect()
 	defer db.Close()
-	name, err := selectUserName(db, xToken)
+	name, err := selectUserName(db, xToken, w)
 	if err != nil {
-		w.WriteHeader(http.StatusUnauthorized)
-		log.Println("ERROR x-token is invalid")
 		return
 	}
 
 	jsonResponse := GetUserResponse{
 		Name: name,
 	}
-	if err := json.NewEncoder(w).Encode(jsonResponse); err != nil {
+	encoder := json.NewEncoder(w)
+	encoder.SetIndent("", "  ")
+	if err := encoder.Encode(jsonResponse); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		log.Println("ERROR Json encode error:", err)
+		log.Println("INFO Return 500:", err)
 		return
 	}
 }
@@ -96,12 +94,14 @@ func PutUser(w http.ResponseWriter, r *http.Request) {
 	var jsonRequest PutUserRequest
 	if err := json.NewDecoder(r.Body).Decode(&jsonRequest); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		log.Println("ERROR Json decode error: ", err)
+		log.Println("ERROR Return 403:", err)
 		return
 	}
 	name := jsonRequest.Name
 
 	db := Connect()
 	defer db.Close()
-	updateUser(db, xToken, name, w)
+	if err := updateUser(db, xToken, name, w); err != nil {
+		return
+	}
 }

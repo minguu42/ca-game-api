@@ -36,25 +36,20 @@ func PostGachaDraw(w http.ResponseWriter, r *http.Request) {
 
 	db := Connect()
 	defer db.Close()
-	userId, err := selectUserId(db, xToken)
-	if err != nil {
-		w.WriteHeader(http.StatusUnauthorized)
-		log.Println("ERROR Return 401: x-token is invalid")
-		return
-	}
 
-	results, err := Draw(db, userId, times)
+	results, err := draw(db, xToken, times, w)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		log.Println("ERROR Return 500:", err)
 		return
 	}
 
 	jsonResponse := PostGachaDrawResponse{
 		Results: results,
 	}
-	if err := json.NewEncoder(w).Encode(jsonResponse); err != nil {
+	encoder := json.NewEncoder(w)
+	encoder.SetIndent("", "  ")
+	if err := encoder.Encode(jsonResponse); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		log.Println("INFO Return 500:", err)
+		log.Println("ERROR Return 500:", err)
+		return
 	}
 }

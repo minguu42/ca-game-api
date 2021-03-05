@@ -19,19 +19,19 @@ func GetCharacterList(w http.ResponseWriter, r *http.Request) {
 
 	db := Connect()
 	defer db.Close()
-	characters, err := selectCharacterList(db, xToken)
+	characters, err := selectCharacterList(db, xToken, w)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		log.Println("ERROR Return 403:", err)
 		return
 	}
 
 	jsonResponse := GetCharacterListResponse{
 		Characters: characters,
 	}
-	if err := json.NewEncoder(w).Encode(jsonResponse); err != nil {
+	encoder := json.NewEncoder(w)
+	encoder.SetIndent("", "  ")
+	if err := encoder.Encode(jsonResponse); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		log.Println("ERROR Return 500:", err)
+		log.Println("INFO Return 500:", err)
 		return
 	}
 }
