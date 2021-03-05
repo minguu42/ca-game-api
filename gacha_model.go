@@ -44,7 +44,9 @@ func draw(db *sql.DB, xToken string, times int, w http.ResponseWriter) ([]Result
 	}
 	for i := 0; i < times; i++ {
 		log.Printf("INFO START Draw once gach (%v / %v) \n", i+1, times)
+		rand.Seed(time.Now().UnixNano())
 		characterId := decideOutputCharacterId(rarity3SumNum, rarity4SumNum, rarity5SumNum)
+		characterLevel := decideCharacterLevel()
 		name, err := selectCharacterName(db, characterId)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
@@ -55,7 +57,8 @@ func draw(db *sql.DB, xToken string, times int, w http.ResponseWriter) ([]Result
 			CharacterId: strconv.Itoa(characterId),
 			Name:        name,
 		})
-		if err := insertResult(tx, userId, characterId); err != nil {
+
+		if err := insertResult(tx, userId, characterId, characterLevel); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			log.Println("ERROR Return 500:", err)
 			return nil, err, tx
@@ -66,8 +69,7 @@ func draw(db *sql.DB, xToken string, times int, w http.ResponseWriter) ([]Result
 	return results, nil, tx
 }
 
-func selectRarity() int {
-	rand.Seed(time.Now().UnixNano())
+func decideRarity() int {
 	if num := rand.Intn(1000) + 1; num >= 900 {
 		return 5
 	} else if num >= 600 {
@@ -79,7 +81,7 @@ func selectRarity() int {
 
 func decideOutputCharacterId(rarity3SumNum, rarity4SumNum, rarity5SumNum int) int {
 	var characterId int
-	switch rarity := selectRarity(); rarity {
+	switch rarity := decideRarity(); rarity {
 	case 3:
 		characterId = rand.Intn(rarity3SumNum) + 30000001
 	case 4:
@@ -90,13 +92,17 @@ func decideOutputCharacterId(rarity3SumNum, rarity4SumNum, rarity5SumNum int) in
 	return characterId
 }
 
-func insertResult(tx *sql.Tx, userId, CharacterId int) error {
-	const insertSql = "INSERT INTO gacha_results (user_id, character_id) VALUES (?, ?)"
-	if _, err := tx.Exec(insertSql, userId, CharacterId); err != nil {
+func decideCharacterLevel() int {
+	return rand.Intn(10) + 1
+}
+
+func insertResult(tx *sql.Tx, userId, characterId, characterLevel int) error {
+	const insertSql = "INSERT INTO gacha_results (user_id, character_id, level) VALUES (?, ?, ?)"
+	if _, err := tx.Exec(insertSql, userId, characterId, characterLevel); err != nil {
 		return err
 	}
-	const createSql = "INSERT INTO user_ownership_characters (user_id, character_id) VALUES (?, ?)"
-	if _, err := tx.Exec(createSql, userId, CharacterId); err != nil {
+	const createSql = "INSERT INTO user_ownership_characters (user_id, character_id, level, experience) VALUES (?, ?, ?, ?)"
+	if _, err := tx.Exec(createSql, userId, characterId, characterLevel, 0); err != nil {
 		return err
 	}
 	return nil
