@@ -1,7 +1,6 @@
 package ca_game_api
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
 )
@@ -22,9 +21,7 @@ func PostGachaDraw(w http.ResponseWriter, r *http.Request) {
 	xToken := r.Header.Get("x-token")
 
 	var jsonRequest PostGachaDrawRequest
-	if err := json.NewDecoder(r.Body).Decode(&jsonRequest); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		log.Println("ERROR Return 403:", err)
+	if err := decodeRequest(r, &jsonRequest, w); err != nil {
 		return
 	}
 	times := jsonRequest.Times
@@ -37,19 +34,30 @@ func PostGachaDraw(w http.ResponseWriter, r *http.Request) {
 	db := Connect()
 	defer db.Close()
 
-	results, err := draw(db, xToken, times, w)
+	results, err, tx := draw(db, xToken, times, w)
 	if err != nil {
+		if tx != nil {
+			if err := tx.Rollback(); err != nil {
+				log.Println("ERROR Rollback error:", err)
+			}
+		}
 		return
 	}
 
 	jsonResponse := PostGachaDrawResponse{
 		Results: results,
 	}
-	encoder := json.NewEncoder(w)
-	encoder.SetIndent("", "  ")
-	if err := encoder.Encode(jsonResponse); err != nil {
+	if err := encodeResponse(w, jsonResponse); err != nil {
+		if err := tx.Rollback(); err != nil {
+			log.Println("ERROR Rollback error:", err)
+		}
+		return
+	}
+
+	if err := tx.Commit(); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Println("ERROR Return 500:", err)
 		return
 	}
+	log.Println("INFO Commit gacha result")
 }

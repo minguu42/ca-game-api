@@ -1,8 +1,6 @@
 package ca_game_api
 
 import (
-	"encoding/json"
-	"log"
 	"net/http"
 )
 
@@ -27,11 +25,7 @@ func GetCharacterList(w http.ResponseWriter, r *http.Request) {
 	jsonResponse := GetCharacterListResponse{
 		Characters: characters,
 	}
-	encoder := json.NewEncoder(w)
-	encoder.SetIndent("", "  ")
-	if err := encoder.Encode(jsonResponse); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		log.Println("INFO Return 500:", err)
+	if err := encodeResponse(w, jsonResponse); err != nil {
 		return
 	}
 }
