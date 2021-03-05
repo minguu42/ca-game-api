@@ -20,14 +20,19 @@ func insertUser(db *sql.DB, name string, token string, w http.ResponseWriter) er
 	return nil
 }
 
-func selectUserName(db *sql.DB, token string) (string, error) {
+func selectUserName(db *sql.DB, token string, w http.ResponseWriter) (string, error) {
+	log.Println("INFO START selectUserName")
 	const selectSql = `SELECT name FROM users WHERE digest_token = ?`
 	digestToken := HashToken(token)
+
 	var name string
 	row := db.QueryRow(selectSql, digestToken)
 	if err := row.Scan(&name); err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		log.Println("ERROR Return 401: x-token is invalid")
 		return "", err
 	}
+	log.Println("INFO END selectUserName")
 	return name, nil
 }
 

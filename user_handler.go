@@ -63,10 +63,8 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 
 	db := Connect()
 	defer db.Close()
-	name, err := selectUserName(db, xToken)
+	name, err := selectUserName(db, xToken, w)
 	if err != nil {
-		w.WriteHeader(http.StatusUnauthorized)
-		log.Println("ERROR Return 401: x-token is invalid")
 		return
 	}
 
