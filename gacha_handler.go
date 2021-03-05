@@ -53,8 +53,11 @@ func PostGachaDraw(w http.ResponseWriter, r *http.Request) {
 	jsonResponse := PostGachaDrawResponse{
 		Results: results,
 	}
-	if err := json.NewEncoder(w).Encode(jsonResponse); err != nil {
+	encoder := json.NewEncoder(w)
+	encoder.SetIndent("", "  ")
+	if err := encoder.Encode(jsonResponse); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Println("INFO Return 500:", err)
+		return
 	}
 }
