@@ -36,15 +36,9 @@ func PostGachaDraw(w http.ResponseWriter, r *http.Request) {
 
 	db := Connect()
 	defer db.Close()
-	userId, err := selectUserId(db, xToken, w)
-	if err != nil {
-		return
-	}
 
-	results, err := Draw(db, userId, times)
+	results, err := draw(db, xToken, times, w)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		log.Println("ERROR Return 500:", err)
 		return
 	}
 
@@ -55,7 +49,7 @@ func PostGachaDraw(w http.ResponseWriter, r *http.Request) {
 	encoder.SetIndent("", "  ")
 	if err := encoder.Encode(jsonResponse); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		log.Println("INFO Return 500:", err)
+		log.Println("ERROR Return 500:", err)
 		return
 	}
 }

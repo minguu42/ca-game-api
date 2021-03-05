@@ -2,7 +2,9 @@ package ca_game_api
 
 import (
 	"database/sql"
+	"log"
 	"math/rand"
+	"net/http"
 	"strconv"
 	"time"
 )
@@ -12,31 +14,43 @@ type Result struct {
 	Name        string `json:"name"`
 }
 
-func Draw(db *sql.DB, userId, times int) ([]Result, error) {
+func draw(db *sql.DB, xToken string, times int, w http.ResponseWriter) ([]Result, error) {
+	log.Println("INFO START draw")
 	var results []Result
 
-	rarity3SumNum, err := countPerRarity(db, 3)
+	userId, err := selectUserId(db, xToken, w)
 	if err != nil {
 		return nil, err
 	}
-	rarity4SumNum, err := countPerRarity(db, 4)
+
+	rarity3SumNum, err := countPerRarity(db, 3, w)
 	if err != nil {
 		return nil, err
 	}
-	rarity5SumNum, err := countPerRarity(db, 5)
+	rarity4SumNum, err := countPerRarity(db, 4, w)
+	if err != nil {
+		return nil, err
+	}
+	rarity5SumNum, err := countPerRarity(db, 5, w)
 	if err != nil {
 		return nil, err
 	}
 
 	tx, err := db.Begin()
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Println("ERROR Return 500:", err)
 		return nil, err
 	}
 	for i := 0; i < times; i++ {
-		characterId := selectCharacterId(rarity3SumNum, rarity4SumNum, rarity5SumNum)
+		log.Printf("INFO START Draw once gach (%v / %v) \n", i+1, times)
+		characterId := decideOutputCharacterId(rarity3SumNum, rarity4SumNum, rarity5SumNum)
 		name, err := selectCharacterName(db, characterId)
 		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			log.Println("ERROR Return 500:", err)
 			if err := tx.Rollback(); err != nil {
+				log.Println("ERROR Rollback error:", err)
 				return nil, err
 			}
 			return nil, err
@@ -46,15 +60,23 @@ func Draw(db *sql.DB, userId, times int) ([]Result, error) {
 			Name:        name,
 		})
 		if err := applyResult(tx, userId, characterId); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			log.Println("ERROR Return 500:", err)
 			if err := tx.Rollback(); err != nil {
+				log.Println("ERROR Rollback error:", err)
 				return nil, err
 			}
 			return nil, err
 		}
+		log.Printf("INFO END Draw once gach (%v / %v) \n", i+1, times)
 	}
 	if err := tx.Commit(); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Println("ERROR Return 500:", err)
 		return nil, err
 	}
+	log.Println("INFO Settle gacha result")
+	log.Println("INFO END draw")
 	return results, nil
 }
 
@@ -69,7 +91,7 @@ func selectRarity() int {
 	}
 }
 
-func selectCharacterId(rarity3SumNum, rarity4SumNum, rarity5SumNum int) int {
+func decideOutputCharacterId(rarity3SumNum, rarity4SumNum, rarity5SumNum int) int {
 	var characterId int
 	switch rarity := selectRarity(); rarity {
 	case 3:
