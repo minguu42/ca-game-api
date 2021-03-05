@@ -30,7 +30,7 @@ func PostUser(w http.ResponseWriter, r *http.Request) {
 	token, err := GenerateRandomString(22)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		log.Println("ERROR Token generate error:", err)
+		log.Println("ERROR Return 500:", err)
 		return
 	}
 
@@ -38,7 +38,7 @@ func PostUser(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 	if err := insertUser(db, name, token); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		log.Println("ERROR Create user error:", err)
+		log.Println("ERROR Return 403:", err)
 		return
 	}
 
@@ -47,7 +47,7 @@ func PostUser(w http.ResponseWriter, r *http.Request) {
 	}
 	if err := json.NewEncoder(w).Encode(jsonResponse); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		log.Println("ERROR Json encode error:", err)
+		log.Println("ERROR Return 500:", err)
 		return
 	}
 }
@@ -68,7 +68,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 	name, err := selectUserName(db, xToken)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
-		log.Println("ERROR x-token is invalid")
+		log.Println("ERROR Return 401: x-token is invalid")
 		return
 	}
 
@@ -77,7 +77,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 	}
 	if err := json.NewEncoder(w).Encode(jsonResponse); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		log.Println("ERROR Json encode error:", err)
+		log.Println("ERROR Return 500:", err)
 		return
 	}
 }
@@ -96,7 +96,7 @@ func PutUser(w http.ResponseWriter, r *http.Request) {
 	var jsonRequest PutUserRequest
 	if err := json.NewDecoder(r.Body).Decode(&jsonRequest); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		log.Println("ERROR Json decode error: ", err)
+		log.Println("ERROR Return 403:", err)
 		return
 	}
 	name := jsonRequest.Name
