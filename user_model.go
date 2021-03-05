@@ -49,13 +49,6 @@ func selectUserId(db *sql.DB, token string, w http.ResponseWriter) (int, error) 
 	return id, nil
 }
 
-type Character struct {
-	UserCharacterId string `json:"userCharacterID"`
-	CharacterId     string `json:"characterID"`
-	Name            string `json:"name"`
-	Level           int    `json:"level"`
-}
-
 func selectCharacterList(db *sql.DB, token string, w http.ResponseWriter) ([]Character, error) {
 	log.Println("INFO START selectCharacterList")
 	var characters []Character

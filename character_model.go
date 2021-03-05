@@ -6,6 +6,13 @@ import (
 	"net/http"
 )
 
+type Character struct {
+	UserCharacterId string `json:"userCharacterID"`
+	CharacterId     string `json:"characterID"`
+	Name            string `json:"name"`
+	Level           int    `json:"level"`
+}
+
 func selectCharacterName(db *sql.DB, characterId int) (string, error) {
 	const selectSql = "SELECT name FROM characters WHERE id = ?"
 	var name string
