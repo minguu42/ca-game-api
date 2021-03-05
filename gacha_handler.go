@@ -34,8 +34,13 @@ func PostGachaDraw(w http.ResponseWriter, r *http.Request) {
 	db := Connect()
 	defer db.Close()
 
-	results, err := draw(db, xToken, times, w)
+	results, err, tx := draw(db, xToken, times, w)
 	if err != nil {
+		if tx != nil {
+			if err := tx.Rollback(); err != nil {
+				log.Println("ERROR Rollback error:", err)
+			}
+		}
 		return
 	}
 
@@ -43,6 +48,16 @@ func PostGachaDraw(w http.ResponseWriter, r *http.Request) {
 		Results: results,
 	}
 	if err := encodeResponse(w, jsonResponse); err != nil {
+		if err := tx.Rollback(); err != nil {
+			log.Println("ERROR Rollback error:", err)
+		}
 		return
 	}
+
+	if err := tx.Commit(); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Println("ERROR Return 500:", err)
+		return
+	}
+	log.Println("INFO Commit gacha result")
 }

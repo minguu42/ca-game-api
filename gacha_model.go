@@ -14,33 +14,33 @@ type Result struct {
 	Name        string `json:"name"`
 }
 
-func draw(db *sql.DB, xToken string, times int, w http.ResponseWriter) ([]Result, error) {
+func draw(db *sql.DB, xToken string, times int, w http.ResponseWriter) ([]Result, error, *sql.Tx) {
 	log.Println("INFO START draw")
 	var results []Result
 
 	userId, err := selectUserId(db, xToken, w)
 	if err != nil {
-		return nil, err
+		return nil, err, nil
 	}
 
 	rarity3SumNum, err := countPerRarity(db, 3, w)
 	if err != nil {
-		return nil, err
+		return nil, err, nil
 	}
 	rarity4SumNum, err := countPerRarity(db, 4, w)
 	if err != nil {
-		return nil, err
+		return nil, err, nil
 	}
 	rarity5SumNum, err := countPerRarity(db, 5, w)
 	if err != nil {
-		return nil, err
+		return nil, err, nil
 	}
 
 	tx, err := db.Begin()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Println("ERROR Return 500:", err)
-		return nil, err
+		return nil, err, nil
 	}
 	for i := 0; i < times; i++ {
 		log.Printf("INFO START Draw once gach (%v / %v) \n", i+1, times)
@@ -49,35 +49,21 @@ func draw(db *sql.DB, xToken string, times int, w http.ResponseWriter) ([]Result
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			log.Println("ERROR Return 500:", err)
-			if err := tx.Rollback(); err != nil {
-				log.Println("ERROR Rollback error:", err)
-				return nil, err
-			}
-			return nil, err
+			return nil, err, tx
 		}
 		results = append(results, Result{
 			CharacterId: strconv.Itoa(characterId),
 			Name:        name,
 		})
-		if err := applyResult(tx, userId, characterId); err != nil {
+		if err := insertResult(tx, userId, characterId); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			log.Println("ERROR Return 500:", err)
-			if err := tx.Rollback(); err != nil {
-				log.Println("ERROR Rollback error:", err)
-				return nil, err
-			}
-			return nil, err
+			return nil, err, tx
 		}
 		log.Printf("INFO END Draw once gach (%v / %v) \n", i+1, times)
 	}
-	if err := tx.Commit(); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		log.Println("ERROR Return 500:", err)
-		return nil, err
-	}
-	log.Println("INFO Settle gacha result")
 	log.Println("INFO END draw")
-	return results, nil
+	return results, nil, tx
 }
 
 func selectRarity() int {
@@ -104,7 +90,7 @@ func decideOutputCharacterId(rarity3SumNum, rarity4SumNum, rarity5SumNum int) in
 	return characterId
 }
 
-func applyResult(tx *sql.Tx, userId, CharacterId int) error {
+func insertResult(tx *sql.Tx, userId, CharacterId int) error {
 	const insertSql = "INSERT INTO gacha_results (user_id, character_id) VALUES (?, ?)"
 	if _, err := tx.Exec(insertSql, userId, CharacterId); err != nil {
 		return err
