@@ -27,18 +27,14 @@ func PostUser(w http.ResponseWriter, r *http.Request) {
 	}
 	name := jsonRequest.Name
 
-	token, err := GenerateRandomString(22)
+	token, err := GenerateRandomString(22, w)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		log.Println("ERROR Return 500:", err)
 		return
 	}
 
 	db := Connect()
 	defer db.Close()
-	if err := insertUser(db, name, token); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		log.Println("ERROR Return 403:", err)
+	if err := insertUser(db, name, token, w); err != nil {
 		return
 	}
 
