@@ -101,5 +101,7 @@ func PutUser(w http.ResponseWriter, r *http.Request) {
 
 	db := Connect()
 	defer db.Close()
-	updateUser(db, xToken, name, w)
+	if err := updateUser(db, xToken, name, w); err != nil {
+		return
+	}
 }

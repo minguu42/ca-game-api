@@ -89,11 +89,15 @@ WHERE U.digest_token = ?
 	return characters, nil
 }
 
-func updateUser(db *sql.DB, token, newName string, w http.ResponseWriter) {
+func updateUser(db *sql.DB, token, newName string, w http.ResponseWriter) error {
+	log.Println("INFO START updateUser")
 	const updateSql = `UPDATE users SET name = ? WHERE digest_token = ?`
 	digestToken := HashToken(token)
 	if _, err := db.Exec(updateSql, newName, digestToken); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		log.Println("ERROR updateUser user error:", err)
+		log.Println("ERROR Return 403:", err)
+		return err
 	}
+	log.Println("INFO END updateUser")
+	return nil
 }
