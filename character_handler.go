@@ -19,10 +19,8 @@ func GetCharacterList(w http.ResponseWriter, r *http.Request) {
 
 	db := Connect()
 	defer db.Close()
-	characters, err := selectCharacterList(db, xToken)
+	characters, err := selectCharacterList(db, xToken, w)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		log.Println("ERROR Return 403:", err)
 		return
 	}
 

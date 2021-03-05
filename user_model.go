@@ -26,12 +26,14 @@ func selectUserName(db *sql.DB, token string) (string, error) {
 	return name, nil
 }
 
-func selectUserId(db *sql.DB, token string) (int, error) {
+func selectUserId(db *sql.DB, token string, w http.ResponseWriter) (int, error) {
 	const selectSql = "SELECT id FROM users WHERE digest_token = ?"
 	digestToken := HashToken(token)
 	row := db.QueryRow(selectSql, digestToken)
 	var id int
 	if err := row.Scan(&id); err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		log.Println("ERROR Return 401: x-token is invalid")
 		return 0, err
 	}
 	return id, nil
@@ -43,7 +45,8 @@ type Character struct {
 	Name            string `json:"name"`
 }
 
-func selectCharacterList(db *sql.DB, token string) ([]Character, error) {
+func selectCharacterList(db *sql.DB, token string, w http.ResponseWriter) ([]Character, error) {
+	log.Println("INFO START selectCharacterList")
 	var characters []Character
 	const selectSql = `
 SELECT UOC.id, C.id, C.name
@@ -53,17 +56,26 @@ INNER JOIN characters AS C ON UOC.character_id = C.id
 WHERE U.digest_token = ?
 `
 	digestToken := HashToken(token)
+	if _, err := selectUserId(db, token, w); err != nil {
+		return nil, err
+	}
+
 	rows, err := db.Query(selectSql, digestToken)
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Println("ERROR Return 500:", err)
 		return nil, err
 	}
 	for rows.Next() {
 		var c Character
 		if err := rows.Scan(&c.UserCharacterId, &c.CharacterId, &c.Name); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			log.Println("ERROR Return 500:", err)
 			return nil, err
 		}
 		characters = append(characters, c)
 	}
+	log.Println("INFO END selectCharacterList")
 	return characters, nil
 }
 

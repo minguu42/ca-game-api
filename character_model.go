@@ -1,6 +1,8 @@
 package ca_game_api
 
-import "database/sql"
+import (
+	"database/sql"
+)
 
 func selectCharacterName(db *sql.DB, characterId int) (string, error) {
 	const selectSql = "SELECT name FROM characters WHERE id = ?"
@@ -13,9 +15,9 @@ func selectCharacterName(db *sql.DB, characterId int) (string, error) {
 }
 
 func countPerRarity(db *sql.DB, rarity int) (int, error) {
-	const countSql = "SELECT COUNT(*) FROM characters WHERE rarity = ?"
+	const selectSql = "SELECT COUNT(*) FROM characters WHERE rarity = ?"
 	var count int
-	row := db.QueryRow(countSql, rarity)
+	row := db.QueryRow(selectSql, rarity)
 	if err := row.Scan(&count); err != nil {
 		return 0, err
 	}
