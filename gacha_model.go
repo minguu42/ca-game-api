@@ -47,6 +47,7 @@ func draw(db *sql.DB, xToken string, times int, w http.ResponseWriter) ([]Result
 		rand.Seed(time.Now().UnixNano())
 		characterId := decideOutputCharacterId(rarity3SumNum, rarity4SumNum, rarity5SumNum)
 		characterLevel := decideCharacterLevel()
+		characterExperience := calculateExperience(characterLevel)
 		name, err := selectCharacterName(db, characterId)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
@@ -58,7 +59,7 @@ func draw(db *sql.DB, xToken string, times int, w http.ResponseWriter) ([]Result
 			Name:        name,
 		})
 
-		if err := insertResult(tx, userId, characterId, characterLevel); err != nil {
+		if err := insertResult(tx, userId, characterId, characterLevel, characterExperience); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			log.Println("ERROR Return 500:", err)
 			return nil, err, tx
@@ -96,13 +97,17 @@ func decideCharacterLevel() int {
 	return rand.Intn(10) + 1
 }
 
-func insertResult(tx *sql.Tx, userId, characterId, characterLevel int) error {
+func calculateExperience(level int) int {
+	return (level ^ 2) * 100
+}
+
+func insertResult(tx *sql.Tx, userId, characterId, characterLevel, characterExperience int) error {
 	const insertSql = "INSERT INTO gacha_results (user_id, character_id, level) VALUES (?, ?, ?)"
 	if _, err := tx.Exec(insertSql, userId, characterId, characterLevel); err != nil {
 		return err
 	}
 	const createSql = "INSERT INTO user_ownership_characters (user_id, character_id, level, experience) VALUES (?, ?, ?, ?)"
-	if _, err := tx.Exec(createSql, userId, characterId, characterLevel, 0); err != nil {
+	if _, err := tx.Exec(createSql, userId, characterId, characterLevel, characterExperience); err != nil {
 		return err
 	}
 	return nil

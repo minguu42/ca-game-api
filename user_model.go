@@ -53,13 +53,14 @@ type Character struct {
 	UserCharacterId string `json:"userCharacterID"`
 	CharacterId     string `json:"characterID"`
 	Name            string `json:"name"`
+	Level           int    `json:"level"`
 }
 
 func selectCharacterList(db *sql.DB, token string, w http.ResponseWriter) ([]Character, error) {
 	log.Println("INFO START selectCharacterList")
 	var characters []Character
 	const selectSql = `
-SELECT UOC.id, C.id, C.name
+SELECT UOC.id, C.id, C.name, UOC.level
 FROM user_ownership_characters AS UOC
 INNER JOIN users AS U ON UOC.user_id = U.id
 INNER JOIN characters AS C ON UOC.character_id = C.id
@@ -78,7 +79,7 @@ WHERE U.digest_token = ?
 	}
 	for rows.Next() {
 		var c Character
-		if err := rows.Scan(&c.UserCharacterId, &c.CharacterId, &c.Name); err != nil {
+		if err := rows.Scan(&c.UserCharacterId, &c.CharacterId, &c.Name, &c.Level); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			log.Println("ERROR Return 500:", err)
 			return nil, err
