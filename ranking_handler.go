@@ -2,15 +2,32 @@ package ca_game_api
 
 import "net/http"
 
+type UserInfo struct {
+	Id       string `json:"userID"`
+	Name     string `json:"name"`
+	SumPower string `json:"sumPower"`
+}
+
 type GetRankingUserResponse struct {
-	Rank1UserId string `json:"rank1UserID"`
-	Rank2UserId string `json:"rank2UserID"`
-	Rank3UserId string `json:"rank3UserID"`
+	UserRankings []UserInfo `json:"userRankings"`
 }
 
 func GetRankingUser(w http.ResponseWriter, r *http.Request) {
-  if isStatusMethodInvalid(w, r, http.MethodGet) {
-	  return
-  }
+	if isStatusMethodInvalid(w, r, http.MethodGet) {
+		return
+	}
 
+	db := Connect()
+	defer db.Close()
+	users, err := selectUserRanking(db, w)
+	if err != nil {
+		return
+	}
+
+	jsonResponse := GetRankingUserResponse{
+		UserRankings: users,
+	}
+	if err := encodeResponse(w, jsonResponse); err != nil {
+		return
+	}
 }
