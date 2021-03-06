@@ -16,6 +16,8 @@ func main() {
 
 	http.HandleFunc("/gacha/draw", measure(logging(ca_game_api.PostGachaDraw)))
 
+	http.HandleFunc("/ranking/user", measure(logging(ca_game_api.GetRankingUser)))
+
 	http.HandleFunc("/character/list", measure(logging(ca_game_api.GetCharacterList)))
 	http.HandleFunc("/character/compose", measure(logging(ca_game_api.PutCharacterCompose)))
 
