@@ -73,6 +73,7 @@ func PutCharacterCompose(w http.ResponseWriter, r *http.Request) {
 	if (userId != baseUserId) || (userId != materialUserId) {
 		w.WriteHeader(http.StatusBadRequest)
 		log.Println("ERROR Return 400: User does not own the character")
+		return
 	}
 
 	tx, newLevel, err := composeCharacter(db, baseUserCharacterId, materialUserCharacterId, w)
