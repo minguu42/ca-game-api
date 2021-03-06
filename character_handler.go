@@ -32,8 +32,15 @@ func GetCharacterList(w http.ResponseWriter, r *http.Request) {
 }
 
 type PutCharacterComposeRequest struct {
-	BaseUserCharacterId int `json:"baseCharacterID"`
+	BaseUserCharacterId     int `json:"baseUserCharacterID"`
 	MaterialUserCharacterId int `json:"materialUserCharacterID"`
+}
+
+type PutCharacterComposeResponse struct {
+	UserCharacterId string `json:"userCharacterID"`
+	CharacterId     string `json:"characterID"`
+	Name            string `json:"name"`
+	Level           int    `json:"level"`
 }
 
 func PutCharacterCompose(w http.ResponseWriter, r *http.Request) {
@@ -51,5 +58,51 @@ func PutCharacterCompose(w http.ResponseWriter, r *http.Request) {
 
 	db := Connect()
 	defer db.Close()
-	log.Println(xToken, baseUserCharacterId, materialUserCharacterId)
+	userId, err := selectUserId(db, xToken, w)
+	if err != nil {
+		return
+	}
+	baseUserId, err := selectUserIdByUserCharacterId(db, baseUserCharacterId, w)
+	if err != nil {
+		return
+	}
+	materialUserId, err := selectUserIdByUserCharacterId(db, materialUserCharacterId, w)
+	if err != nil {
+		return
+	}
+	if (userId != baseUserId) || (userId != materialUserId) {
+		w.WriteHeader(http.StatusBadRequest)
+		log.Println("ERROR Return 400: User does not own the character")
+	}
+
+	tx, newLevel, err := composeCharacter(db, baseUserCharacterId, materialUserCharacterId, w)
+	if err != nil {
+		if tx != nil {
+			if err := tx.Rollback(); err != nil {
+				log.Println("ERROR Rollback error:", err)
+			}
+		}
+		return
+	}
+
+	jsonResponse, err := createPutCharacterComposeResponse(db, baseUserCharacterId, newLevel, w)
+	if err != nil {
+		if err := tx.Rollback(); err != nil {
+			log.Println("ERROR Rollback error:", err)
+		}
+		return
+	}
+	if err := encodeResponse(w, jsonResponse); err != nil {
+		if err := tx.Rollback(); err != nil {
+			log.Println("ERROR Rollback error:", err)
+		}
+		return
+	}
+
+	if err := tx.Commit(); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Println("ERROR Return 500:", err)
+		return
+	}
+	log.Println("INFO Commit character compose")
 }

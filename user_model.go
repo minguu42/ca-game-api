@@ -49,38 +49,16 @@ func selectUserId(db *sql.DB, token string, w http.ResponseWriter) (int, error) 
 	return id, nil
 }
 
-func selectCharacterList(db *sql.DB, token string, w http.ResponseWriter) ([]Character, error) {
-	log.Println("INFO START selectCharacterList")
-	var characters []Character
-	const selectSql = `
-SELECT UOC.id, C.id, C.name, UOC.level
-FROM user_ownership_characters AS UOC
-INNER JOIN users AS U ON UOC.user_id = U.id
-INNER JOIN characters AS C ON UOC.character_id = C.id
-WHERE U.digest_token = ?
-`
-	digestToken := HashToken(token)
-	if _, err := selectUserId(db, token, w); err != nil {
-		return nil, err
+func selectUserIdByUserCharacterId(db *sql.DB, userCharacterId int, w http.ResponseWriter) (int, error) {
+	const selectSql = `SELECT user_id FROM user_ownership_characters WHERE id = ?`
+	row := db.QueryRow(selectSql, userCharacterId)
+	var id int
+	if err := row.Scan(&id); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		log.Println("ERROR Return 400:", err)
+		return 0, err
 	}
-
-	rows, err := db.Query(selectSql, digestToken)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		log.Println("ERROR Return 500:", err)
-		return nil, err
-	}
-	for rows.Next() {
-		var c Character
-		if err := rows.Scan(&c.UserCharacterId, &c.CharacterId, &c.Name, &c.Level); err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			log.Println("ERROR Return 500:", err)
-			return nil, err
-		}
-		characters = append(characters, c)
-	}
-	log.Println("INFO END selectCharacterList")
-	return characters, nil
+	return id, nil
 }
 
 func updateUser(db *sql.DB, token, newName string, w http.ResponseWriter) error {

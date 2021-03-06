@@ -97,10 +97,6 @@ func decideCharacterLevel() int {
 	return rand.Intn(10) + 1
 }
 
-func calculateExperience(level int) int {
-	return (level ^ 2) * 100
-}
-
 func insertResult(tx *sql.Tx, userId, characterId, characterLevel, characterExperience int) error {
 	const insertSql = "INSERT INTO gacha_results (user_id, character_id, level) VALUES (?, ?, ?)"
 	if _, err := tx.Exec(insertSql, userId, characterId, characterLevel); err != nil {

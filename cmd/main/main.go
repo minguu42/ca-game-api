@@ -1,11 +1,12 @@
 package main
 
 import (
-	_ "github.com/go-sql-driver/mysql"
-	"github.com/minguu42/ca-game-api"
 	"log"
 	"net/http"
 	"time"
+
+	_ "github.com/go-sql-driver/mysql"
+	ca_game_api "github.com/minguu42/ca-game-api"
 )
 
 func main() {
