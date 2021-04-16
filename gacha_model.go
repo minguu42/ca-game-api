@@ -98,11 +98,11 @@ func decideCharacterLevel() int {
 }
 
 func insertResult(tx *sql.Tx, userId, characterId, characterLevel, characterExperience int) error {
-	const insertSql = "INSERT INTO gacha_results (user_id, character_id, level) VALUES (?, ?, ?)"
+	const insertSql = "INSERT INTO gacha_results (user_id, character_id, level) VALUES ($1, $2, $3)"
 	if _, err := tx.Exec(insertSql, userId, characterId, characterLevel); err != nil {
 		return err
 	}
-	const createSql = "INSERT INTO user_ownership_characters (user_id, character_id, level, experience) VALUES (?, ?, ?, ?)"
+	const createSql = "INSERT INTO user_ownership_characters (user_id, character_id, level, experience) VALUES ($1, $2, $3, $4)"
 	if _, err := tx.Exec(createSql, userId, characterId, characterLevel, characterExperience); err != nil {
 		return err
 	}

@@ -36,7 +36,7 @@ func selectUserName(db *sql.DB, token string, w http.ResponseWriter) (string, er
 }
 
 func selectUserId(db *sql.DB, token string, w http.ResponseWriter) (int, error) {
-	const selectSql = `SELECT id FROM users WHERE digest_token = ?`
+	const selectSql = `SELECT id FROM users WHERE digest_token = $1`
 	digestToken := HashToken(token)
 	row := db.QueryRow(selectSql, digestToken)
 	var id int
@@ -49,7 +49,7 @@ func selectUserId(db *sql.DB, token string, w http.ResponseWriter) (int, error) 
 }
 
 func selectUserIdByUserCharacterId(db *sql.DB, userCharacterId int, w http.ResponseWriter) (int, error) {
-	const selectSql = `SELECT user_id FROM user_ownership_characters WHERE id = ?`
+	const selectSql = `SELECT user_id FROM user_ownership_characters WHERE id = $1`
 	row := db.QueryRow(selectSql, userCharacterId)
 	var id int
 	if err := row.Scan(&id); err != nil {
@@ -62,7 +62,7 @@ func selectUserIdByUserCharacterId(db *sql.DB, userCharacterId int, w http.Respo
 
 func updateUser(db *sql.DB, token, newName string, w http.ResponseWriter) error {
 	log.Println("INFO START updateUser")
-	const updateSql = `UPDATE users SET name = ? WHERE digest_token = ?`
+	const updateSql = `UPDATE users SET name = $1 WHERE digest_token = $2`
 	digestToken := HashToken(token)
 	if _, err := db.Exec(updateSql, newName, digestToken); err != nil {
 		w.WriteHeader(http.StatusBadRequest)

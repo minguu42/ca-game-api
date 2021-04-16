@@ -15,7 +15,7 @@ type Character struct {
 }
 
 func selectCharacterName(db *sql.DB, characterId int) (string, error) {
-	const selectSql = "SELECT name FROM characters WHERE id = ?"
+	const selectSql = "SELECT name FROM characters WHERE id = $1"
 	var name string
 	row := db.QueryRow(selectSql, characterId)
 	if err := row.Scan(&name); err != nil {
@@ -25,7 +25,7 @@ func selectCharacterName(db *sql.DB, characterId int) (string, error) {
 }
 
 func countPerRarity(db *sql.DB, rarity int, w http.ResponseWriter) (int, error) {
-	const selectSql = "SELECT COUNT(*) FROM characters WHERE rarity = ?"
+	const selectSql = "SELECT COUNT(*) FROM characters WHERE rarity = $1"
 	var count int
 	row := db.QueryRow(selectSql, rarity)
 	if err := row.Scan(&count); err != nil {
@@ -44,7 +44,7 @@ SELECT UOC.id, C.id, C.name, UOC.level
 FROM user_ownership_characters AS UOC
 INNER JOIN users AS U ON UOC.user_id = U.id
 INNER JOIN characters AS C ON UOC.character_id = C.id
-WHERE U.digest_token = ?
+WHERE U.digest_token = $1
 `
 	digestToken := HashToken(token)
 	if _, err := selectUserId(db, token, w); err != nil {
@@ -75,7 +75,7 @@ func selectCalorieByUserCharacterId(db *sql.DB, userCharacterId int, w http.Resp
 SELECT C.calorie
 FROM user_ownership_characters AS UOC
 INNER JOIN characters AS C ON UOC.character_id = C.id
-WHERE UOC.id = ?
+WHERE UOC.id = $1
 `
 	row := db.QueryRow(selectSql, userCharacterId)
 	var calorie int
@@ -88,7 +88,7 @@ WHERE UOC.id = ?
 }
 
 func selectExperience(db *sql.DB, userCharacterId int, w http.ResponseWriter) (int, error) {
-	const selectSql = `SELECT experience FROM user_ownership_characters WHERE id = ?`
+	const selectSql = `SELECT experience FROM user_ownership_characters WHERE id = $1`
 	row := db.QueryRow(selectSql, userCharacterId)
 	var experience int
 	if err := row.Scan(&experience); err != nil {
@@ -137,7 +137,7 @@ func composeCharacter(db *sql.DB, baseUserCharacterId, materialUserCharacterId i
 }
 
 func updateCharacter(tx *sql.Tx, userCharacterId, level, experience int, w http.ResponseWriter) error {
-	const updateSql = `UPDATE user_ownership_characters SET level = ?, experience = ? WHERE id = ?`
+	const updateSql = `UPDATE user_ownership_characters SET level = $1, experience = $2 WHERE id = $3`
 	if _, err := tx.Exec(updateSql, level, experience, userCharacterId); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Println("ERROR Return 500:", err)
@@ -147,7 +147,7 @@ func updateCharacter(tx *sql.Tx, userCharacterId, level, experience int, w http.
 }
 
 func deleteCharacter(tx *sql.Tx, userCharacterId int, w http.ResponseWriter) error {
-	const deleteSql = `DELETE FROM user_ownership_characters WHERE id = ?`
+	const deleteSql = `DELETE FROM user_ownership_characters WHERE id = $1`
 	if _, err := tx.Exec(deleteSql, userCharacterId); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Println("ERROR Return 500:", err)
@@ -162,7 +162,7 @@ func createPutCharacterComposeResponse(db *sql.DB, userCharacterId, level int, w
 SELECT UOC.id, C.id, C.name
 FROM user_ownership_characters AS UOC
 INNER JOIN characters AS C ON UOC.character_id = C.id
-WHERE UOC.id = ?
+WHERE UOC.id = $1
 `
 	row := db.QueryRow(selectSql, userCharacterId)
 	if err := row.Scan(&jsonResponse.UserCharacterId, &jsonResponse.CharacterId, &jsonResponse.Name); err != nil {
