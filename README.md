@@ -28,6 +28,7 @@ $ docker-compose up -d
 
 # （初回のみ、2回目以降は行わない）テーブルとキャラクターを作成する
 $ docker exec -i mysql-container sh -c 'exec mysql -u <上と等しいユーザ名> -D ca_game_api_db -p"<上と等しいユーザのパスワード>"' < init.sql
+$ docker exec -i ca-game-api-db sh -c 'exec psql -U minguu -d ca_game_api_db -w' < init.sql
 ```
 
 ## 動作例
