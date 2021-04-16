@@ -5,6 +5,7 @@ services:
       context: .
       dockerfile: Dockerfile
     environment:
+      PORT: ${PORT}
       DRIVER: ${DRIVER}
       DATASOURCE: ${DATASOURCE}
     stdin_open: true

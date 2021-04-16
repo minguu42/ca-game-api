@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -21,7 +22,7 @@ func main() {
 	http.HandleFunc("/character/list", measure(logging(ca_game_api.GetCharacterList)))
 	http.HandleFunc("/character/compose", measure(logging(ca_game_api.PutCharacterCompose)))
 
-	if err := http.ListenAndServe(":8080", nil); err != nil {
+	if err := http.ListenAndServe(":" + os.Getenv("PORT"), nil); err != nil {
 		log.Fatal("Server listen error: ", err)
 	}
 }
