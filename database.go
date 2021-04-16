@@ -6,13 +6,8 @@ import (
 	"os"
 )
 
-var (
-	DRIVER     = os.Getenv("DRIVER")
-	DATASOURCE = os.Getenv("DATASOURCE")
-)
-
 func Connect() *sql.DB {
-	db, err := sql.Open(DRIVER, DATASOURCE)
+	db, err := sql.Open(os.Getenv("DRIVER"), os.Getenv("DATABASE_URL"))
 	if err != nil {
 		log.Fatal("database connection error", err)
 	}

@@ -1,6 +1,5 @@
 package ca_game_api
 
-import "C"
 import (
 	"database/sql"
 	"log"
@@ -9,7 +8,7 @@ import (
 
 func insertUser(db *sql.DB, name string, token string, w http.ResponseWriter) error {
 	log.Println("INFO START insertUser")
-	const createSql = `INSERT INTO users (name, digest_token) VALUES (?, ?)`
+	const createSql = `INSERT INTO users (name, digest_token) VALUES ($1, $2);`
 	digestToken := HashToken(token)
 	if _, err := db.Exec(createSql, name, digestToken); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -22,7 +21,7 @@ func insertUser(db *sql.DB, name string, token string, w http.ResponseWriter) er
 
 func selectUserName(db *sql.DB, token string, w http.ResponseWriter) (string, error) {
 	log.Println("INFO START selectUserName")
-	const selectSql = `SELECT name FROM users WHERE digest_token = ?`
+	const selectSql = `SELECT name FROM users WHERE digest_token = $1`
 	digestToken := HashToken(token)
 
 	var name string
