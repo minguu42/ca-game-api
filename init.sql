@@ -1,48 +1,36 @@
-CREATE TABLE IF NOT EXISTS `users` (
-    id int PRIMARY KEY AUTO_INCREMENT,
+CREATE TABLE IF NOT EXISTS users (
+    id serial PRIMARY KEY,
     name varchar(255) UNIQUE NOT NULL,
     digest_token varchar(255) NOT NULL,
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS `characters` (
-    id int PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS characters (
+    id serial PRIMARY KEY,
     name varchar(255) NOT NULL,
     rarity int NOT NULL,
     power int NOT NULL,
     calorie int NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS `user_ownership_characters` (
-    id int PRIMARY KEY AUTO_INCREMENT,
-    user_id int NOT NULL,
-    character_id int NOT NULL,
+CREATE TABLE IF NOT EXISTS user_ownership_characters (
+    id serial PRIMARY KEY,
+    user_id int REFERENCES users,
+    character_id int REFERENCES characters,
     level int NOT NULL,
     experience int NOT NULL,
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS `gacha_results` (
-    id int PRIMARY KEY AUTO_INCREMENT,
-    user_id int NOT NULL,
-    character_id int NOT NULL,
+CREATE TABLE IF NOT EXISTS gacha_results (
+    id serial PRIMARY KEY,
+    user_id int REFERENCES users,
+    character_id int REFERENCES characters,
     level int NOT NULL,
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
-
-ALTER TABLE `user_ownership_characters`
-    ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
-
-ALTER TABLE `user_ownership_characters`
-    ADD FOREIGN KEY (`character_id`) REFERENCES `characters` (`id`);
-
-ALTER TABLE `gacha_results`
-    ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
-
-ALTER TABLE `gacha_results`
-    ADD FOREIGN KEY (`character_id`) REFERENCES `characters` (`id`);
 
 INSERT INTO characters VALUES (30000001, 'normal_character1', 3, 1, 10000);
 INSERT INTO characters VALUES (30000002, 'normal_character2', 3, 200, 500);

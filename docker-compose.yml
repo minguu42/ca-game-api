@@ -5,31 +5,32 @@ services:
       context: .
       dockerfile: Dockerfile
     environment:
-      PORT: ${PORT}
-      DRIVER: ${DRIVER}
-      DATASOURCE: ${DATASOURCE}
+      - PORT
+      - DRIVER
+      - DATABASE_URL
+    container_name: ca-game-api
     stdin_open: true
     tty: true
     volumes:
-      - .:/go/src/github.com/minguu42/ca-game-api
+      - .:/go/src/app
     ports:
-      - 8080:8080
+      - 8000:8000
     depends_on:
       - db
   db:
-    image: mysql:8.0.23
+    image: postgres:12.6
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-    container_name: mysql-container
+      - POSTGRES_PASSWORD
+      - POSTGRES_USER
+      - POSTGRES_DB
+    container_name: ca-game-api-db
     tty: true
+    restart: always
     ports:
-      - 3336:3336
+      - 5432:5432
     volumes:
-      - mysql-data:/var/lib/mysql
+      - pg-data:/var/lib/postgresql/data
 
 volumes:
-  mysql-data:
+  pg-data:
     driver: local

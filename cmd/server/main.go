@@ -6,21 +6,21 @@ import (
 	"os"
 	"time"
 
-	_ "github.com/go-sql-driver/mysql"
-	ca_game_api "github.com/minguu42/ca-game-api"
+	_ "github.com/lib/pq"
+	caGameApi "github.com/minguu42/ca-game-api"
 )
 
 func main() {
-	http.HandleFunc("/user/create", measure(logging(ca_game_api.PostUser)))
-	http.HandleFunc("/user/get", measure(logging(ca_game_api.GetUser)))
-	http.HandleFunc("/user/update", measure(logging(ca_game_api.PutUser)))
+	http.HandleFunc("/user/create", measure(logging(caGameApi.PostUser)))
+	http.HandleFunc("/user/get", measure(logging(caGameApi.GetUser)))
+	http.HandleFunc("/user/update", measure(logging(caGameApi.PutUser)))
 
-	http.HandleFunc("/gacha/draw", measure(logging(ca_game_api.PostGachaDraw)))
+	http.HandleFunc("/gacha/draw", measure(logging(caGameApi.PostGachaDraw)))
 
-	http.HandleFunc("/ranking/user", measure(logging(ca_game_api.GetRankingUser)))
+	http.HandleFunc("/ranking/user", measure(logging(caGameApi.GetRankingUser)))
 
-	http.HandleFunc("/character/list", measure(logging(ca_game_api.GetCharacterList)))
-	http.HandleFunc("/character/compose", measure(logging(ca_game_api.PutCharacterCompose)))
+	http.HandleFunc("/character/list", measure(logging(caGameApi.GetCharacterList)))
+	http.HandleFunc("/character/compose", measure(logging(caGameApi.PutCharacterCompose)))
 
 	if err := http.ListenAndServe(":" + os.Getenv("PORT"), nil); err != nil {
 		log.Fatal("Server listen error: ", err)
