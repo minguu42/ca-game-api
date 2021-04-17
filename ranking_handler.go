@@ -13,7 +13,8 @@ type GetRankingUserResponse struct {
 }
 
 func GetRankingUser(w http.ResponseWriter, r *http.Request) {
-	if isStatusMethodInvalid(w, r, http.MethodGet) {
+	if isStatusMethodInvalid(r, http.MethodGet) {
+		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
 

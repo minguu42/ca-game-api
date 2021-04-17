@@ -10,7 +10,8 @@ type GetCharacterListResponse struct {
 }
 
 func GetCharacterList(w http.ResponseWriter, r *http.Request) {
-	if isStatusMethodInvalid(w, r, http.MethodGet) {
+	if isStatusMethodInvalid(r, http.MethodGet) {
+		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
 
@@ -42,7 +43,8 @@ type PutCharacterComposeResponse struct {
 }
 
 func PutCharacterCompose(w http.ResponseWriter, r *http.Request) {
-	if isStatusMethodInvalid(w, r, http.MethodPut) {
+	if isStatusMethodInvalid(r, http.MethodPut) {
+		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
 

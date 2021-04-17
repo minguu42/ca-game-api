@@ -13,7 +13,8 @@ type PostUserResponse struct {
 }
 
 func PostUser(w http.ResponseWriter, r *http.Request) {
-	if isStatusMethodInvalid(w, r, http.MethodPost) {
+	if isStatusMethodInvalid(r, http.MethodPost) {
+		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
 
@@ -45,7 +46,8 @@ type GetUserResponse struct {
 }
 
 func GetUser(w http.ResponseWriter, r *http.Request) {
-	if isStatusMethodInvalid(w, r, http.MethodGet) {
+	if isStatusMethodInvalid(r, http.MethodGet) {
+		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
 
@@ -69,7 +71,8 @@ type PutUserRequest struct {
 }
 
 func PutUser(w http.ResponseWriter, r *http.Request) {
-	if isStatusMethodInvalid(w, r, http.MethodPut) {
+	if isStatusMethodInvalid(r, http.MethodPut) {
+		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
 
