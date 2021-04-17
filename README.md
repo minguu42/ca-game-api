@@ -28,6 +28,7 @@ $ docker-compose up -d
 
 # （初回のみ、2回目以降は行わない）テーブルとキャラクターを作成する
 $ docker exec -i mysql-container sh -c 'exec mysql -u <上と等しいユーザ名> -D ca_game_api_db -p"<上と等しいユーザのパスワード>"' < init.sql
+$ docker exec -i ca-game-api-db sh -c 'exec psql -U minguu -d ca_game_api_db -w' < init.sql
 ```
 
 ## 動作例
@@ -42,7 +43,7 @@ $ docker exec -i mysql-container sh -c 'exec mysql -u <上と等しいユーザ�
 ユーザ名は重複できず、既に存在する場合は、`400 Bad Request`が返ります。
 
 ```bash
-$ curl -i -X POST "http://localhost:8080/user/create" -H  "accept: application/json" -H  "Content-Type: application/json" -d "{  \"name\": \"minguu\"}"
+$ curl -i -X POST "http://localhost:8000/user/create" -H  "accept: application/json" -H  "Content-Type: application/json" -d "{  \"name\": \"minguu\"}"
 HTTP/1.1 200 OK
 Date: Sat, 06 Mar 2021 10:33:06 GMT
 Content-Length: 40
@@ -61,7 +62,7 @@ Content-Type: text/plain; charset=utf-8
 トークンが適切でない場合は、`401 Unauthorized`を返します。
 
 ```bash
-$ curl -i -X GET "http://localhost:8080/user/get" -H  "accept: application/json" -H  "x-token: ceKeMPeYr0eF3K5e4Lfjfe"
+$ curl -i -X GET "http://localhost:8000/user/get" -H  "accept: application/json" -H  "x-token: ceKeMPeYr0eF3K5e4Lfjfe"
 HTTP/1.1 200 OK
 Date: Sat, 06 Mar 2021 10:34:15 GMT
 Content-Length: 23
@@ -80,7 +81,7 @@ Content-Type: text/plain; charset=utf-8
 指定した名前が既に存在する場合は、`400 Bad Request`を返します。
 
 ```bash
-$ curl -i -X PUT "http://localhost:8080/user/update" -H  "accept: application/json" -H  "x-token: ceKeMPeYr0eF3K5e4Lfjfe" -H  "Content-Type: application/json" -d "{  \"name\": \"newMinguu\"}"
+$ curl -i -X PUT "http://localhost:8000/user/update" -H  "accept: application/json" -H  "x-token: ceKeMPeYr0eF3K5e4Lfjfe" -H  "Content-Type: application/json" -d "{  \"name\": \"newMinguu\"}"
 HTTP/1.1 200 OK
 Date: Sat, 06 Mar 2021 10:38:46 GMT
 Content-Length: 0
@@ -94,7 +95,7 @@ Content-Length: 0
 回数が正の整数でない場合は`400 Bad Request`を返します。
 
 ```bash
-$ curl -i -X POST "http://localhost:8080/gacha/draw" -H  "accept: application/json" -H  "x-token: ceKeMPeYr0eF3K5e4Lfjfe" -H  "Content-Type: application/json" -d "{  \"times\": 3}"
+$ curl -i -X POST "http://localhost:8000/gacha/draw" -H  "accept: application/json" -H  "x-token: ceKeMPeYr0eF3K5e4Lfjfe" -H  "Content-Type: application/json" -d "{  \"times\": 3}"
 HTTP/1.1 200 OK
 Date: Sat, 06 Mar 2021 10:40:30 GMT
 Content-Length: 259
@@ -126,7 +127,7 @@ Content-Type: text/plain; charset=utf-8
 キャラクタを所有していないユーザの場合は、 ステータス行は`200 OK`で、 レスポンスボディは`{"characters": null}`で返します。
 
 ```bash
-$ curl -i -X GET "http://localhost:8080/character/list" -H  "accept: application/json" -H  "x-token: ceKeMPeYr0eF3K5e4Lfjfe"
+$ curl -i -X GET "http://localhost:8000/character/list" -H  "accept: application/json" -H  "x-token: ceKeMPeYr0eF3K5e4Lfjfe"
 HTTP/1.1 200 OK
 Date: Sat, 06 Mar 2021 10:42:47 GMT
 Content-Length: 407
@@ -164,7 +165,7 @@ Content-Type: text/plain; charset=utf-8
 ユーザのランキングは、ユーザの所有しているキャラクターのレベルとキャラクター固有のパワーの合計値で決定します。
 
 ```bash
-$ curl -i -X GET "http://localhost:8080/ranking/user" -H  "accept: application/json"                                                                                                
+$ curl -i -X GET "http://localhost:8000/ranking/user" -H  "accept: application/json"                                                                            
 HTTP/1.1 200 OK
 Date: Sat, 06 Mar 2021 10:48:59 GMT
 Content-Length: 274
