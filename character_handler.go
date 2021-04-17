@@ -26,6 +26,7 @@ func GetCharacterList(w http.ResponseWriter, r *http.Request) {
 		Characters: characters,
 	}
 	if err := encodeResponse(w, jsonResponse); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 }
@@ -96,6 +97,7 @@ func PutCharacterCompose(w http.ResponseWriter, r *http.Request) {
 		if err := tx.Rollback(); err != nil {
 			log.Println("ERROR Rollback error:", err)
 		}
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 

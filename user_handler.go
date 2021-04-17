@@ -64,6 +64,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 		Name: name,
 	}
 	if err := encodeResponse(w, jsonResponse); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 }
