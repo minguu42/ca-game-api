@@ -23,7 +23,7 @@ func PostUser(w http.ResponseWriter, r *http.Request) {
 	}
 	name := jsonRequest.Name
 
-	token, err := GenerateRandomString(22, w)
+	token, err := generateRandomString(22, w)
 	if err != nil {
 		return
 	}

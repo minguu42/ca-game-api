@@ -46,7 +46,7 @@ INNER JOIN users AS U ON UOC.user_id = U.id
 INNER JOIN characters AS C ON UOC.character_id = C.id
 WHERE U.digest_token = $1
 `
-	digestToken := HashToken(token)
+	digestToken := hash(token)
 	if _, err := selectUserId(token, w); err != nil {
 		return nil, err
 	}
