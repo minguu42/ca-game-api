@@ -10,23 +10,6 @@ import (
 	caGameApi "github.com/minguu42/ca-game-api"
 )
 
-func main() {
-	http.HandleFunc("/user/create", measure(logging(caGameApi.PostUser)))
-	http.HandleFunc("/user/get", measure(logging(caGameApi.GetUser)))
-	http.HandleFunc("/user/update", measure(logging(caGameApi.PutUser)))
-
-	http.HandleFunc("/gacha/draw", measure(logging(caGameApi.PostGachaDraw)))
-
-	http.HandleFunc("/ranking/user", measure(logging(caGameApi.GetRankingUser)))
-
-	http.HandleFunc("/character/list", measure(logging(caGameApi.GetCharacterList)))
-	http.HandleFunc("/character/compose", measure(logging(caGameApi.PutCharacterCompose)))
-
-	if err := http.ListenAndServe(":" + os.Getenv("PORT"), nil); err != nil {
-		log.Fatal("Server listen error: ", err)
-	}
-}
-
 func logging(h http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("INFO START %v requeest to %v\n", r.Method, r.URL)
@@ -41,5 +24,31 @@ func measure(h http.HandlerFunc) http.HandlerFunc {
 		h(w, r)
 		end := time.Now()
 		log.Printf("INFO Response time: %v seconds\n", (end.Sub(start)).Seconds())
+	}
+}
+
+func main() {
+	mux := http.NewServeMux()
+
+	mux.HandleFunc("/user/create", measure(logging(caGameApi.PostUser)))
+	mux.HandleFunc("/user/get", measure(logging(caGameApi.GetUser)))
+	mux.HandleFunc("/user/update", measure(logging(caGameApi.PutUser)))
+
+	mux.HandleFunc("/gacha/draw", measure(logging(caGameApi.PostGachaDraw)))
+
+	mux.HandleFunc("/ranking/user", measure(logging(caGameApi.GetRankingUser)))
+
+	mux.HandleFunc("/character/list", measure(logging(caGameApi.GetCharacterList)))
+	mux.HandleFunc("/character/compose", measure(logging(caGameApi.PutCharacterCompose)))
+
+	s := &http.Server{
+		Addr:           ":" + os.Getenv("PORT"),
+		Handler:        mux,
+		ReadTimeout:    10 * time.Second,
+		WriteTimeout:   10 * time.Second,
+		MaxHeaderBytes: 1 << 20,
+	}
+	if err := s.ListenAndServe(); err != nil {
+		log.Fatal("Server listen error: ", err)
 	}
 }

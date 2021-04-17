@@ -214,3 +214,10 @@ Content-Type: text/plain; charset=utf-8
   "level": 4
 }
 ```
+
+
+curl -i -X POST "http://localhost:8000/user/create" -H  "accept: application/json" -H  "Content-Type: application/json" -d "{  \"name\": \"minguu\"}"
+
+curl -i -X GET "http://localhost:8000/user/get" -H  "accept: application/json" -H  "x-token: PYi05uOulU4Rshqz5YZQ-c"
+
+curl -i -X PUT "http://localhost:8000/user/update" -H  "accept: application/json" -H  "x-token: PYi05uOulU4Rshqz5YZQ-c" -H  "Content-Type: application/json" -d "{  \"name\": \"newMinguu\"}"
