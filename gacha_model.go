@@ -14,11 +14,11 @@ type Result struct {
 	Name        string `json:"name"`
 }
 
-func draw(db *sql.DB, xToken string, times int, w http.ResponseWriter) ([]Result, error, *sql.Tx) {
+func draw(xToken string, times int, w http.ResponseWriter) ([]Result, error, *sql.Tx) {
 	log.Println("INFO START draw")
 	var results []Result
 
-	userId, err := selectUserId(db, xToken, w)
+	userId, err := selectUserId(xToken, w)
 	if err != nil {
 		return nil, err, nil
 	}

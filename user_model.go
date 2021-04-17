@@ -1,7 +1,6 @@
 package ca_game_api
 
 import (
-	"database/sql"
 	"log"
 	"net/http"
 )
@@ -35,7 +34,7 @@ func selectUserName(token string, w http.ResponseWriter) (string, error) {
 	return name, nil
 }
 
-func selectUserId(db *sql.DB, token string, w http.ResponseWriter) (int, error) {
+func selectUserId(token string, w http.ResponseWriter) (int, error) {
 	const selectSql = `SELECT id FROM users WHERE digest_token = $1`
 	digestToken := HashToken(token)
 	row := db.QueryRow(selectSql, digestToken)
@@ -48,7 +47,7 @@ func selectUserId(db *sql.DB, token string, w http.ResponseWriter) (int, error) 
 	return id, nil
 }
 
-func selectUserIdByUserCharacterId(db *sql.DB, userCharacterId int, w http.ResponseWriter) (int, error) {
+func selectUserIdByUserCharacterId(userCharacterId int, w http.ResponseWriter) (int, error) {
 	const selectSql = `SELECT user_id FROM user_ownership_characters WHERE id = $1`
 	row := db.QueryRow(selectSql, userCharacterId)
 	var id int

@@ -31,7 +31,7 @@ func PostGachaDraw(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	results, err, tx := draw(db, xToken, times, w)
+	results, err, tx := draw(xToken, times, w)
 	if err != nil {
 		if tx != nil {
 			if err := tx.Rollback(); err != nil {

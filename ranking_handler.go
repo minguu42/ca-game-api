@@ -17,7 +17,7 @@ func GetRankingUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	users, err := selectUserRanking(db, w)
+	users, err := selectUserRanking(w)
 	if err != nil {
 		return
 	}

@@ -1,12 +1,11 @@
 package ca_game_api
 
 import (
-	"database/sql"
 	"log"
 	"net/http"
 )
 
-func selectUserRanking(db *sql.DB, w http.ResponseWriter) ([]UserInfo, error) {
+func selectUserRanking(w http.ResponseWriter) ([]UserInfo, error) {
 	log.Println("INFO START selectUserRanking")
 	var users []UserInfo
 	const selectSql = `

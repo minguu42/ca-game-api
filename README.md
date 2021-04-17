@@ -221,3 +221,7 @@ curl -i -X POST "http://localhost:8000/user/create" -H  "accept: application/jso
 curl -i -X GET "http://localhost:8000/user/get" -H  "accept: application/json" -H  "x-token: PYi05uOulU4Rshqz5YZQ-c"
 
 curl -i -X PUT "http://localhost:8000/user/update" -H  "accept: application/json" -H  "x-token: PYi05uOulU4Rshqz5YZQ-c" -H  "Content-Type: application/json" -d "{  \"name\": \"newMinguu\"}"
+
+curl -i -X POST "http://localhost:8000/gacha/draw" -H  "accept: application/json" -H  "x-token: PYi05uOulU4Rshqz5YZQ-c" -H  "Content-Type: application/json" -d "{  \"times\": 3}"
+
+curl -i -X GET "http://localhost:8000/character/list" -H  "accept: application/json" -H  "x-token: PYi05uOulU4Rshqz5YZQ-c"

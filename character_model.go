@@ -36,7 +36,7 @@ func countPerRarity(db *sql.DB, rarity int, w http.ResponseWriter) (int, error) 
 	return count, nil
 }
 
-func selectCharacterList(db *sql.DB, token string, w http.ResponseWriter) ([]Character, error) {
+func selectCharacterList(token string, w http.ResponseWriter) ([]Character, error) {
 	log.Println("INFO START selectCharacterList")
 	var characters []Character
 	const selectSql = `
@@ -47,7 +47,7 @@ INNER JOIN characters AS C ON UOC.character_id = C.id
 WHERE U.digest_token = $1
 `
 	digestToken := HashToken(token)
-	if _, err := selectUserId(db, token, w); err != nil {
+	if _, err := selectUserId(token, w); err != nil {
 		return nil, err
 	}
 
@@ -107,7 +107,7 @@ func calculateLevel(experience int) int {
 	return int(math.Floor(math.Sqrt(float64(experience)) / 10.0))
 }
 
-func composeCharacter(db *sql.DB, baseUserCharacterId, materialUserCharacterId int, w http.ResponseWriter) (*sql.Tx, int, error) {
+func composeCharacter(baseUserCharacterId, materialUserCharacterId int, w http.ResponseWriter) (*sql.Tx, int, error) {
 	log.Println("INFO START composeCharacter")
 	calorie, err := selectCalorieByUserCharacterId(db, materialUserCharacterId, w)
 	if err != nil {
@@ -156,7 +156,7 @@ func deleteCharacter(tx *sql.Tx, userCharacterId int, w http.ResponseWriter) err
 	return nil
 }
 
-func createPutCharacterComposeResponse(db *sql.DB, userCharacterId, level int, w http.ResponseWriter) (PutCharacterComposeResponse, error) {
+func createPutCharacterComposeResponse(userCharacterId, level int, w http.ResponseWriter) (PutCharacterComposeResponse, error) {
 	var jsonResponse PutCharacterComposeResponse
 	const selectSql = `
 SELECT UOC.id, C.id, C.name
