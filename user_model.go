@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func insertUser(db *sql.DB, name string, token string, w http.ResponseWriter) error {
+func insertUser(name string, token string, w http.ResponseWriter) error {
 	log.Println("INFO START insertUser")
 	const createSql = `INSERT INTO users (name, digest_token) VALUES ($1, $2);`
 	digestToken := HashToken(token)
@@ -19,7 +19,7 @@ func insertUser(db *sql.DB, name string, token string, w http.ResponseWriter) er
 	return nil
 }
 
-func selectUserName(db *sql.DB, token string, w http.ResponseWriter) (string, error) {
+func selectUserName(token string, w http.ResponseWriter) (string, error) {
 	log.Println("INFO START selectUserName")
 	const selectSql = `SELECT name FROM users WHERE digest_token = $1`
 	digestToken := HashToken(token)
@@ -60,7 +60,7 @@ func selectUserIdByUserCharacterId(db *sql.DB, userCharacterId int, w http.Respo
 	return id, nil
 }
 
-func updateUser(db *sql.DB, token, newName string, w http.ResponseWriter) error {
+func updateUser(token, newName string, w http.ResponseWriter) error {
 	log.Println("INFO START updateUser")
 	const updateSql = `UPDATE users SET name = $1 WHERE digest_token = $2`
 	digestToken := HashToken(token)

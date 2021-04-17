@@ -28,9 +28,7 @@ func PostUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	db := Connect()
-	defer db.Close()
-	if err := insertUser(db, name, token, w); err != nil {
+	if err := insertUser(name, token, w); err != nil {
 		return
 	}
 
@@ -53,9 +51,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 
 	xToken := r.Header.Get("x-token")
 
-	db := Connect()
-	defer db.Close()
-	name, err := selectUserName(db, xToken, w)
+	name, err := selectUserName(xToken, w)
 	if err != nil {
 		return
 	}
@@ -85,9 +81,7 @@ func PutUser(w http.ResponseWriter, r *http.Request) {
 	}
 	name := jsonRequest.Name
 
-	db := Connect()
-	defer db.Close()
-	if err := updateUser(db, xToken, name, w); err != nil {
+	if err := updateUser(xToken, name, w); err != nil {
 		return
 	}
 }

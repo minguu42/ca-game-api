@@ -17,8 +17,6 @@ func GetRankingUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	db := Connect()
-	defer db.Close()
 	users, err := selectUserRanking(db, w)
 	if err != nil {
 		return

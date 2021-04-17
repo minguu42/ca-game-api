@@ -16,8 +16,6 @@ func GetCharacterList(w http.ResponseWriter, r *http.Request) {
 
 	xToken := r.Header.Get("x-token")
 
-	db := Connect()
-	defer db.Close()
 	characters, err := selectCharacterList(db, xToken, w)
 	if err != nil {
 		return
@@ -56,8 +54,6 @@ func PutCharacterCompose(w http.ResponseWriter, r *http.Request) {
 	baseUserCharacterId := jsonRequest.BaseUserCharacterId
 	materialUserCharacterId := jsonRequest.MaterialUserCharacterId
 
-	db := Connect()
-	defer db.Close()
 	userId, err := selectUserId(db, xToken, w)
 	if err != nil {
 		return
