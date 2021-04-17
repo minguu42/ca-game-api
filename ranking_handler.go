@@ -18,13 +18,13 @@ func GetRankingUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	users, err := selectUserRanking(w)
+	userRankings, err := selectUserRanking(w)
 	if err != nil {
 		return
 	}
 
 	jsonResponse := GetRankingUserResponse{
-		UserRankings: users,
+		UserRankings: userRankings,
 	}
 	if err := encodeResponse(w, jsonResponse); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
