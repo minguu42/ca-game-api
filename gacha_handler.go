@@ -22,7 +22,8 @@ func PostGachaDraw(w http.ResponseWriter, r *http.Request) {
 	xToken := r.Header.Get("x-token")
 
 	var jsonRequest PostGachaDrawRequest
-	if err := decodeRequest(r, &jsonRequest, w); err != nil {
+	if err := decodeRequest(r, &jsonRequest); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	times := jsonRequest.Times

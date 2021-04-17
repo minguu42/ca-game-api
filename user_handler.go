@@ -19,7 +19,8 @@ func PostUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var jsonRequest PostUserRequest
-	if err := decodeRequest(r, &jsonRequest, w); err != nil {
+	if err := decodeRequest(r, &jsonRequest); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	name := jsonRequest.Name
@@ -37,6 +38,7 @@ func PostUser(w http.ResponseWriter, r *http.Request) {
 		Token: token,
 	}
 	if err := encodeResponse(w, jsonResponse); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 }
@@ -79,7 +81,8 @@ func PutUser(w http.ResponseWriter, r *http.Request) {
 	xToken := r.Header.Get("x-token")
 
 	var jsonRequest PutUserRequest
-	if err := decodeRequest(r, &jsonRequest, w); err != nil {
+	if err := decodeRequest(r, &jsonRequest); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	name := jsonRequest.Name

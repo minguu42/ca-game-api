@@ -14,9 +14,8 @@ func isStatusMethodInvalid(r *http.Request, method string) bool {
 	return false
 }
 
-func decodeRequest(r *http.Request, jsonRequest interface{}, w http.ResponseWriter) error {
+func decodeRequest(r *http.Request, jsonRequest interface{}) error {
 	if err := json.NewDecoder(r.Body).Decode(jsonRequest); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
 		log.Println("ERROR Return 400:", err)
 		return err
 	}
@@ -27,7 +26,6 @@ func encodeResponse(w http.ResponseWriter, jsonResponse interface{}) error {
 	encoder := json.NewEncoder(w)
 	encoder.SetIndent("", "  ")
 	if err := encoder.Encode(jsonResponse); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
 		log.Println("INFO Return 500:", err)
 		return err
 	}

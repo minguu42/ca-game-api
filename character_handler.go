@@ -50,7 +50,8 @@ func PutCharacterCompose(w http.ResponseWriter, r *http.Request) {
 
 	xToken := r.Header.Get("x-token")
 	var jsonRequest PutCharacterComposeRequest
-	if err := decodeRequest(r, &jsonRequest, w); err != nil {
+	if err := decodeRequest(r, &jsonRequest); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	baseUserCharacterId := jsonRequest.BaseUserCharacterId
