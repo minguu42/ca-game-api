@@ -5,13 +5,12 @@ import (
 	"net/http"
 )
 
-func insertUser(name string, token string, w http.ResponseWriter) error {
+func insertUser(name string, token string) error {
 	log.Println("INFO START insertUser")
 	const createSql = `INSERT INTO users (name, digest_token) VALUES ($1, $2);`
 	digestToken := hash(token)
 	if _, err := db.Exec(createSql, name, digestToken); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		log.Println("ERROR Return 403:", err)
+		log.Println("ERROR insertUser error:", err)
 		return err
 	}
 	log.Println("INFO END insertUser")

@@ -31,7 +31,8 @@ func PostUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := insertUser(name, token, w); err != nil {
+	if err := insertUser(name, token); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
