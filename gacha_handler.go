@@ -20,26 +20,27 @@ func PostGachaDraw(w http.ResponseWriter, r *http.Request) {
 	}
 
 	xToken := r.Header.Get("x-token")
-
 	var jsonRequest PostGachaDrawRequest
 	if err := decodeRequest(r, &jsonRequest); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	times := jsonRequest.Times
+
 	if times <= 0 {
 		w.WriteHeader(http.StatusBadRequest)
 		log.Println("ERROR Return 403: Times is 0 or negative number")
 		return
 	}
 
-	results, err, tx := draw(xToken, times, w)
+	results, err, tx := draw(xToken, times)
 	if err != nil {
 		if tx != nil {
 			if err := tx.Rollback(); err != nil {
 				log.Println("ERROR Rollback error:", err)
 			}
 		}
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 

@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"log"
 	"math/rand"
-	"net/http"
 	"strconv"
 	"time"
 )
@@ -14,7 +13,7 @@ type Result struct {
 	Name        string `json:"name"`
 }
 
-func draw(xToken string, times int, w http.ResponseWriter) ([]Result, error, *sql.Tx) {
+func draw(xToken string, times int) ([]Result, error, *sql.Tx) {
 	log.Println("INFO START draw")
 	var results []Result
 
@@ -23,23 +22,21 @@ func draw(xToken string, times int, w http.ResponseWriter) ([]Result, error, *sq
 		return nil, err, nil
 	}
 
-	rarity3SumNum, err := countPerRarity(db, 3, w)
+	rarity3SumNum, err := countPerRarity(db, 3)
 	if err != nil {
 		return nil, err, nil
 	}
-	rarity4SumNum, err := countPerRarity(db, 4, w)
+	rarity4SumNum, err := countPerRarity(db, 4)
 	if err != nil {
 		return nil, err, nil
 	}
-	rarity5SumNum, err := countPerRarity(db, 5, w)
+	rarity5SumNum, err := countPerRarity(db, 5)
 	if err != nil {
 		return nil, err, nil
 	}
 
 	tx, err := db.Begin()
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		log.Println("ERROR Return 500:", err)
 		return nil, err, nil
 	}
 	for i := 0; i < times; i++ {
@@ -50,7 +47,6 @@ func draw(xToken string, times int, w http.ResponseWriter) ([]Result, error, *sq
 		characterExperience := calculateExperience(characterLevel)
 		name, err := selectCharacterName(db, characterId)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
 			log.Println("ERROR Return 500:", err)
 			return nil, err, tx
 		}
@@ -60,7 +56,6 @@ func draw(xToken string, times int, w http.ResponseWriter) ([]Result, error, *sq
 		})
 
 		if err := insertResult(tx, userId, characterId, characterLevel, characterExperience); err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
 			log.Println("ERROR Return 500:", err)
 			return nil, err, tx
 		}

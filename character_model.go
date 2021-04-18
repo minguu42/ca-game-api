@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"log"
 	"math"
-	"net/http"
 )
 
 type Character struct {
@@ -24,13 +23,11 @@ func selectCharacterName(db *sql.DB, characterId int) (string, error) {
 	return name, nil
 }
 
-func countPerRarity(db *sql.DB, rarity int, w http.ResponseWriter) (int, error) {
+func countPerRarity(db *sql.DB, rarity int) (int, error) {
 	const selectSql = "SELECT COUNT(*) FROM characters WHERE rarity = $1"
 	var count int
 	row := db.QueryRow(selectSql, rarity)
 	if err := row.Scan(&count); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		log.Println("ERROR Return 500:", err)
 		return 0, err
 	}
 	return count, nil
