@@ -10,16 +10,16 @@ type GetCharacterListResponse struct {
 }
 
 func GetCharacterList(w http.ResponseWriter, r *http.Request) {
-	if isStatusMethodInvalid(w, r, http.MethodGet) {
+	if isStatusMethodInvalid(r, http.MethodGet) {
+		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
 
 	xToken := r.Header.Get("x-token")
 
-	db := Connect()
-	defer db.Close()
-	characters, err := selectCharacterList(db, xToken, w)
+	characters, err := selectCharacterList(xToken)
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
@@ -27,6 +27,7 @@ func GetCharacterList(w http.ResponseWriter, r *http.Request) {
 		Characters: characters,
 	}
 	if err := encodeResponse(w, jsonResponse); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 }
@@ -44,30 +45,33 @@ type PutCharacterComposeResponse struct {
 }
 
 func PutCharacterCompose(w http.ResponseWriter, r *http.Request) {
-	if isStatusMethodInvalid(w, r, http.MethodPut) {
+	if isStatusMethodInvalid(r, http.MethodPut) {
+		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
 
 	xToken := r.Header.Get("x-token")
 	var jsonRequest PutCharacterComposeRequest
-	if err := decodeRequest(r, &jsonRequest, w); err != nil {
+	if err := decodeRequest(r, &jsonRequest); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	baseUserCharacterId := jsonRequest.BaseUserCharacterId
 	materialUserCharacterId := jsonRequest.MaterialUserCharacterId
 
-	db := Connect()
-	defer db.Close()
-	userId, err := selectUserId(db, xToken, w)
+	userId, err := selectUserId(xToken)
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	baseUserId, err := selectUserIdByUserCharacterId(db, baseUserCharacterId, w)
+	baseUserId, err := selectUserIdByUserCharacterId(baseUserCharacterId)
 	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	materialUserId, err := selectUserIdByUserCharacterId(db, materialUserCharacterId, w)
+	materialUserId, err := selectUserIdByUserCharacterId(materialUserCharacterId)
 	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	if (userId != baseUserId) || (userId != materialUserId) {
@@ -76,7 +80,7 @@ func PutCharacterCompose(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tx, newLevel, err := composeCharacter(db, baseUserCharacterId, materialUserCharacterId, w)
+	tx, newLevel, err := composeCharacter(baseUserCharacterId, materialUserCharacterId)
 	if err != nil {
 		if tx != nil {
 			if err := tx.Rollback(); err != nil {
@@ -86,7 +90,7 @@ func PutCharacterCompose(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jsonResponse, err := createPutCharacterComposeResponse(db, baseUserCharacterId, newLevel, w)
+	jsonResponse, err := createPutCharacterComposeResponse(baseUserCharacterId, newLevel)
 	if err != nil {
 		if err := tx.Rollback(); err != nil {
 			log.Println("ERROR Rollback error:", err)
@@ -97,6 +101,7 @@ func PutCharacterCompose(w http.ResponseWriter, r *http.Request) {
 		if err := tx.Rollback(); err != nil {
 			log.Println("ERROR Rollback error:", err)
 		}
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 

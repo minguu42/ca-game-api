@@ -1,72 +1,65 @@
 package ca_game_api
 
 import (
-	"database/sql"
 	"log"
-	"net/http"
 )
 
-func insertUser(db *sql.DB, name string, token string, w http.ResponseWriter) error {
+func insertUser(name string, token string) error {
 	log.Println("INFO START insertUser")
 	const createSql = `INSERT INTO users (name, digest_token) VALUES ($1, $2);`
-	digestToken := HashToken(token)
+	digestToken := hash(token)
 	if _, err := db.Exec(createSql, name, digestToken); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		log.Println("ERROR Return 403:", err)
+		log.Println("ERROR insertUser error:", err)
 		return err
 	}
 	log.Println("INFO END insertUser")
 	return nil
 }
 
-func selectUserName(db *sql.DB, token string, w http.ResponseWriter) (string, error) {
-	log.Println("INFO START selectUserName")
+func selectUserByToken(token string) (string, error) {
+	log.Println("INFO START selectUserByToken")
 	const selectSql = `SELECT name FROM users WHERE digest_token = $1`
-	digestToken := HashToken(token)
+	digestToken := hash(token)
 
 	var name string
 	row := db.QueryRow(selectSql, digestToken)
 	if err := row.Scan(&name); err != nil {
-		w.WriteHeader(http.StatusUnauthorized)
-		log.Println("ERROR Return 401: x-token is invalid")
+		log.Println("ERROR selectUserByToken error: x-token is invalid")
 		return "", err
 	}
-	log.Println("INFO END selectUserName")
+	log.Println("INFO END selectUserByToken")
 	return name, nil
 }
 
-func selectUserId(db *sql.DB, token string, w http.ResponseWriter) (int, error) {
+func selectUserId(token string) (int, error) {
 	const selectSql = `SELECT id FROM users WHERE digest_token = $1`
-	digestToken := HashToken(token)
+	digestToken := hash(token)
 	row := db.QueryRow(selectSql, digestToken)
 	var id int
 	if err := row.Scan(&id); err != nil {
-		w.WriteHeader(http.StatusUnauthorized)
 		log.Println("ERROR Return 401: x-token is invalid")
 		return 0, err
 	}
 	return id, nil
 }
 
-func selectUserIdByUserCharacterId(db *sql.DB, userCharacterId int, w http.ResponseWriter) (int, error) {
+func selectUserIdByUserCharacterId(userCharacterId int) (int, error) {
 	const selectSql = `SELECT user_id FROM user_ownership_characters WHERE id = $1`
 	row := db.QueryRow(selectSql, userCharacterId)
 	var id int
 	if err := row.Scan(&id); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
 		log.Println("ERROR Return 400:", err)
 		return 0, err
 	}
 	return id, nil
 }
 
-func updateUser(db *sql.DB, token, newName string, w http.ResponseWriter) error {
+func updateUser(token, newName string) error {
 	log.Println("INFO START updateUser")
 	const updateSql = `UPDATE users SET name = $1 WHERE digest_token = $2`
-	digestToken := HashToken(token)
+	digestToken := hash(token)
 	if _, err := db.Exec(updateSql, newName, digestToken); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		log.Println("ERROR Return 403:", err)
+		log.Println("ERROR updateUser error:", err)
 		return err
 	}
 	log.Println("INFO END updateUser")

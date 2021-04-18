@@ -28,6 +28,9 @@ func measure(h http.HandlerFunc) http.HandlerFunc {
 }
 
 func main() {
+	caGameApi.OpenDb()
+	defer caGameApi.CloseDb()
+
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/user/create", measure(logging(caGameApi.PostUser)))

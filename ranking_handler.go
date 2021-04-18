@@ -13,21 +13,22 @@ type GetRankingUserResponse struct {
 }
 
 func GetRankingUser(w http.ResponseWriter, r *http.Request) {
-	if isStatusMethodInvalid(w, r, http.MethodGet) {
+	if isStatusMethodInvalid(r, http.MethodGet) {
+		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
 
-	db := Connect()
-	defer db.Close()
-	users, err := selectUserRanking(db, w)
+	userRankings, err := selectUserRanking()
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	jsonResponse := GetRankingUserResponse{
-		UserRankings: users,
+		UserRankings: userRankings,
 	}
 	if err := encodeResponse(w, jsonResponse); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 }

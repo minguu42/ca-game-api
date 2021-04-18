@@ -6,19 +6,17 @@ import (
 	"net/http"
 )
 
-func isStatusMethodInvalid(w http.ResponseWriter, r *http.Request, method string) bool {
+func isStatusMethodInvalid(r *http.Request, method string) bool {
 	if r.Method != method {
-		w.WriteHeader(http.StatusMethodNotAllowed)
 		log.Println("ERROR Status method is not allowed")
 		return true
 	}
 	return false
 }
 
-func decodeRequest(r *http.Request, jsonRequest interface{}, w http.ResponseWriter) error {
+func decodeRequest(r *http.Request, jsonRequest interface{}) error {
 	if err := json.NewDecoder(r.Body).Decode(jsonRequest); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		log.Println("ERROR Return 400:", err)
+		log.Println("ERROR decodeRequest error:", err)
 		return err
 	}
 	return nil
@@ -28,8 +26,7 @@ func encodeResponse(w http.ResponseWriter, jsonResponse interface{}) error {
 	encoder := json.NewEncoder(w)
 	encoder.SetIndent("", "  ")
 	if err := encoder.Encode(jsonResponse); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		log.Println("INFO Return 500:", err)
+		log.Println("ERROR encodeResponse error:", err)
 		return err
 	}
 	return nil

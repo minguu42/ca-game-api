@@ -6,10 +6,18 @@ import (
 	"os"
 )
 
-func Connect() *sql.DB {
-	db, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
+var db *sql.DB
+
+func OpenDb() {
+	var err error
+	db, err = sql.Open("postgres", os.Getenv("DATABASE_URL"))
 	if err != nil {
-		log.Fatal("database connection error", err)
+		log.Fatal(err)
 	}
-	return db
+}
+
+func CloseDb() {
+	if err := db.Close(); err != nil {
+		log.Fatal(err)
+	}
 }

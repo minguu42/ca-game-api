@@ -13,24 +13,26 @@ type PostUserResponse struct {
 }
 
 func PostUser(w http.ResponseWriter, r *http.Request) {
-	if isStatusMethodInvalid(w, r, http.MethodPost) {
+	if isStatusMethodInvalid(r, http.MethodPost) {
+		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
 
 	var jsonRequest PostUserRequest
-	if err := decodeRequest(r, &jsonRequest, w); err != nil {
+	if err := decodeRequest(r, &jsonRequest); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	name := jsonRequest.Name
 
-	token, err := GenerateRandomString(22, w)
+	token, err := generateRandomString(22)
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	db := Connect()
-	defer db.Close()
-	if err := insertUser(db, name, token, w); err != nil {
+	if err := insertUser(name, token); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
@@ -38,6 +40,7 @@ func PostUser(w http.ResponseWriter, r *http.Request) {
 		Token: token,
 	}
 	if err := encodeResponse(w, jsonResponse); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 }
@@ -47,16 +50,16 @@ type GetUserResponse struct {
 }
 
 func GetUser(w http.ResponseWriter, r *http.Request) {
-	if isStatusMethodInvalid(w, r, http.MethodGet) {
+	if isStatusMethodInvalid(r, http.MethodGet) {
+		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
 
-	xToken := r.Header.Get("x-token")
+	token := r.Header.Get("x-token")
 
-	db := Connect()
-	defer db.Close()
-	name, err := selectUserName(db, xToken, w)
+	name, err := selectUserByToken(token)
 	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
@@ -64,6 +67,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 		Name: name,
 	}
 	if err := encodeResponse(w, jsonResponse); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 }
@@ -73,21 +77,21 @@ type PutUserRequest struct {
 }
 
 func PutUser(w http.ResponseWriter, r *http.Request) {
-	if isStatusMethodInvalid(w, r, http.MethodPut) {
+	if isStatusMethodInvalid(r, http.MethodPut) {
+		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
 
 	xToken := r.Header.Get("x-token")
-
 	var jsonRequest PutUserRequest
-	if err := decodeRequest(r, &jsonRequest, w); err != nil {
+	if err := decodeRequest(r, &jsonRequest); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	name := jsonRequest.Name
 
-	db := Connect()
-	defer db.Close()
-	if err := updateUser(db, xToken, name, w); err != nil {
+	if err := updateUser(xToken, name); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 }

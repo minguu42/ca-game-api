@@ -14,33 +14,33 @@ type PostGachaDrawResponse struct {
 }
 
 func PostGachaDraw(w http.ResponseWriter, r *http.Request) {
-	if isStatusMethodInvalid(w, r, http.MethodPost) {
+	if isStatusMethodInvalid(r, http.MethodPost) {
+		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
 
 	xToken := r.Header.Get("x-token")
-
 	var jsonRequest PostGachaDrawRequest
-	if err := decodeRequest(r, &jsonRequest, w); err != nil {
+	if err := decodeRequest(r, &jsonRequest); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	times := jsonRequest.Times
+
 	if times <= 0 {
 		w.WriteHeader(http.StatusBadRequest)
 		log.Println("ERROR Return 403: Times is 0 or negative number")
 		return
 	}
 
-	db := Connect()
-	defer db.Close()
-
-	results, err, tx := draw(db, xToken, times, w)
+	results, err, tx := draw(xToken, times)
 	if err != nil {
 		if tx != nil {
 			if err := tx.Rollback(); err != nil {
 				log.Println("ERROR Rollback error:", err)
 			}
 		}
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
@@ -51,6 +51,7 @@ func PostGachaDraw(w http.ResponseWriter, r *http.Request) {
 		if err := tx.Rollback(); err != nil {
 			log.Println("ERROR Rollback error:", err)
 		}
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
