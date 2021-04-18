@@ -17,19 +17,18 @@ func insertUser(name string, token string) error {
 	return nil
 }
 
-func selectUserName(token string, w http.ResponseWriter) (string, error) {
-	log.Println("INFO START selectUserName")
+func selectUserByToken(token string) (string, error) {
+	log.Println("INFO START selectUserByToken")
 	const selectSql = `SELECT name FROM users WHERE digest_token = $1`
 	digestToken := hash(token)
 
 	var name string
 	row := db.QueryRow(selectSql, digestToken)
 	if err := row.Scan(&name); err != nil {
-		w.WriteHeader(http.StatusUnauthorized)
-		log.Println("ERROR Return 401: x-token is invalid")
+		log.Println("ERROR selectUserByToken error: x-token is invalid")
 		return "", err
 	}
-	log.Println("INFO END selectUserName")
+	log.Println("INFO END selectUserByToken")
 	return name, nil
 }
 
@@ -58,13 +57,12 @@ func selectUserIdByUserCharacterId(userCharacterId int, w http.ResponseWriter) (
 	return id, nil
 }
 
-func updateUser(token, newName string, w http.ResponseWriter) error {
+func updateUser(token, newName string) error {
 	log.Println("INFO START updateUser")
 	const updateSql = `UPDATE users SET name = $1 WHERE digest_token = $2`
 	digestToken := hash(token)
 	if _, err := db.Exec(updateSql, newName, digestToken); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		log.Println("ERROR Return 403:", err)
+		log.Println("ERROR updateUser error:", err)
 		return err
 	}
 	log.Println("INFO END updateUser")

@@ -55,10 +55,11 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	xToken := r.Header.Get("x-token")
+	token := r.Header.Get("x-token")
 
-	name, err := selectUserName(xToken, w)
+	name, err := selectUserByToken(token)
 	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
@@ -82,7 +83,6 @@ func PutUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	xToken := r.Header.Get("x-token")
-
 	var jsonRequest PutUserRequest
 	if err := decodeRequest(r, &jsonRequest); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -90,7 +90,8 @@ func PutUser(w http.ResponseWriter, r *http.Request) {
 	}
 	name := jsonRequest.Name
 
-	if err := updateUser(xToken, name, w); err != nil {
+	if err := updateUser(xToken, name); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 }
