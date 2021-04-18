@@ -18,8 +18,9 @@ func GetRankingUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userRankings, err := selectUserRanking(w)
+	userRankings, err := selectUserRanking()
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 

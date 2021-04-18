@@ -2,10 +2,9 @@ package ca_game_api
 
 import (
 	"log"
-	"net/http"
 )
 
-func selectUserRanking(w http.ResponseWriter) ([]UserInfo, error) {
+func selectUserRanking() ([]UserInfo, error) {
 	log.Println("INFO START selectUserRanking")
 	var users []UserInfo
 	const selectSql = `
@@ -19,15 +18,11 @@ LIMIT 3
 `
 	rows, err := db.Query(selectSql)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		log.Println("ERROR Return 500:", err)
 		return nil, err
 	}
 	for rows.Next() {
 		var user UserInfo
 		if err := rows.Scan(&user.Id, &user.Name, &user.SumPower); err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			log.Println("ERROR Return 500:", err)
 			return nil, err
 		}
 		users = append(users, user)
