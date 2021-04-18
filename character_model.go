@@ -36,7 +36,7 @@ func countPerRarity(db *sql.DB, rarity int, w http.ResponseWriter) (int, error) 
 	return count, nil
 }
 
-func selectCharacterList(token string, w http.ResponseWriter) ([]Character, error) {
+func selectCharacterList(token string) ([]Character, error) {
 	log.Println("INFO START selectCharacterList")
 	var characters []Character
 	const selectSql = `
@@ -47,21 +47,19 @@ INNER JOIN characters AS C ON UOC.character_id = C.id
 WHERE U.digest_token = $1
 `
 	digestToken := hash(token)
-	if _, err := selectUserId(token, w); err != nil {
+	if _, err := selectUserId(token); err != nil {
 		return nil, err
 	}
 
 	rows, err := db.Query(selectSql, digestToken)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		log.Println("ERROR Return 500:", err)
+		log.Println("ERROR db.Query error:", err)
 		return nil, err
 	}
 	for rows.Next() {
 		var c Character
 		if err := rows.Scan(&c.UserCharacterId, &c.CharacterId, &c.Name, &c.Level); err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			log.Println("ERROR Return 500:", err)
+			log.Println("ERROR rows.Scan error:", err)
 			return nil, err
 		}
 		characters = append(characters, c)
@@ -70,7 +68,7 @@ WHERE U.digest_token = $1
 	return characters, nil
 }
 
-func selectCalorieByUserCharacterId(db *sql.DB, userCharacterId int, w http.ResponseWriter) (int, error) {
+func selectCalorieByUserCharacterId(db *sql.DB, userCharacterId int) (int, error) {
 	const selectSql = `
 SELECT C.calorie
 FROM user_ownership_characters AS UOC
@@ -80,20 +78,18 @@ WHERE UOC.id = $1
 	row := db.QueryRow(selectSql, userCharacterId)
 	var calorie int
 	if err := row.Scan(&calorie); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		log.Println("ERROR Return 500:", err)
+		log.Println("ERROR selectCalorieByUserCharacterId:", err)
 		return 0, err
 	}
 	return calorie, nil
 }
 
-func selectExperience(db *sql.DB, userCharacterId int, w http.ResponseWriter) (int, error) {
+func selectExperience(db *sql.DB, userCharacterId int) (int, error) {
 	const selectSql = `SELECT experience FROM user_ownership_characters WHERE id = $1`
 	row := db.QueryRow(selectSql, userCharacterId)
 	var experience int
 	if err := row.Scan(&experience); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		log.Println("ERROR Return 500:", err)
+		log.Println("ERROR selectExperience error:", err)
 		return 0, err
 	}
 	return experience, nil
@@ -107,13 +103,13 @@ func calculateLevel(experience int) int {
 	return int(math.Floor(math.Sqrt(float64(experience)) / 10.0))
 }
 
-func composeCharacter(baseUserCharacterId, materialUserCharacterId int, w http.ResponseWriter) (*sql.Tx, int, error) {
+func composeCharacter(baseUserCharacterId, materialUserCharacterId int) (*sql.Tx, int, error) {
 	log.Println("INFO START composeCharacter")
-	calorie, err := selectCalorieByUserCharacterId(db, materialUserCharacterId, w)
+	calorie, err := selectCalorieByUserCharacterId(db, materialUserCharacterId)
 	if err != nil {
 		return nil, 0, err
 	}
-	experience, err := selectExperience(db, baseUserCharacterId, w)
+	experience, err := selectExperience(db, baseUserCharacterId)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -122,41 +118,37 @@ func composeCharacter(baseUserCharacterId, materialUserCharacterId int, w http.R
 
 	tx, err := db.Begin()
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		log.Println("ERROR Return 500:", err)
 		return nil, 0, err
 	}
-	if err := updateCharacter(tx, baseUserCharacterId, newLevel, newExperience, w); err != nil {
+	if err := updateCharacter(tx, baseUserCharacterId, newLevel, newExperience); err != nil {
 		return tx, 0, err
 	}
-	if err := deleteCharacter(tx, materialUserCharacterId, w); err != nil {
+	if err := deleteCharacter(tx, materialUserCharacterId); err != nil {
 		return tx, 0, err
 	}
 	log.Println("INFO END composeCharacter")
 	return tx, newLevel, nil
 }
 
-func updateCharacter(tx *sql.Tx, userCharacterId, level, experience int, w http.ResponseWriter) error {
+func updateCharacter(tx *sql.Tx, userCharacterId, level, experience int) error {
 	const updateSql = `UPDATE user_ownership_characters SET level = $1, experience = $2 WHERE id = $3`
 	if _, err := tx.Exec(updateSql, level, experience, userCharacterId); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
 		log.Println("ERROR Return 500:", err)
 		return err
 	}
 	return nil
 }
 
-func deleteCharacter(tx *sql.Tx, userCharacterId int, w http.ResponseWriter) error {
+func deleteCharacter(tx *sql.Tx, userCharacterId int) error {
 	const deleteSql = `DELETE FROM user_ownership_characters WHERE id = $1`
 	if _, err := tx.Exec(deleteSql, userCharacterId); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
 		log.Println("ERROR Return 500:", err)
 		return err
 	}
 	return nil
 }
 
-func createPutCharacterComposeResponse(userCharacterId, level int, w http.ResponseWriter) (PutCharacterComposeResponse, error) {
+func createPutCharacterComposeResponse(userCharacterId, level int) (PutCharacterComposeResponse, error) {
 	var jsonResponse PutCharacterComposeResponse
 	const selectSql = `
 SELECT UOC.id, C.id, C.name
@@ -166,8 +158,6 @@ WHERE UOC.id = $1
 `
 	row := db.QueryRow(selectSql, userCharacterId)
 	if err := row.Scan(&jsonResponse.UserCharacterId, &jsonResponse.CharacterId, &jsonResponse.Name); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		log.Println("ERROR Return 500:", err)
 		return jsonResponse, err
 	}
 	jsonResponse.Level = level

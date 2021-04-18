@@ -18,7 +18,7 @@ func draw(xToken string, times int, w http.ResponseWriter) ([]Result, error, *sq
 	log.Println("INFO START draw")
 	var results []Result
 
-	userId, err := selectUserId(xToken, w)
+	userId, err := selectUserId(xToken)
 	if err != nil {
 		return nil, err, nil
 	}

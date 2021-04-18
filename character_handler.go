@@ -17,8 +17,9 @@ func GetCharacterList(w http.ResponseWriter, r *http.Request) {
 
 	xToken := r.Header.Get("x-token")
 
-	characters, err := selectCharacterList(xToken, w)
+	characters, err := selectCharacterList(xToken)
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
@@ -58,16 +59,19 @@ func PutCharacterCompose(w http.ResponseWriter, r *http.Request) {
 	baseUserCharacterId := jsonRequest.BaseUserCharacterId
 	materialUserCharacterId := jsonRequest.MaterialUserCharacterId
 
-	userId, err := selectUserId(xToken, w)
+	userId, err := selectUserId(xToken)
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	baseUserId, err := selectUserIdByUserCharacterId(baseUserCharacterId, w)
+	baseUserId, err := selectUserIdByUserCharacterId(baseUserCharacterId)
 	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	materialUserId, err := selectUserIdByUserCharacterId(materialUserCharacterId, w)
+	materialUserId, err := selectUserIdByUserCharacterId(materialUserCharacterId)
 	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	if (userId != baseUserId) || (userId != materialUserId) {
@@ -76,7 +80,7 @@ func PutCharacterCompose(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tx, newLevel, err := composeCharacter(baseUserCharacterId, materialUserCharacterId, w)
+	tx, newLevel, err := composeCharacter(baseUserCharacterId, materialUserCharacterId)
 	if err != nil {
 		if tx != nil {
 			if err := tx.Rollback(); err != nil {
@@ -86,7 +90,7 @@ func PutCharacterCompose(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jsonResponse, err := createPutCharacterComposeResponse(baseUserCharacterId, newLevel, w)
+	jsonResponse, err := createPutCharacterComposeResponse(baseUserCharacterId, newLevel)
 	if err != nil {
 		if err := tx.Rollback(); err != nil {
 			log.Println("ERROR Rollback error:", err)

@@ -2,7 +2,6 @@ package ca_game_api
 
 import (
 	"log"
-	"net/http"
 )
 
 func insertUser(name string, token string) error {
@@ -32,25 +31,23 @@ func selectUserByToken(token string) (string, error) {
 	return name, nil
 }
 
-func selectUserId(token string, w http.ResponseWriter) (int, error) {
+func selectUserId(token string) (int, error) {
 	const selectSql = `SELECT id FROM users WHERE digest_token = $1`
 	digestToken := hash(token)
 	row := db.QueryRow(selectSql, digestToken)
 	var id int
 	if err := row.Scan(&id); err != nil {
-		w.WriteHeader(http.StatusUnauthorized)
 		log.Println("ERROR Return 401: x-token is invalid")
 		return 0, err
 	}
 	return id, nil
 }
 
-func selectUserIdByUserCharacterId(userCharacterId int, w http.ResponseWriter) (int, error) {
+func selectUserIdByUserCharacterId(userCharacterId int) (int, error) {
 	const selectSql = `SELECT user_id FROM user_ownership_characters WHERE id = $1`
 	row := db.QueryRow(selectSql, userCharacterId)
 	var id int
 	if err := row.Scan(&id); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
 		log.Println("ERROR Return 400:", err)
 		return 0, err
 	}
