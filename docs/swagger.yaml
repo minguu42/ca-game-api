@@ -1,0 +1,256 @@
+openapi: 3.0.0
+
+info:
+  version: 1.0.0
+  title: ca-game-api
+  description: |
+    これはca-game-apiのAPI仕様です。
+
+    このca-game-apiはTechTrainのミッションである[オンライン版　CA Tech Dojo サーバサイド (Go)編](https://techbowl.co.jp/techtrain/missions/12)に取り組んだ後に、OpenAPIを学習するためにオリジナル要素を加えて自分で作成したものです。
+
+    [TechTrain MISSION Game API](https://editor.swagger.io/)を元にしています。
+
+servers:
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/minguu42/ca-game-api/1.0.0
+
+tags:
+  - name: user
+    description: ユーザ関連API
+  - name: gacha
+    description: ガチャ関連API
+  - name: character
+    description: キャラクター関連API
+
+paths:
+  /user/create:
+    post:
+      summary: ユーザ情報作成API
+      tags: 
+        - user
+      description: |
+        ユーザ情報を作成します。
+        ユーザの名前情報をリクエストで受け取り、ユーザIDと認証用トークンを生成し、データベースへ保存します。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+      responses:
+        '200':
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+  /user/get:
+    get:
+      summary: ユーザ情報取得API
+      tags: 
+        - user
+      description: |
+        ユーザ情報を取得します。
+        ユーザの認証と特定の処理はリクエストヘッダのx-tokenを読み取ってデータベースに照会をします。
+      parameters:
+        - name: x-token
+          in: header
+          required: true
+          description: 認証トークン
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+  /user/update:
+    put:
+      summary: ユーザ情報更新API
+      tags:
+        - user
+      description: |
+        ユーザ情報の更新をします。初期実装では名前の更新を行います。
+      parameters:
+        - name: x-token
+          in: header
+          required: true
+          description: 認証トークン
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+      responses:
+        '200':
+          description: A successful response.
+  /user/ranking:
+    get:
+      summary: ユーザランキング情報取得API
+      tags:
+        - user
+      description: |
+        ユーザのランキング情報を取得します。
+
+        ランキング情報には上位3位までのユーザ情報が含まれます。
+      parameters:
+        - name: x-token
+          in: header
+          required: true
+          description: 認証トークン
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  userRanking:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        userID:
+                          type: string
+                        name:
+                          type: string
+                        sumPower:
+                          type: string
+  /gacha/draw:
+    post:
+      summary: ガチャ実行API
+      tags:
+        - gacha
+      description: |
+        ガチャを引いてキャラクターを取得する処理を実装します。
+        獲得したキャラクターはユーザ所持キャラクターテーブルへ保存します。
+        同じ種類のキャラクターでもユーザは複数所持することができます。
+        
+        キャラクターの確率は等倍ではなく、任意に変更できるようテーブルを設計しましょう。
+      parameters: 
+        - name: x-token
+          in: header
+          required: true
+          description: 認証トークン
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                times:
+                  type: integer
+      responses:
+        '200':
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        characterID:
+                          type: string
+                        name:
+                          type: string
+  /character/list:
+    get:
+      summary: ユーザ所持キャラクター一覧取得API
+      tags:
+        - character
+      description: |
+        ユーザが所持しているキャラクター一覧情報を取得します。
+      parameters: 
+        - name: x-token
+          in: header
+          required: true
+          description: 認証トークン
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  characters:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        userCharacterID:
+                          type: string
+                        characterID:
+                          type: string
+                        name:
+                          type: string
+  /character/compose:
+    post:
+      summary: キャラクターを合成するAPI
+      tags:
+        - character
+      description: |
+        所有しているキャラクターを合成し、キャラクターのレベルを上げます。
+        
+        合成されたキャラクターは失われます。
+      parameters:
+        - name: x-token
+          in: header
+          required: true
+          description: 認証トークン
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                baseUserCharacterID:
+                  type: integer
+                materialUserCharacterID:
+                  type: integer
+      responses:
+        '200':
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  userCharacterID:
+                    type: string
+                  characterID:
+                    type: string
+                  name:
+                    type: string
+                  level:
+                    type: integer
