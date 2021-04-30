@@ -37,7 +37,7 @@ func selectUserId(token string) (int, error) {
 	row := db.QueryRow(selectSql, digestToken)
 	var id int
 	if err := row.Scan(&id); err != nil {
-		log.Println("ERROR Return 401: x-token is invalid")
+		log.Println("ERROR selectUserId error:", err)
 		return 0, err
 	}
 	return id, nil
@@ -48,7 +48,7 @@ func selectUserIdByUserCharacterId(userCharacterId int) (int, error) {
 	row := db.QueryRow(selectSql, userCharacterId)
 	var id int
 	if err := row.Scan(&id); err != nil {
-		log.Println("ERROR Return 400:", err)
+		log.Println("ERROR selectUserIdByUserCharacterId:", err)
 		return 0, err
 	}
 	return id, nil
