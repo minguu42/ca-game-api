@@ -1,33 +1,27 @@
 package ca_game_api
 
 import (
-	"log"
+	"fmt"
 )
 
 func insertUser(name string, token string) error {
-	log.Println("INFO START insertUser")
 	const createSql = `INSERT INTO users (name, digest_token) VALUES ($1, $2);`
 	digestToken := hash(token)
 	if _, err := db.Exec(createSql, name, digestToken); err != nil {
-		log.Println("ERROR insertUser error:", err)
-		return err
+		return fmt.Errorf("db.Exec faild: %w", err)
 	}
-	log.Println("INFO END insertUser")
 	return nil
 }
 
 func selectUserByToken(token string) (string, error) {
-	log.Println("INFO START selectUserByToken")
 	const selectSql = `SELECT name FROM users WHERE digest_token = $1`
 	digestToken := hash(token)
 
 	var name string
 	row := db.QueryRow(selectSql, digestToken)
 	if err := row.Scan(&name); err != nil {
-		log.Println("ERROR selectUserByToken error: x-token is invalid")
-		return "", err
+		return "", fmt.Errorf("row.Scan faild: %w", err)
 	}
-	log.Println("INFO END selectUserByToken")
 	return name, nil
 }
 
@@ -37,8 +31,7 @@ func selectUserId(token string) (int, error) {
 	row := db.QueryRow(selectSql, digestToken)
 	var id int
 	if err := row.Scan(&id); err != nil {
-		log.Println("ERROR selectUserId error:", err)
-		return 0, err
+		return 0, fmt.Errorf("row.Scan faild: %w", err)
 	}
 	return id, nil
 }
@@ -48,20 +41,16 @@ func selectUserIdByUserCharacterId(userCharacterId int) (int, error) {
 	row := db.QueryRow(selectSql, userCharacterId)
 	var id int
 	if err := row.Scan(&id); err != nil {
-		log.Println("ERROR selectUserIdByUserCharacterId:", err)
-		return 0, err
+		return 0, fmt.Errorf("row.Scan faild: %w", err)
 	}
 	return id, nil
 }
 
 func updateUser(token, newName string) error {
-	log.Println("INFO START updateUser")
 	const updateSql = `UPDATE users SET name = $1 WHERE digest_token = $2`
 	digestToken := hash(token)
 	if _, err := db.Exec(updateSql, newName, digestToken); err != nil {
-		log.Println("ERROR updateUser error:", err)
-		return err
+		return fmt.Errorf("db.Exec faild: %w", err)
 	}
-	log.Println("INFO END updateUser")
 	return nil
 }
