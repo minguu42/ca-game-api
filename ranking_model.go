@@ -1,6 +1,7 @@
 package ca_game_api
 
 import (
+	"fmt"
 	"log"
 )
 
@@ -8,16 +9,17 @@ func selectUserRanking() ([]UserInfo, error) {
 	log.Println("INFO START selectUserRanking")
 	var users []UserInfo
 	const selectSql = `
-SELECT UOC.user_id, U.name, SUM(UOC.level * C.power) AS sumPower
+SELECT U.id, U.name, SUM(UOC.level * C.power) AS sumPower
 FROM user_ownership_characters AS UOC
 INNER JOIN users AS U ON UOC.user_id = U.id
 INNER JOIN characters AS C ON UOC.character_id = C.id
-GROUP BY UOC.user_id
+GROUP BY U.id
 ORDER BY sumPower DESC
 LIMIT 3
 `
 	rows, err := db.Query(selectSql)
 	if err != nil {
+		fmt.Println("ERROR selectUserRanking error:", err)
 		return nil, err
 	}
 	for rows.Next() {
