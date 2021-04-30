@@ -27,6 +27,7 @@ func GetCharacterList(w http.ResponseWriter, r *http.Request) {
 		Characters: characters,
 	}
 	if err := encodeResponse(w, jsonResponse); err != nil {
+		log.Println("ERROR encodeResponse fail:", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -53,6 +54,7 @@ func PutCharacterCompose(w http.ResponseWriter, r *http.Request) {
 	xToken := r.Header.Get("x-token")
 	var jsonRequest PutCharacterComposeRequest
 	if err := decodeRequest(r, &jsonRequest); err != nil {
+		log.Println("ERROR decodeRequest fail:", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -98,8 +100,9 @@ func PutCharacterCompose(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := encodeResponse(w, jsonResponse); err != nil {
+		log.Println("ERROR encodeResponse fail:", err)
 		if err := tx.Rollback(); err != nil {
-			log.Println("ERROR Rollback error:", err)
+			log.Println("ERROR Rollback fail:", err)
 		}
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -110,5 +113,4 @@ func PutCharacterCompose(w http.ResponseWriter, r *http.Request) {
 		log.Println("ERROR Return 500:", err)
 		return
 	}
-	log.Println("INFO Commit character compose")
 }

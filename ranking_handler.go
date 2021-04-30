@@ -32,6 +32,7 @@ func GetRankingUser(w http.ResponseWriter, r *http.Request) {
 		UserRankings: userRankings,
 	}
 	if err := encodeResponse(w, jsonResponse); err != nil {
+		log.Println("ERROR encodeResponse fail:", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

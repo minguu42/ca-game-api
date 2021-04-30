@@ -2,11 +2,9 @@ package ca_game_api
 
 import (
 	"fmt"
-	"log"
 )
 
 func selectUserRanking() ([]UserInfo, error) {
-	log.Println("INFO START selectUserRanking")
 	var users []UserInfo
 	const selectSql = `
 SELECT U.id, U.name, SUM(UOC.level * C.power) AS sumPower
@@ -19,15 +17,14 @@ LIMIT 3
 `
 	rows, err := db.Query(selectSql)
 	if err != nil {
-		return nil, fmt.Errorf("query fail: %w", err)
+		return nil, fmt.Errorf("db.Query faild: %w", err)
 	}
 	for rows.Next() {
 		var user UserInfo
 		if err := rows.Scan(&user.Id, &user.Name, &user.SumPower); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("rows.Scan faild: %w", err)
 		}
 		users = append(users, user)
 	}
-	log.Println("INFO END selectUserRanking")
 	return users, nil
 }

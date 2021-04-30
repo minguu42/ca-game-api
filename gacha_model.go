@@ -2,7 +2,7 @@ package ca_game_api
 
 import (
 	"database/sql"
-	"log"
+	"fmt"
 	"math/rand"
 	"strconv"
 	"time"
@@ -14,41 +14,38 @@ type Result struct {
 }
 
 func draw(xToken string, times int) ([]Result, error, *sql.Tx) {
-	log.Println("INFO START draw")
 	var results []Result
 
 	userId, err := selectUserId(xToken)
 	if err != nil {
-		return nil, err, nil
+		return nil, fmt.Errorf("selectUserid faild: %w", err), nil
 	}
 
-	rarity3SumNum, err := countPerRarity(db, 3)
+	rarity3SumNum, err := countPerRarity(3)
 	if err != nil {
-		return nil, err, nil
+		return nil, fmt.Errorf("countPerRarity faild: %w", err), nil
 	}
-	rarity4SumNum, err := countPerRarity(db, 4)
+	rarity4SumNum, err := countPerRarity(4)
 	if err != nil {
-		return nil, err, nil
+		return nil, fmt.Errorf("countPerRarity faild: %w", err), nil
 	}
-	rarity5SumNum, err := countPerRarity(db, 5)
+	rarity5SumNum, err := countPerRarity(5)
 	if err != nil {
-		return nil, err, nil
+		return nil, fmt.Errorf("countPerRarity faild: %w", err), nil
 	}
 
 	tx, err := db.Begin()
 	if err != nil {
-		return nil, err, nil
+		return nil, fmt.Errorf("db.Begin faild: %w", err), nil
 	}
 	for i := 0; i < times; i++ {
-		log.Printf("INFO START Draw once gach (%v / %v) \n", i+1, times)
 		rand.Seed(time.Now().UnixNano())
 		characterId := decideOutputCharacterId(rarity3SumNum, rarity4SumNum, rarity5SumNum)
 		characterLevel := decideCharacterLevel()
 		characterExperience := calculateExperience(characterLevel)
-		name, err := selectCharacterName(db, characterId)
+		name, err := selectCharacterName(characterId)
 		if err != nil {
-			log.Println("ERROR Return 500:", err)
-			return nil, err, tx
+			return nil, fmt.Errorf("selectCharacterName faild: %w", err), tx
 		}
 		results = append(results, Result{
 			CharacterId: strconv.Itoa(characterId),
@@ -56,12 +53,9 @@ func draw(xToken string, times int) ([]Result, error, *sql.Tx) {
 		})
 
 		if err := insertResult(tx, userId, characterId, characterLevel, characterExperience); err != nil {
-			log.Println("ERROR Return 500:", err)
-			return nil, err, tx
+			return nil, fmt.Errorf("insertResult fiald: %w", err), tx
 		}
-		log.Printf("INFO END Draw once gach (%v / %v) \n", i+1, times)
 	}
-	log.Println("INFO END draw")
 	return results, nil, tx
 }
 
@@ -95,11 +89,11 @@ func decideCharacterLevel() int {
 func insertResult(tx *sql.Tx, userId, characterId, characterLevel, characterExperience int) error {
 	const insertSql = "INSERT INTO gacha_results (user_id, character_id, level) VALUES ($1, $2, $3)"
 	if _, err := tx.Exec(insertSql, userId, characterId, characterLevel); err != nil {
-		return err
+		return fmt.Errorf("tx.Exec faild: %w", err)
 	}
 	const createSql = "INSERT INTO user_ownership_characters (user_id, character_id, level, experience) VALUES ($1, $2, $3, $4)"
 	if _, err := tx.Exec(createSql, userId, characterId, characterLevel, characterExperience); err != nil {
-		return err
+		return fmt.Errorf("tx.Exec faild: %w", err)
 	}
 	return nil
 }
