@@ -3,7 +3,7 @@ services:
   api:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: build/Dockerfile
     environment:
       - PORT
       - DATABASE_URL
