@@ -54,6 +54,7 @@ func PutCharacterCompose(w http.ResponseWriter, r *http.Request) {
 	xToken := r.Header.Get("x-token")
 	var jsonRequest PutCharacterComposeRequest
 	if err := decodeRequest(r, &jsonRequest); err != nil {
+		log.Println("ERROR decodeRequest fail:", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}

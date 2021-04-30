@@ -22,7 +22,7 @@ func PostGachaDraw(w http.ResponseWriter, r *http.Request) {
 	xToken := r.Header.Get("x-token")
 	var jsonRequest PostGachaDrawRequest
 	if err := decodeRequest(r, &jsonRequest); err != nil {
-		log.Println("ERROR encodeResponse fail:", err)
+		log.Println("ERROR decodeRequest fail:", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -49,6 +49,7 @@ func PostGachaDraw(w http.ResponseWriter, r *http.Request) {
 		Results: results,
 	}
 	if err := encodeResponse(w, jsonResponse); err != nil {
+		log.Println("ERROR encodeResponse fail:", err)
 		if err := tx.Rollback(); err != nil {
 			log.Println("ERROR Rollback error:", err)
 		}
