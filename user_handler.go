@@ -1,6 +1,7 @@
 package ca_game_api
 
 import (
+	"log"
 	"net/http"
 )
 
@@ -40,6 +41,7 @@ func PostUser(w http.ResponseWriter, r *http.Request) {
 		Token: token,
 	}
 	if err := encodeResponse(w, jsonResponse); err != nil {
+		log.Println("ERROR encodeResponse fail:", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -67,6 +69,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 		Name: name,
 	}
 	if err := encodeResponse(w, jsonResponse); err != nil {
+		log.Println("ERROR encodeResponse fail:", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
