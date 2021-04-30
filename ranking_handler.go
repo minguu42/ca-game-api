@@ -1,6 +1,9 @@
 package ca_game_api
 
-import "net/http"
+import (
+	"log"
+	"net/http"
+)
 
 type UserInfo struct {
 	Id       string `json:"userID"`
@@ -20,6 +23,7 @@ func GetRankingUser(w http.ResponseWriter, r *http.Request) {
 
 	userRankings, err := selectUserRanking()
 	if err != nil {
+		log.Println("ERROR selectUserRanking error:", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

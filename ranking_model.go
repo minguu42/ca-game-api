@@ -19,8 +19,7 @@ LIMIT 3
 `
 	rows, err := db.Query(selectSql)
 	if err != nil {
-		fmt.Println("ERROR selectUserRanking error:", err)
-		return nil, err
+		return nil, fmt.Errorf("query fail: %w", err)
 	}
 	for rows.Next() {
 		var user UserInfo
