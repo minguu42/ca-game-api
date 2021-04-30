@@ -28,7 +28,7 @@ $ docker-compose up -d
 
 # （初回のみ、2回目以降は行わない）テーブルとキャラクターを作成する
 $ docker exec -i mysql-container sh -c 'exec mysql -u <上と等しいユーザ名> -D ca_game_api_db -p"<上と等しいユーザのパスワード>"' < init.sql
-$ docker exec -i ca-game-api-db sh -c 'exec psql -U minguu -d ca_game_api_db -w' < init.sql
+$ docker exec -i ca-game-api-db sh -c 'exec psql -U minguu -d ca_game_api_db -w' < docs/init.sql
 ```
 
 ## 動作例
@@ -218,10 +218,10 @@ Content-Type: text/plain; charset=utf-8
 
 curl -i -X POST "http://localhost:8000/user/create" -H  "accept: application/json" -H  "Content-Type: application/json" -d "{  \"name\": \"minguu\"}"
 
-curl -i -X GET "http://localhost:8000/user/get" -H  "accept: application/json" -H  "x-token: PYi05uOulU4Rshqz5YZQ-c"
+curl -i -X GET "http://localhost:8000/user/get" -H  "accept: application/json" -H  "x-token: yypKkCsMXx2MBBVorFQBsQ"
 
-curl -i -X PUT "http://localhost:8000/user/update" -H  "accept: application/json" -H  "x-token: PYi05uOulU4Rshqz5YZQ-c" -H  "Content-Type: application/json" -d "{  \"name\": \"newMinguu\"}"
+curl -i -X PUT "http://localhost:8000/user/update" -H  "accept: application/json" -H  "x-token: yypKkCsMXx2MBBVorFQBsQ" -H  "Content-Type: application/json" -d "{  \"name\": \"newMinguu\"}"
 
-curl -i -X POST "http://localhost:8000/gacha/draw" -H  "accept: application/json" -H  "x-token: PYi05uOulU4Rshqz5YZQ-c" -H  "Content-Type: application/json" -d "{  \"times\": 3}"
+curl -i -X POST "http://localhost:8000/gacha/draw" -H  "accept: application/json" -H  "x-token: yypKkCsMXx2MBBVorFQBsQ" -H  "Content-Type: application/json" -d "{  \"times\": 3}"
 
-curl -i -X GET "http://localhost:8000/character/list" -H  "accept: application/json" -H  "x-token: PYi05uOulU4Rshqz5YZQ-c"
+curl -i -X GET "http://localhost:8000/character/list" -H  "accept: application/json" -H  "x-token: yypKkCsMXx2MBBVorFQBsQ"
