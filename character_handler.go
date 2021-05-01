@@ -77,8 +77,8 @@ func PutCharacterCompose(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if (userId != baseUserId) || (userId != materialUserId) {
+		log.Println("ERROR User does not own the character")
 		w.WriteHeader(http.StatusBadRequest)
-		log.Println("ERROR Return 400: User does not own the character")
 		return
 	}
 
@@ -86,7 +86,7 @@ func PutCharacterCompose(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if tx != nil {
 			if err := tx.Rollback(); err != nil {
-				log.Println("ERROR Rollback error:", err)
+				log.Println("ERROR tx.Rollback failed:", err)
 			}
 		}
 		return
@@ -95,22 +95,22 @@ func PutCharacterCompose(w http.ResponseWriter, r *http.Request) {
 	jsonResponse, err := createPutCharacterComposeResponse(baseUserCharacterId, newLevel)
 	if err != nil {
 		if err := tx.Rollback(); err != nil {
-			log.Println("ERROR Rollback error:", err)
+			log.Println("ERROR tx.Rollback failed:", err)
 		}
 		return
 	}
 	if err := encodeResponse(w, jsonResponse); err != nil {
-		log.Println("ERROR encodeResponse fail:", err)
+		log.Println("ERROR encodeResponse failed:", err)
 		if err := tx.Rollback(); err != nil {
-			log.Println("ERROR Rollback fail:", err)
+			log.Println("ERROR tx.Rollback failed:", err)
 		}
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	if err := tx.Commit(); err != nil {
+		log.Println("ERROR tx.Commit failed:", err)
 		w.WriteHeader(http.StatusInternalServerError)
-		log.Println("ERROR Return 500:", err)
 		return
 	}
 }
