@@ -225,3 +225,7 @@ curl -i -X PUT "http://localhost:8000/user/update" -H  "accept: application/json
 curl -i -X POST "http://localhost:8000/gacha/draw" -H  "accept: application/json" -H  "x-token: yypKkCsMXx2MBBVorFQBsQ" -H  "Content-Type: application/json" -d "{  \"times\": 3}"
 
 curl -i -X GET "http://localhost:8000/character/list" -H  "accept: application/json" -H  "x-token: yypKkCsMXx2MBBVorFQBsQ"
+
+curl -i -X GET "http://localhost:8000/ranking/user" -H  "accept: application/json"
+
+curl -i -X PUT "http://localhost:8000/character/compose" -H  "accept: application/json" -H  "x-token: yypKkCsMXx2MBBVorFQBsQ" -H  "Content-Type: application/json" -d "{  \"baseUserCharacterID\": 4,  \"materialUserCharacterID\": 5}"
