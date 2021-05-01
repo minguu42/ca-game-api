@@ -63,16 +63,19 @@ func PutCharacterCompose(w http.ResponseWriter, r *http.Request) {
 
 	userId, err := selectUserId(xToken)
 	if err != nil {
+		log.Println("ERROR selectUserId failed:", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	baseUserId, err := selectUserIdByUserCharacterId(baseUserCharacterId)
 	if err != nil {
+		log.Println("ERROR selectUserIdByUserCharacterId failed:", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	materialUserId, err := selectUserIdByUserCharacterId(materialUserCharacterId)
 	if err != nil {
+		log.Println("ERROR selectUserIdByUserCharacterId failed:", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -84,19 +87,23 @@ func PutCharacterCompose(w http.ResponseWriter, r *http.Request) {
 
 	tx, newLevel, err := composeCharacter(baseUserCharacterId, materialUserCharacterId)
 	if err != nil {
+		log.Println("ERROR composeCharacter failed:", err)
 		if tx != nil {
 			if err := tx.Rollback(); err != nil {
 				log.Println("ERROR tx.Rollback failed:", err)
 			}
 		}
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	jsonResponse, err := createPutCharacterComposeResponse(baseUserCharacterId, newLevel)
 	if err != nil {
+		log.Println("ERROR createPutCharacterComposeResponse failed:", err)
 		if err := tx.Rollback(); err != nil {
 			log.Println("ERROR tx.Rollback failed:", err)
 		}
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	if err := encodeResponse(w, jsonResponse); err != nil {
