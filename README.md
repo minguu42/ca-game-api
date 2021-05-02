@@ -27,9 +27,9 @@ MYSQL_PASSWORD=<上と等しいユーザのパスワード>
 $ docker-compose up -d
 
 # （初回のみ、2回目以降は行わない）テーブルとキャラクターを作成する
-$ docker exec -i mysql-container sh -c 'exec mysql -u <上と等しいユーザ名> -D ca_game_api_db -p"<上と等しいユーザのパスワード>"' < init.sql
-$ docker exec -i ca-game-api-db sh -c 'exec psql -U minguu -d ca_game_api_db -w' < build/init.sql
-$ docker exec -i ca-game-api-db-test sh -c 'exec psql -U test -d ca_game_api_db_test -w' < build/init.sql
+$ docker exec -i mysql-container sh -c 'exec mysql -u <上と等しいユーザ名> -D ca_game_api_db -p"<上と等しいユーザのパスワード>"' < setup.sql
+$ docker exec -i ca-game-api-db sh -c 'exec psql -U minguu -d ca_game_api_db -w' < build/setup.sql
+$ docker exec -i ca-game-api-db-test sh -c 'exec psql -U test -d ca_game_api_db_test -w' < build/setup.sql
 ```
 
 ## 動作例
