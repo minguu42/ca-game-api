@@ -7,6 +7,7 @@ services:
     environment:
       - PORT
       - DATABASE_URL
+      - DATABASE_TEST_URL
     container_name: ca-game-api
     stdin_open: true
     tty: true
@@ -16,6 +17,7 @@ services:
       - 8000:8000
     depends_on:
       - db
+      - db-test
   db:
     image: postgres:12.6
     environment:
@@ -29,7 +31,22 @@ services:
       - 5432:5432
     volumes:
       - pg-data:/var/lib/postgresql/data
+  db-test:
+    image: postgres:12.6
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_TEST_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_TEST_USER}
+      POSTGRES_DB: ${POSTGRES_TEST_DB}
+    container_name: ca-game-api-db-test
+    tty: true
+    restart: always
+    ports:
+      - 15432:5432
+    volumes:
+      - pg-test-data:/var/lib/postgresql/data
 
 volumes:
   pg-data:
+    driver: local
+  pg-test-data:
     driver: local
