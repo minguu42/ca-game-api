@@ -29,7 +29,7 @@ $ docker-compose up -d
 # （初回のみ、2回目以降は行わない）テーブルとキャラクターを作成する
 $ docker exec -i mysql-container sh -c 'exec mysql -u <上と等しいユーザ名> -D ca_game_api_db -p"<上と等しいユーザのパスワード>"' < setup.sql
 $ docker exec -i ca-game-api-db sh -c 'exec psql -U minguu -d ca_game_api_db -w' < build/setup.sql
-$ docker exec -i ca-game-api-db-test sh -c 'exec psql -U test -d ca_game_api_db_test -w' < build/setup.sql
+$ docker exec -i ca-game-api-db-test sh -c 'exec psql -U test -d ca_game_api_db_test -w' < build/setup_test.sql
 ```
 
 ## 動作例
@@ -230,3 +230,8 @@ curl -i -X GET "http://localhost:8000/character/list" -H  "accept: application/j
 curl -i -X GET "http://localhost:8000/ranking/user" -H  "accept: application/json"
 
 curl -i -X PUT "http://localhost:8000/character/compose" -H  "accept: application/json" -H  "x-token: yypKkCsMXx2MBBVorFQBsQ" -H  "Content-Type: application/json" -d "{  \"baseUserCharacterID\": 4,  \"materialUserCharacterID\": 5}"
+
+log.Println(hash("ceKeMPeYr0eF3K5e4Lfjfe"))
+log.Println(hash("yypKkCsMXx2MBBVorFQBsQ"))
+'71a6f9c1007c60601a6d67e7f79d4550602b34ced90cdac86bd340f293bf0247'
+'541d9abc4b06e838e471ff564c24585a6ddc5280c9478f2e6e85b2eb7ed979a9'
