@@ -2,6 +2,7 @@ package ca_game_api
 
 import (
 	"database/sql"
+	"encoding/json"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -40,10 +41,19 @@ func tearDown() {
 }
 
 func TestPostUser(t *testing.T) {
-	json := strings.NewReader(`{"name":"minguu3"}`)
-	request, _ := http.NewRequest("POST", "/user/create", json)
+	name, _ := generateRandomString(8)
+	requestBody := strings.NewReader(`{"name":"` + name + `"}`)
+	request, _ := http.NewRequest("POST", "/user/create", requestBody)
 	mux.ServeHTTP(writer, request)
+
 	if writer.Code != 200 {
 		t.Errorf("Response code is %v", writer.Code)
+	}
+	var response PostUserResponse
+	if err := json.Unmarshal(writer.Body.Bytes(), &response); err != nil {
+		log.Println(err)
+	}
+	if response.Token == "" {
+		t.Errorf("token is none")
 	}
 }
