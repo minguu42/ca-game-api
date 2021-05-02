@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 CREATE TABLE IF NOT EXISTS characters (
-    id serial PRIMARY KEY,
+    id int PRIMARY KEY,
     name varchar(255) NOT NULL,
     rarity int NOT NULL,
     power int NOT NULL,
