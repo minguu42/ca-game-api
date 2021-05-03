@@ -96,3 +96,39 @@ func TestPutUser(t *testing.T) {
 		t.Errorf("response code is %v", resp.StatusCode)
 	}
 }
+
+func TestGetUserRanking(t *testing.T) {
+	r := httptest.NewRequest("GET", "/user/ranking", nil)
+	r.Header.Set("x-token", "yypKkCsMXx2MBBVorFQBsQ")
+	w := httptest.NewRecorder()
+
+	GetUserRanking(w, r)
+
+	resp := w.Result()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		t.Errorf("cannot read body: %v", resp.Body)
+	}
+
+	if resp.StatusCode != 200 {
+		t.Errorf("response code is %v", resp.StatusCode)
+	}
+
+	var response GetUserRankingResponse
+	if err := json.Unmarshal(body, &response); err != nil {
+		t.Errorf("cannot unmarshal body: %v", body)
+	}
+	if len(response.UserRankings) != 3 {
+		t.Errorf("ranking up to 3rd, but %v", len(response.UserRankings))
+	}
+	if response.UserRankings[0].Name != "test user" {
+		t.Errorf("rank1 user is not test user, %v", response.UserRankings[0].Name)
+	}
+	if response.UserRankings[1].Name != "test user3" {
+		t.Errorf("rank2 user is not test user2, %v", response.UserRankings[1].Name)
+	}
+	if response.UserRankings[2].Name != "test user4" {
+		t.Errorf("rank3 user is not test user3, %v", response.UserRankings[2].Name)
+	}
+}

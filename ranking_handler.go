@@ -11,11 +11,11 @@ type UserInfo struct {
 	SumPower string `json:"sumPower"`
 }
 
-type GetRankingUserResponse struct {
+type GetUserRankingResponse struct {
 	UserRankings []UserInfo `json:"userRankings"`
 }
 
-func GetRankingUser(w http.ResponseWriter, r *http.Request) {
+func GetUserRanking(w http.ResponseWriter, r *http.Request) {
 	if isStatusMethodInvalid(r, http.MethodGet) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
@@ -28,7 +28,7 @@ func GetRankingUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jsonResponse := GetRankingUserResponse{
+	jsonResponse := GetUserRankingResponse{
 		UserRankings: userRankings,
 	}
 	if err := encodeResponse(w, jsonResponse); err != nil {
