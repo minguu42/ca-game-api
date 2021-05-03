@@ -82,5 +82,11 @@ INSERT INTO characters VALUES (30000001, 'normal_character1', 3, 1, 10000),
                               (50000010, 'super_rare_character10', 5, 600, 2000);
 
 INSERT INTO users (name, digest_token) VALUES ('test user', '71a6f9c1007c60601a6d67e7f79d4550602b34ced90cdac86bd340f293bf0247'),
-                                              ('test user2', '541d9abc4b06e838e471ff564c24585a6ddc5280c9478f2e6e85b2eb7ed979a9');
+                                              ('test user2', '541d9abc4b06e838e471ff564c24585a6ddc5280c9478f2e6e85b2eb7ed979a9'),
+                                              ('test user3', 'dj9fq2j9u9feq3nfq8fjqf98qfjdb0jqq0db09da38faji98qh4vnmz8zqq2ue90'),
+                                              ('test user4', 'q34avo2q3avj9q28t4nq39vm9uz98qnq984j91oaoj9zu9q3ujvq9832j932q8u');
 
+INSERT INTO user_ownership_characters (user_id, character_id, level, experience) VALUES (1, 50000001, 1, 0),
+                                                                                        (2, 50000002, 1, 0),
+                                                                                        (3, 40000002, 1, 0),
+                                                                                        (4, 30000002, 1, 0);
