@@ -29,8 +29,8 @@ func TestMain(m *testing.M) {
 
 func TestPostUser(t *testing.T) {
 	name, _ := generateRandomString(8)
-	requestBody := strings.NewReader(`{"name":"` + name + `"}`)
-	r := httptest.NewRequest("POST", "/user/post", requestBody)
+	reqBody := strings.NewReader(`{"name":"` + name + `"}`)
+	r := httptest.NewRequest("POST", "/user/post", reqBody)
 	w := httptest.NewRecorder()
 
 	PostUser(w, r)
@@ -39,7 +39,7 @@ func TestPostUser(t *testing.T) {
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		t.Errorf("cannot read test response: %v", w.Code)
+		t.Errorf("cannot read body: %v", resp.Body)
 	}
 
 	if resp.StatusCode != 200 {
@@ -65,7 +65,7 @@ func TestGetUser(t *testing.T) {
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		t.Errorf("cannot read test response: %v", w.Code)
+		t.Errorf("cannot read body: %v", resp.Body)
 	}
 
 	if resp.StatusCode != 200 {
@@ -78,5 +78,21 @@ func TestGetUser(t *testing.T) {
 	}
 	if response.Name != "test user" {
 		t.Errorf("user name is %v", response.Name)
+	}
+}
+
+func TestPutUser(t *testing.T) {
+	name, _ := generateRandomString(8)
+	reqBody := strings.NewReader(`{"name":"` + name + `"}`)
+	r := httptest.NewRequest("PUT", "/user/update", reqBody)
+	r.Header.Set("x-token", "yypKkCsMXx2MBBVorFQBsQ")
+	w := httptest.NewRecorder()
+
+	PutUser(w, r)
+
+	resp := w.Result()
+
+	if resp.StatusCode != 200 {
+		t.Errorf("response code is %v", resp.StatusCode)
 	}
 }
