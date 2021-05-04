@@ -72,9 +72,8 @@ func selectUserIdByUserCharacterId(userCharacterId int) (int, error) {
 	return id, nil
 }
 
-func selectUserRanking() ([]UserJson, error) {
-	var users []UserJson
-	const selectSql = `
+func selectUserRanking() ([]UserRankingJson, error) {
+	const sql = `
 SELECT U.name, SUM(UOC.level * C.base_power) AS sumPower
 FROM user_ownership_characters AS UOC
 INNER JOIN users AS U ON UOC.user_id = U.id
@@ -83,16 +82,17 @@ GROUP BY U.id
 ORDER BY sumPower DESC
 LIMIT 3
 `
-	rows, err := db.Query(selectSql)
+	var rankings []UserRankingJson
+	rows, err := db.Query(sql)
 	if err != nil {
-		return nil, fmt.Errorf("db.Query faild: %w", err)
+		return nil, fmt.Errorf("db.Query failed: %w", err)
 	}
 	for rows.Next() {
-		var user UserJson
-		if err := rows.Scan(&user.Name, &user.SumPower); err != nil {
-			return nil, fmt.Errorf("rows.Scan faild: %w", err)
+		var ranking UserRankingJson
+		if err := rows.Scan(&ranking.Name, &ranking.SumPower); err != nil {
+			return nil, fmt.Errorf("rows.Scan failed: %w", err)
 		}
-		users = append(users, user)
+		rankings = append(rankings, ranking)
 	}
-	return users, nil
+	return rankings, nil
 }

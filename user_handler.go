@@ -111,41 +111,41 @@ func PutUser(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-type UserJson struct {
+type UserRankingJson struct {
 	Name     string `json:"name"`
 	SumPower int `json:"sumPower"`
 }
 
 type GetUserRankingResponse struct {
-	Users []UserJson `json:"users"`
+	Users []UserRankingJson `json:"users"`
 }
 
 func GetUserRanking(w http.ResponseWriter, r *http.Request) {
 	if isStatusMethodInvalid(r, "GET") {
-		w.WriteHeader(http.StatusMethodNotAllowed)
+		w.WriteHeader(405)
 		return
 	}
 
 	token := r.Header.Get("x-token")
 	if _, err := getUserByToken(token); err != nil {
-		fmt.Println("getUserByToken failed:", err)
+		fmt.Println("ERROR getUserByToken failed:", err)
 		w.WriteHeader(403)
 		return
 	}
 
-	userRankings, err := selectUserRanking()
+	rankings, err := selectUserRanking()
 	if err != nil {
 		log.Println("ERROR selectUserRanking error:", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(500)
 		return
 	}
 
 	jsonResponse := GetUserRankingResponse{
-		Users: userRankings,
+		Users: rankings,
 	}
 	if err := encodeResponse(w, jsonResponse); err != nil {
 		log.Println("ERROR encodeResponse fail:", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(500)
 		return
 	}
 }
