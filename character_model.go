@@ -10,21 +10,21 @@ type Character struct {
 	id      int
 	name    string
 	rarity  int
-	power   int
+	basePower   int
 	calorie int
 }
 
-func selectCharacterName(characterId int) (string, error) {
-	const selectSql = "SELECT name FROM characters WHERE id = $1"
-	var name string
-	row := db.QueryRow(selectSql, characterId)
-	if err := row.Scan(&name); err != nil {
-		return "", fmt.Errorf("row.Scan faild: %w", err)
+func getCharacterById(id int) (Character, error) {
+	const selectSql = "SELECT id, name, rarity, base_power, calorie FROM characters WHERE id = $1"
+	row := db.QueryRow(selectSql, id)
+	var character Character
+	if err := row.Scan(&character.id, &character.name, &character.rarity, &character.basePower, &character.calorie); err != nil {
+		return character, fmt.Errorf("row.Scan failed: %w", err)
 	}
-	return name, nil
+	return character, nil
 }
 
-func countPerRarity(rarity int) (int, error) {
+func countCharactersByRarity(rarity int) (int, error) {
 	const selectSql = "SELECT COUNT(*) FROM characters WHERE rarity = $1"
 	var count int
 	row := db.QueryRow(selectSql, rarity)

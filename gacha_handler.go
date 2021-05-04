@@ -19,34 +19,45 @@ type PostGachaDrawResponse struct {
 }
 
 func PostGachaDraw(w http.ResponseWriter, r *http.Request) {
-	if isStatusMethodInvalid(r, http.MethodPost) {
-		w.WriteHeader(http.StatusMethodNotAllowed)
+	if isStatusMethodInvalid(r, "POST") {
+		w.WriteHeader(405)
 		return
 	}
 
-	xToken := r.Header.Get("x-token")
+	token := r.Header.Get("x-token")
 	var reqBody PostGachaDrawRequest
 	if err := decodeRequest(r, &reqBody); err != nil {
-		log.Println("ERROR decodeRequest fail:", err)
-		w.WriteHeader(http.StatusBadRequest)
+		log.Println("ERROR decodeRequest failed:", err)
+		w.WriteHeader(400)
 		return
 	}
 	times := reqBody.Times
 
 	if times <= 0 {
-		w.WriteHeader(http.StatusBadRequest)
-		log.Println("ERROR Return 403: Times is 0 or negative number")
+		w.WriteHeader(400)
+		log.Println("ERROR Times should be positive number")
+		return
+	}
+	user, err := getUserByToken(token)
+	if err != nil {
+		log.Println("ERROR getUserByToken failed:", err)
+		w.WriteHeader(403)
 		return
 	}
 
-	results, err, tx := draw(xToken, times)
+	tx, err := db.Begin()
 	if err != nil {
-		if tx != nil {
-			if err := tx.Rollback(); err != nil {
-				log.Println("ERROR Rollback error:", err)
-			}
+		log.Println("ERROR db.Begin failed:", err)
+		w.WriteHeader(500)
+		return
+	}
+
+	results, err := draw(tx, user.id, times)
+	if err != nil {
+		if err := tx.Rollback(); err != nil {
+			log.Println("ERROR tx.Rollback failed:", err)
 		}
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(500)
 		return
 	}
 

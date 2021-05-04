@@ -15,50 +15,32 @@ type gachaResult struct {
 	createdAt time.Time
 }
 
-func draw(xToken string, times int) ([]ResultJson, error, *sql.Tx) {
+func draw(tx *sql.Tx, userId int, times int) ([]ResultJson, error) {
 	var results []ResultJson
 
-	userId, err := selectUserId(xToken)
-	if err != nil {
-		return nil, fmt.Errorf("selectUserid faild: %w", err), nil
-	}
-
-	rarity3SumNum, err := countPerRarity(3)
-	if err != nil {
-		return nil, fmt.Errorf("countPerRarity faild: %w", err), nil
-	}
-	rarity4SumNum, err := countPerRarity(4)
-	if err != nil {
-		return nil, fmt.Errorf("countPerRarity faild: %w", err), nil
-	}
-	rarity5SumNum, err := countPerRarity(5)
-	if err != nil {
-		return nil, fmt.Errorf("countPerRarity faild: %w", err), nil
-	}
-
-	tx, err := db.Begin()
-	if err != nil {
-		return nil, fmt.Errorf("db.Begin faild: %w", err), nil
-	}
 	for i := 0; i < times; i++ {
 		rand.Seed(time.Now().UnixNano())
-		characterId := decideOutputCharacterId(rarity3SumNum, rarity4SumNum, rarity5SumNum)
+		characterId, err := decideCharacterId()
+		if err != nil {
+			return nil, fmt.Errorf("decideCharacterId failed: %w", err)
+		}
 		characterLevel := decideCharacterLevel()
 		characterExperience := calculateExperience(characterLevel)
-		name, err := selectCharacterName(characterId)
+		character, err := getCharacterById(characterId)
 		if err != nil {
-			return nil, fmt.Errorf("selectCharacterName faild: %w", err), tx
+			return nil, fmt.Errorf("getCharacterById failed: %w", err)
 		}
+
 		results = append(results, ResultJson{
 			CharacterId: characterId,
-			Name:        name,
+			Name:        character.name,
 		})
 
 		if err := insertResult(tx, userId, characterId, characterLevel, characterExperience); err != nil {
-			return nil, fmt.Errorf("insertResult fiald: %w", err), tx
+			return nil, fmt.Errorf("insertResult fiald: %w", err)
 		}
 	}
-	return results, nil, tx
+	return results, nil
 }
 
 func decideRarity() int {
@@ -71,17 +53,30 @@ func decideRarity() int {
 	}
 }
 
-func decideOutputCharacterId(rarity3SumNum, rarity4SumNum, rarity5SumNum int) int {
+func decideCharacterId() (int, error) {
+	rarity3Num, err := countCharactersByRarity(3)
+	if err != nil {
+		return 0, fmt.Errorf("countCharactersByRarity failed: %w", err)
+	}
+	rarity4Num, err := countCharactersByRarity(4)
+	if err != nil {
+		return 0, fmt.Errorf("countCharactersByRarity failed: %w", err)
+	}
+	rarity5Num, err := countCharactersByRarity(5)
+	if err != nil {
+		return 0, fmt.Errorf("countCharactersByRarity failed: %w", err)
+	}
+
 	var characterId int
 	switch rarity := decideRarity(); rarity {
 	case 3:
-		characterId = rand.Intn(rarity3SumNum) + 30000001
+		characterId = rand.Intn(rarity3Num) + 30000001
 	case 4:
-		characterId = rand.Intn(rarity4SumNum) + 40000001
+		characterId = rand.Intn(rarity4Num) + 40000001
 	case 5:
-		characterId = rand.Intn(rarity5SumNum) + 50000001
+		characterId = rand.Intn(rarity5Num) + 50000001
 	}
-	return characterId
+	return characterId, nil
 }
 
 func decideCharacterLevel() int {
