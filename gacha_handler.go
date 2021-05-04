@@ -9,8 +9,13 @@ type PostGachaDrawRequest struct {
 	Times int `json:"times"`
 }
 
+type ResultJson struct {
+	CharacterId string `json:"characterID"`
+	Name        string `json:"name"`
+}
+
 type PostGachaDrawResponse struct {
-	Results []Result `json:"results"`
+	Results []ResultJson `json:"results"`
 }
 
 func PostGachaDraw(w http.ResponseWriter, r *http.Request) {

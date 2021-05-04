@@ -32,11 +32,11 @@ func insertUser(user User) error {
 }
 
 func selectUserByToken(token string) (User, error) {
-	const selectSql = `SELECT * FROM users WHERE digest_token = $1`
 	digestToken := hash(token)
 
-	var user User
+	const selectSql = `SELECT * FROM users WHERE digest_token = $1`
 	row := db.QueryRow(selectSql, digestToken)
+	var user User
 	if err := row.Scan(&user.id, &user.name, &user.digestToken, &user.createdAt, &user.updatedAt); err != nil {
 		return user, fmt.Errorf("row.Scan failed: %w", err)
 	}
@@ -72,8 +72,8 @@ func updateUser(user User) error {
 	return nil
 }
 
-func selectUserRanking() ([]UserRankingInfo, error) {
-	var users []UserRankingInfo
+func selectUserRanking() ([]UserJson, error) {
+	var users []UserJson
 	const selectSql = `
 SELECT U.name, SUM(UOC.level * C.power) AS sumPower
 FROM user_ownership_characters AS UOC
@@ -88,7 +88,7 @@ LIMIT 3
 		return nil, fmt.Errorf("db.Query faild: %w", err)
 	}
 	for rows.Next() {
-		var user UserRankingInfo
+		var user UserJson
 		if err := rows.Scan(&user.Name, &user.SumPower); err != nil {
 			return nil, fmt.Errorf("rows.Scan faild: %w", err)
 		}

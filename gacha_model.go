@@ -16,13 +16,8 @@ type gachaResult struct {
 	createdAt time.Time
 }
 
-type Result struct {
-	CharacterId string `json:"characterID"`
-	Name        string `json:"name"`
-}
-
-func draw(xToken string, times int) ([]Result, error, *sql.Tx) {
-	var results []Result
+func draw(xToken string, times int) ([]ResultJson, error, *sql.Tx) {
+	var results []ResultJson
 
 	userId, err := selectUserId(xToken)
 	if err != nil {
@@ -55,7 +50,7 @@ func draw(xToken string, times int) ([]Result, error, *sql.Tx) {
 		if err != nil {
 			return nil, fmt.Errorf("selectCharacterName faild: %w", err), tx
 		}
-		results = append(results, Result{
+		results = append(results, ResultJson{
 			CharacterId: strconv.Itoa(characterId),
 			Name:        name,
 		})
