@@ -93,6 +93,7 @@ INSERT INTO users (name, digest_token) VALUES ('test1', '71a6f9c1007c60601a6d67e
                                               ('test5', 'jdoije928jf9eqj1fnqz9duq921ejf6qwure2qi9jf7qc4xz98qw2urf98j9eqf1');
 
 -- GetUserRanking, GetCharacterList のためのキャラクター. Rank1. test1, Rank2. test3, Rank3. test4 となる.
+-- GetUserRanking のため test3 の sumPower は 500 で固定する.
 INSERT INTO user_ownership_characters (user_id, character_id, level, experience) VALUES (1, 50000002, 1, 0),
                                                                                         (1, 40000002, 1, 0),
                                                                                         (1, 50000002, 1, 0),

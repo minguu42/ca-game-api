@@ -113,7 +113,7 @@ func PutUser(w http.ResponseWriter, r *http.Request) {
 
 type UserJson struct {
 	Name     string `json:"name"`
-	SumPower string `json:"sumPower"`
+	SumPower int `json:"sumPower"`
 }
 
 type GetUserRankingResponse struct {
