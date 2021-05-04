@@ -65,17 +65,17 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 
 	token := r.Header.Get("x-token")
 
-	user, err := selectUserByToken(token)
+	user, err := getUserByToken(token)
 	if err != nil {
-		log.Println("ERROR selectUserByToken failed:", err)
+		log.Println("ERROR getUserByToken failed:", err)
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
-	jsonResponse := GetUserResponse{
+	respBody := GetUserResponse{
 		Name: user.name,
 	}
-	if err := encodeResponse(w, jsonResponse); err != nil {
+	if err := encodeResponse(w, respBody); err != nil {
 		log.Println("ERROR encodeResponse failed:", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -127,8 +127,8 @@ func GetUserRanking(w http.ResponseWriter, r *http.Request) {
 	}
 
 	token := r.Header.Get("x-token")
-	if _, err := selectUserByToken(token); err != nil {
-		fmt.Println("selectUserByToken failed:", err)
+	if _, err := getUserByToken(token); err != nil {
+		fmt.Println("getUserByToken failed:", err)
 		w.WriteHeader(403)
 		return
 	}

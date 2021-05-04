@@ -31,11 +31,11 @@ func (user User) insert() error {
 	return nil
 }
 
-func selectUserByToken(token string) (User, error) {
+func getUserByToken(token string) (User, error) {
 	digestToken := hash(token)
 
-	const selectSql = `SELECT * FROM users WHERE digest_token = $1`
-	row := db.QueryRow(selectSql, digestToken)
+	const sql = `SELECT id, name, digest_token, created_at, updated_at FROM users WHERE digest_token = $1`
+	row := db.QueryRow(sql, digestToken)
 	var user User
 	if err := row.Scan(&user.id, &user.name, &user.digestToken, &user.createdAt, &user.updatedAt); err != nil {
 		return user, fmt.Errorf("row.Scan failed: %w", err)
