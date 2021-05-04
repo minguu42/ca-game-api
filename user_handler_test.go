@@ -30,7 +30,7 @@ func TestMain(m *testing.M) {
 func TestPostUser(t *testing.T) {
 	name, err := generateRandomString(8)
 	if err != nil {
-		t.Errorf("cannot generate random string")
+		t.Errorf("generateRandomString failed: %v", err)
 	}
 	reqBody := strings.NewReader(`{"name":"` + name + `"}`)
 	r := httptest.NewRequest("POST", "/user/post", reqBody)
@@ -42,11 +42,11 @@ func TestPostUser(t *testing.T) {
 
 	bytes, err := io.ReadAll(resp.Body)
 	if err != nil {
-		t.Errorf("cannot read response body: %v", resp.Body)
+		t.Errorf("io.ReadAll failed: %v", err)
 	}
 	var body PostUserResponse
 	if err := json.Unmarshal(bytes, &body); err != nil {
-		t.Errorf("cannot unmarshal bytes")
+		t.Errorf("json.Unmarshal failed: %v", err)
 	}
 
 	if resp.StatusCode != 200 {
@@ -71,11 +71,11 @@ func TestGetUser(t *testing.T) {
 
 	bytes, err := io.ReadAll(resp.Body)
 	if err != nil {
-		t.Errorf("cannot read response body: %v", resp.Body)
+		t.Errorf("io.ReadAll failed: %v", err)
 	}
 	var body GetUserResponse
 	if err := json.Unmarshal(bytes, &body); err != nil {
-		t.Errorf("cannot unmarshal bytes")
+		t.Errorf("json.Unmarshal failed: %v", err)
 	}
 
 	if resp.StatusCode != 200 {
@@ -87,7 +87,10 @@ func TestGetUser(t *testing.T) {
 }
 
 func TestPutUser(t *testing.T) {
-	name, _ := generateRandomString(8)
+	name, err := generateRandomString(8)
+	if err != nil {
+		t.Errorf("generateRandomString failed: %v", err)
+	}
 	reqBody := strings.NewReader(`{"name":"` + name + `"}`)
 	r := httptest.NewRequest("PUT", "/user/update", reqBody)
 	r.Header.Set("x-token", "yypKkCsMXx2MBBVorFQBsQ")
@@ -98,7 +101,7 @@ func TestPutUser(t *testing.T) {
 	resp := w.Result()
 
 	if resp.StatusCode != 200 {
-		t.Errorf("response code is %v", resp.StatusCode)
+		t.Errorf("Response code should be 200, but %v", resp.StatusCode)
 	}
 }
 
