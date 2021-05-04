@@ -118,7 +118,7 @@ type UserRankingInfo struct {
 }
 
 type GetUserRankingResponse struct {
-	UserRankings []UserRankingInfo `json:"userRankings"`
+	Users []UserRankingInfo `json:"users"`
 }
 
 func GetUserRanking(w http.ResponseWriter, r *http.Request) {
@@ -142,7 +142,7 @@ func GetUserRanking(w http.ResponseWriter, r *http.Request) {
 	}
 
 	jsonResponse := GetUserRankingResponse{
-		UserRankings: userRankings,
+		Users: userRankings,
 	}
 	if err := encodeResponse(w, jsonResponse); err != nil {
 		log.Println("ERROR encodeResponse fail:", err)
