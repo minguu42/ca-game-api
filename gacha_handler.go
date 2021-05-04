@@ -10,7 +10,7 @@ type PostGachaDrawRequest struct {
 }
 
 type ResultJson struct {
-	CharacterId int `json:"characterID"`
+	CharacterId int    `json:"characterID"`
 	Name        string `json:"name"`
 }
 

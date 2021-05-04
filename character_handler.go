@@ -5,8 +5,17 @@ import (
 	"net/http"
 )
 
+type CharacterJson struct {
+	UserCharacterId string `json:"userCharacterID"`
+	CharacterId     string `json:"characterID"`
+	Name            string `json:"name"`
+	Level           int    `json:"level"`
+	Experience      int    `json:"experience"`
+	Power           int    `json:"power"`
+}
+
 type GetCharacterListResponse struct {
-	Characters []Character2 `json:"characters"`
+	Characters []CharacterJson `json:"characters"`
 }
 
 func GetCharacterList(w http.ResponseWriter, r *http.Request) {

@@ -14,13 +14,6 @@ type Character struct {
 	calorie int
 }
 
-type Character2 struct {
-	UserCharacterId string `json:"userCharacterID"`
-	CharacterId     string `json:"characterID"`
-	Name            string `json:"name"`
-	Level           int    `json:"level"`
-}
-
 func selectCharacterName(characterId int) (string, error) {
 	const selectSql = "SELECT name FROM characters WHERE id = $1"
 	var name string
@@ -41,8 +34,8 @@ func countPerRarity(rarity int) (int, error) {
 	return count, nil
 }
 
-func selectCharacterList(token string) ([]Character2, error) {
-	var characters []Character2
+func selectCharacterList(token string) ([]CharacterJson, error) {
+	var characters []CharacterJson
 	const selectSql = `
 SELECT UOC.id, C.id, C.name, UOC.level
 FROM user_ownership_characters AS UOC
@@ -60,7 +53,7 @@ WHERE U.digest_token = $1
 		return nil, fmt.Errorf("db.Query faild: %w", err)
 	}
 	for rows.Next() {
-		var c Character2
+		var c CharacterJson
 		if err := rows.Scan(&c.UserCharacterId, &c.CharacterId, &c.Name, &c.Level); err != nil {
 			return nil, fmt.Errorf("rows.Scan faild: %w", err)
 		}
