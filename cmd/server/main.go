@@ -39,7 +39,7 @@ func main() {
 
 	mux.HandleFunc("/gacha/draw", measure(logging(caGameApi.PostGachaDraw)))
 
-	mux.HandleFunc("/ranking/user", measure(logging(caGameApi.GetRankingUser)))
+	mux.HandleFunc("/ranking/user", measure(logging(caGameApi.GetUserRanking)))
 
 	mux.HandleFunc("/character/list", measure(logging(caGameApi.GetCharacterList)))
 	mux.HandleFunc("/character/compose", measure(logging(caGameApi.PutCharacterCompose)))
