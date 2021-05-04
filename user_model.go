@@ -31,6 +31,14 @@ func (user User) insert() error {
 	return nil
 }
 
+func(user User) update() error {
+	const sql = `UPDATE users SET name = $1 WHERE digest_token = $2`
+	if _, err := db.Exec(sql, user.name, user.digestToken); err != nil {
+		return fmt.Errorf("db.Exec failed: %w", err)
+	}
+	return nil
+}
+
 func getUserByToken(token string) (User, error) {
 	digestToken := hash(token)
 
@@ -62,14 +70,6 @@ func selectUserIdByUserCharacterId(userCharacterId int) (int, error) {
 		return 0, fmt.Errorf("row.Scan failed: %w", err)
 	}
 	return id, nil
-}
-
-func updateUser(user User) error {
-	const updateSql = `UPDATE users SET name = $1 WHERE digest_token = $2`
-	if _, err := db.Exec(updateSql, user.name, user.digestToken); err != nil {
-		return fmt.Errorf("db.Exec failed: %w", err)
-	}
-	return nil
 }
 
 func selectUserRanking() ([]UserJson, error) {

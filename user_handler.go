@@ -16,21 +16,21 @@ type PostUserResponse struct {
 
 func PostUser(w http.ResponseWriter, r *http.Request) {
 	if isStatusMethodInvalid(r, "POST") {
-		w.WriteHeader(http.StatusMethodNotAllowed)
+		w.WriteHeader(405)
 		return
 	}
 
 	var reqBody PostUserRequest
 	if err := decodeRequest(r, &reqBody); err != nil {
 		log.Println("ERROR decodeRequest failed:", err)
-		w.WriteHeader(http.StatusBadRequest)
+		w.WriteHeader(400)
 		return
 	}
 
 	token, err := generateRandomString(22)
 	if err != nil {
 		log.Println("ERROR generateRandomString failed:", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(500)
 		return
 	}
 
@@ -39,7 +39,7 @@ func PostUser(w http.ResponseWriter, r *http.Request) {
 	user.digestToken = hash(token)
 	if err := user.insert(); err != nil {
 		log.Println("ERROR user.insert failed:", err)
-		w.WriteHeader(http.StatusBadRequest)
+		w.WriteHeader(400)
 		return
 	}
 
@@ -48,7 +48,7 @@ func PostUser(w http.ResponseWriter, r *http.Request) {
 	}
 	if err := encodeResponse(w, respBody); err != nil {
 		log.Println("ERROR encodeResponse failed:", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(500)
 		return
 	}
 }
@@ -59,7 +59,7 @@ type GetUserResponse struct {
 
 func GetUser(w http.ResponseWriter, r *http.Request) {
 	if isStatusMethodInvalid(r, "GET") {
-		w.WriteHeader(http.StatusMethodNotAllowed)
+		w.WriteHeader(405)
 		return
 	}
 
@@ -77,7 +77,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 	}
 	if err := encodeResponse(w, respBody); err != nil {
 		log.Println("ERROR encodeResponse failed:", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(500)
 		return
 	}
 }
@@ -88,25 +88,25 @@ type PutUserRequest struct {
 
 func PutUser(w http.ResponseWriter, r *http.Request) {
 	if isStatusMethodInvalid(r, "PUT") {
-		w.WriteHeader(http.StatusMethodNotAllowed)
+		w.WriteHeader(405)
 		return
 	}
 
 	token := r.Header.Get("x-token")
-	var jsonRequest PutUserRequest
-	if err := decodeRequest(r, &jsonRequest); err != nil {
+	var reqBody PutUserRequest
+	if err := decodeRequest(r, &reqBody); err != nil {
 		log.Println("ERROR decodeRequest failed:", err)
-		w.WriteHeader(http.StatusBadRequest)
+		w.WriteHeader(400)
 		return
 	}
 
 	var user User
-	user.name = jsonRequest.Name
+	user.name = reqBody.Name
 	user.digestToken = hash(token)
 
-	if err := updateUser(user); err != nil {
+	if err := user.update(); err != nil {
 		log.Println("ERROR updateUser failed:", err)
-		w.WriteHeader(http.StatusBadRequest)
+		w.WriteHeader(400)
 		return
 	}
 }
