@@ -20,8 +20,8 @@ func PostUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var jsonRequest PostUserRequest
-	if err := decodeRequest(r, &jsonRequest); err != nil {
+	var reqBody PostUserRequest
+	if err := decodeRequest(r, &reqBody); err != nil {
 		log.Println("ERROR decodeRequest failed:", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -35,19 +35,18 @@ func PostUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var user User
-	user.name = jsonRequest.Name
+	user.name = reqBody.Name
 	user.digestToken = hash(token)
-
-	if err := insertUser(user); err != nil {
-		log.Println("ERROR insertUser failed:", err)
+	if err := user.insert(); err != nil {
+		log.Println("ERROR user.insert failed:", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	jsonResponse := PostUserResponse{
+	respBody := PostUserResponse{
 		Token: token,
 	}
-	if err := encodeResponse(w, jsonResponse); err != nil {
+	if err := encodeResponse(w, respBody); err != nil {
 		log.Println("ERROR encodeResponse failed:", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return

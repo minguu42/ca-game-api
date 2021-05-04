@@ -23,10 +23,10 @@ type UserOwnCharacter struct {
 	updatedAt  time.Time
 }
 
-func insertUser(user User) error {
-	const createSql = `INSERT INTO users (name, digest_token) VALUES ($1, $2);`
-	if _, err := db.Exec(createSql, user.name, user.digestToken); err != nil {
-		return fmt.Errorf("db.Exec failed: %w", err)
+func (user User) insert() error {
+	const sql = `INSERT INTO users (name, digest_token) VALUES ($1, $2);`
+	if _, err := db.Exec(sql, user.name, user.digestToken); err != nil {
+		return fmt.Errorf("db.Exec failed: %v", err)
 	}
 	return nil
 }
