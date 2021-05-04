@@ -8,6 +8,14 @@ import (
 	"time"
 )
 
+type gachaResult struct {
+	id        int
+	user      *User
+	character *Character
+	level     int
+	createdAt time.Time
+}
+
 type Result struct {
 	CharacterId string `json:"characterID"`
 	Name        string `json:"name"`

@@ -6,7 +6,7 @@ import (
 )
 
 type GetCharacterListResponse struct {
-	Characters []Character `json:"characters"`
+	Characters []Character2 `json:"characters"`
 }
 
 func GetCharacterList(w http.ResponseWriter, r *http.Request) {

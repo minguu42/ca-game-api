@@ -2,14 +2,25 @@ package ca_game_api
 
 import (
 	"fmt"
+	"time"
 )
 
 type User struct {
 	id          int
 	name        string
 	digestToken string
-	createdAt   string
-	updatedAt   string
+	createdAt   time.Time
+	updatedAt   time.Time
+}
+
+type UserOwnCharacter struct {
+	id         int
+	user       *User
+	character  *Character
+	level      int
+	experience int
+	createdAt  time.Time
+	updatedAt  time.Time
 }
 
 type UserRankingInfo struct {
