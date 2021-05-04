@@ -28,7 +28,10 @@ func TestMain(m *testing.M) {
 }
 
 func TestPostUser(t *testing.T) {
-	name, _ := generateRandomString(8)
+	name, err := generateRandomString(8)
+	if err != nil {
+		t.Errorf("cannot generate random string")
+	}
 	reqBody := strings.NewReader(`{"name":"` + name + `"}`)
 	r := httptest.NewRequest("POST", "/user/post", reqBody)
 	w := httptest.NewRecorder()
@@ -37,20 +40,23 @@ func TestPostUser(t *testing.T) {
 
 	resp := w.Result()
 
-	body, err := io.ReadAll(resp.Body)
+	bytes, err := io.ReadAll(resp.Body)
 	if err != nil {
-		t.Errorf("cannot read body: %v", resp.Body)
+		t.Errorf("cannot read response body: %v", resp.Body)
+	}
+	var body PostUserResponse
+	if err := json.Unmarshal(bytes, &body); err != nil {
+		t.Errorf("cannot unmarshal bytes")
 	}
 
 	if resp.StatusCode != 200 {
-		t.Errorf("Response code is %v", w.Code)
+		t.Errorf("Response code should be 200, but %v", w.Code)
 	}
-	var response PostUserResponse
-	if err := json.Unmarshal(body, &response); err != nil {
-		t.Errorf("cannot unmarshal body: %v", body)
+	if body.Token == "" {
+		t.Errorf("Token does not exist")
 	}
-	if response.Token == "" {
-		t.Errorf("token is none")
+	if len(body.Token) != 22 {
+		t.Errorf("Token length should be 22, but %v", len(body.Token))
 	}
 }
 
