@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS characters (
     id int PRIMARY KEY,
     name varchar(255) NOT NULL,
     rarity int NOT NULL,
-    power int NOT NULL,
+    base_power int NOT NULL,
     calorie int NOT NULL
 );
 
