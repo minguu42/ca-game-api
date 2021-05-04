@@ -12,7 +12,7 @@ type User struct {
 	updatedAt   string
 }
 
-type UserInfo struct {
+type UserRankingInfo struct {
 	Id       string `json:"userID"`
 	Name     string `json:"name"`
 	SumPower string `json:"sumPower"`
@@ -67,8 +67,8 @@ func updateUser(user User) error {
 	return nil
 }
 
-func selectUserRanking() ([]UserInfo, error) {
-	var users []UserInfo
+func selectUserRanking() ([]UserRankingInfo, error) {
+	var users []UserRankingInfo
 	const selectSql = `
 SELECT U.id, U.name, SUM(UOC.level * C.power) AS sumPower
 FROM user_ownership_characters AS UOC
@@ -83,7 +83,7 @@ LIMIT 3
 		return nil, fmt.Errorf("db.Query faild: %w", err)
 	}
 	for rows.Next() {
-		var user UserInfo
+		var user UserRankingInfo
 		if err := rows.Scan(&user.Id, &user.Name, &user.SumPower); err != nil {
 			return nil, fmt.Errorf("rows.Scan faild: %w", err)
 		}

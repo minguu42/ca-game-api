@@ -112,7 +112,7 @@ func PutUser(w http.ResponseWriter, r *http.Request) {
 }
 
 type GetUserRankingResponse struct {
-	UserRankings []UserInfo `json:"userRankings"`
+	UserRankings []UserRankingInfo `json:"userRankings"`
 }
 
 func GetUserRanking(w http.ResponseWriter, r *http.Request) {
