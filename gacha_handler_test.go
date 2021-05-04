@@ -18,26 +18,37 @@ func TestPostGachaDraw(t *testing.T) {
 
 	resp := w.Result()
 
-	body, err := io.ReadAll(resp.Body)
+	bytes, err := io.ReadAll(resp.Body)
 	if err != nil {
-		t.Errorf("cannot read body: %v", resp.Body)
+		t.Errorf("io.ReadAll failed: %v", err)
+	}
+	var body PostGachaDrawResponse
+	if err := json.Unmarshal(bytes, &body); err != nil {
+		t.Errorf("json.Unmarshal failed: %v", err)
 	}
 
 	if resp.StatusCode != 200 {
-		t.Errorf("response code is %v", resp.StatusCode)
+		t.Errorf("Response code should be 200, but %v", resp.StatusCode)
 	}
-
-	var response PostGachaDrawResponse
-	if err := json.Unmarshal(body, &response); err != nil {
-		t.Errorf("cannot unmarshal body: %v", body)
+	if len(body.Results) != 3 {
+		t.Errorf("Results num should be 3, but %v", len(body.Results))
 	}
-	if len(response.Results) != 3 {
-		t.Errorf("results num is 3, but %v", len(response.Results))
+	if body.Results[0].CharacterId == 0 {
+		t.Error(`1st character's characterID does not exist`)
 	}
-	if response.Results[0].CharacterId == 0 {
-		t.Error(`character id is not 0`)
+	if body.Results[0].Name == "" {
+		t.Error(`1st character's name does not exist`)
 	}
-	if response.Results[0].Name == "" {
-		t.Error(`character name is not ""`)
+	if body.Results[1].CharacterId == 0 {
+		t.Error(`2nd character's characterID does not exist`)
+	}
+	if body.Results[1].Name == "" {
+		t.Error(`2nd character's name does not exist`)
+	}
+	if body.Results[2].CharacterId == 0 {
+		t.Error(`3rd character's characterID does not exist`)
+	}
+	if body.Results[2].Name == "" {
+		t.Error(`3rd character's name does not exist`)
 	}
 }
