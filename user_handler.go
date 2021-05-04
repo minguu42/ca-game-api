@@ -1,6 +1,7 @@
 package ca_game_api
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 )
@@ -14,7 +15,7 @@ type PostUserResponse struct {
 }
 
 func PostUser(w http.ResponseWriter, r *http.Request) {
-	if isStatusMethodInvalid(r, http.MethodPost) {
+	if isStatusMethodInvalid(r, "POST") {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
@@ -58,7 +59,7 @@ type GetUserResponse struct {
 }
 
 func GetUser(w http.ResponseWriter, r *http.Request) {
-	if isStatusMethodInvalid(r, http.MethodGet) {
+	if isStatusMethodInvalid(r, "GET") {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
@@ -87,7 +88,7 @@ type PutUserRequest struct {
 }
 
 func PutUser(w http.ResponseWriter, r *http.Request) {
-	if isStatusMethodInvalid(r, http.MethodPut) {
+	if isStatusMethodInvalid(r, "PUT") {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
@@ -111,13 +112,25 @@ func PutUser(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+type UserRankingInfo struct {
+	Name     string `json:"name"`
+	SumPower string `json:"sumPower"`
+}
+
 type GetUserRankingResponse struct {
 	UserRankings []UserRankingInfo `json:"userRankings"`
 }
 
 func GetUserRanking(w http.ResponseWriter, r *http.Request) {
-	if isStatusMethodInvalid(r, http.MethodGet) {
+	if isStatusMethodInvalid(r, "GET") {
 		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
+	token := r.Header.Get("x-token")
+	if _, err := selectUserByToken(token); err != nil {
+		fmt.Println("selectUserByToken failed:", err)
+		w.WriteHeader(403)
 		return
 	}
 

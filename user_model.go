@@ -23,12 +23,6 @@ type UserOwnCharacter struct {
 	updatedAt  time.Time
 }
 
-type UserRankingInfo struct {
-	Id       string `json:"userID"`
-	Name     string `json:"name"`
-	SumPower string `json:"sumPower"`
-}
-
 func insertUser(user User) error {
 	const createSql = `INSERT INTO users (name, digest_token) VALUES ($1, $2);`
 	if _, err := db.Exec(createSql, user.name, user.digestToken); err != nil {
@@ -81,7 +75,7 @@ func updateUser(user User) error {
 func selectUserRanking() ([]UserRankingInfo, error) {
 	var users []UserRankingInfo
 	const selectSql = `
-SELECT U.id, U.name, SUM(UOC.level * C.power) AS sumPower
+SELECT U.name, SUM(UOC.level * C.power) AS sumPower
 FROM user_ownership_characters AS UOC
 INNER JOIN users AS U ON UOC.user_id = U.id
 INNER JOIN characters AS C ON UOC.character_id = C.id
@@ -95,7 +89,7 @@ LIMIT 3
 	}
 	for rows.Next() {
 		var user UserRankingInfo
-		if err := rows.Scan(&user.Id, &user.Name, &user.SumPower); err != nil {
+		if err := rows.Scan(&user.Name, &user.SumPower); err != nil {
 			return nil, fmt.Errorf("rows.Scan faild: %w", err)
 		}
 		users = append(users, user)
