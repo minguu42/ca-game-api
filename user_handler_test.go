@@ -69,21 +69,20 @@ func TestGetUser(t *testing.T) {
 
 	resp := w.Result()
 
-	body, err := io.ReadAll(resp.Body)
+	bytes, err := io.ReadAll(resp.Body)
 	if err != nil {
-		t.Errorf("cannot read body: %v", resp.Body)
+		t.Errorf("cannot read response body: %v", resp.Body)
+	}
+	var body GetUserResponse
+	if err := json.Unmarshal(bytes, &body); err != nil {
+		t.Errorf("cannot unmarshal bytes")
 	}
 
 	if resp.StatusCode != 200 {
-		t.Errorf("Response code is %v", w.Code)
+		t.Errorf("Response code should be 200, but %v", w.Code)
 	}
-
-	var response GetUserResponse
-	if err := json.Unmarshal(body, &response); err != nil {
-		t.Errorf("cannot unmarshal body: %v", body)
-	}
-	if response.Name != "test user" {
-		t.Errorf("user name is %v", response.Name)
+	if body.Name != "test1" {
+		t.Errorf("Name should be test1, but %v", body.Name)
 	}
 }
 
@@ -114,7 +113,7 @@ func TestGetUserRanking(t *testing.T) {
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		t.Errorf("cannot read body: %v", resp.Body)
+		t.Errorf("cannot read response body: %v", resp.Body)
 	}
 
 	if resp.StatusCode != 200 {
@@ -128,13 +127,13 @@ func TestGetUserRanking(t *testing.T) {
 	if len(response.Users) != 3 {
 		t.Errorf("ranking up to 3rd, but %v", len(response.Users))
 	}
-	if response.Users[0].Name != "test user" {
-		t.Errorf("rank1 user is not test user, %v", response.Users[0].Name)
+	if response.Users[0].Name != "test1" {
+		t.Errorf("1st user name should be test1, but %v", response.Users[0].Name)
 	}
-	if response.Users[1].Name != "test user3" {
-		t.Errorf("rank2 user is not test user2, %v", response.Users[1].Name)
+	if response.Users[1].Name != "test3" {
+		t.Errorf("2nd user name should be test3, but %v", response.Users[1].Name)
 	}
-	if response.Users[2].Name != "test user4" {
-		t.Errorf("rank3 user is not test user3, %v", response.Users[2].Name)
+	if response.Users[2].Name != "test4" {
+		t.Errorf("3rd user name should be test4, but %v", response.Users[2].Name)
 	}
 }
