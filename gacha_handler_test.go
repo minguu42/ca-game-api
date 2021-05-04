@@ -34,8 +34,8 @@ func TestPostGachaDraw(t *testing.T) {
 	if len(response.Results) != 3 {
 		t.Errorf("results num is 3, but %v", len(response.Results))
 	}
-	if response.Results[0].CharacterId == "0" {
-		t.Error("character id is not 0")
+	if response.Results[0].CharacterId == 0 {
+		t.Error(`character id is not 0`)
 	}
 	if response.Results[0].Name == "" {
 		t.Error(`character name is not ""`)

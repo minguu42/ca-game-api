@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"math/rand"
-	"strconv"
 	"time"
 )
 
@@ -51,7 +50,7 @@ func draw(xToken string, times int) ([]ResultJson, error, *sql.Tx) {
 			return nil, fmt.Errorf("selectCharacterName faild: %w", err), tx
 		}
 		results = append(results, ResultJson{
-			CharacterId: strconv.Itoa(characterId),
+			CharacterId: characterId,
 			Name:        name,
 		})
 

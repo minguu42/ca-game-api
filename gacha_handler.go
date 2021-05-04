@@ -10,7 +10,7 @@ type PostGachaDrawRequest struct {
 }
 
 type ResultJson struct {
-	CharacterId string `json:"characterID"`
+	CharacterId int `json:"characterID"`
 	Name        string `json:"name"`
 }
 
@@ -25,13 +25,13 @@ func PostGachaDraw(w http.ResponseWriter, r *http.Request) {
 	}
 
 	xToken := r.Header.Get("x-token")
-	var jsonRequest PostGachaDrawRequest
-	if err := decodeRequest(r, &jsonRequest); err != nil {
+	var reqBody PostGachaDrawRequest
+	if err := decodeRequest(r, &reqBody); err != nil {
 		log.Println("ERROR decodeRequest fail:", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	times := jsonRequest.Times
+	times := reqBody.Times
 
 	if times <= 0 {
 		w.WriteHeader(http.StatusBadRequest)
@@ -50,10 +50,10 @@ func PostGachaDraw(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jsonResponse := PostGachaDrawResponse{
+	respBody := PostGachaDrawResponse{
 		Results: results,
 	}
-	if err := encodeResponse(w, jsonResponse); err != nil {
+	if err := encodeResponse(w, respBody); err != nil {
 		log.Println("ERROR encodeResponse fail:", err)
 		if err := tx.Rollback(); err != nil {
 			log.Println("ERROR Rollback error:", err)
@@ -67,5 +67,4 @@ func PostGachaDraw(w http.ResponseWriter, r *http.Request) {
 		log.Println("ERROR Return 500:", err)
 		return
 	}
-	log.Println("INFO Commit gacha result")
 }
