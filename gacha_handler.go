@@ -1,6 +1,7 @@
 package ca_game_api
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 )
@@ -45,15 +46,21 @@ func PostGachaDraw(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	results, err := decideGachaResults(user, times)
+	if err != nil {
+		fmt.Println("ERROR decideGachaResults failed:", err)
+		w.WriteHeader(500)
+		return
+	}
+
 	tx, err := db.Begin()
 	if err != nil {
 		log.Println("ERROR db.Begin failed:", err)
 		w.WriteHeader(500)
 		return
 	}
-
-	results, err := draw(tx, user.id, times)
-	if err != nil {
+	if err := storeGachaResults(tx, results); err != nil {
+		log.Println("ERROR storeGachaResults failed:", err)
 		if err := tx.Rollback(); err != nil {
 			log.Println("ERROR tx.Rollback failed:", err)
 		}
@@ -61,21 +68,29 @@ func PostGachaDraw(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	resultsJson := make([]ResultJson, 0, len(results))
+	for _, result := range results {
+		resultJson := ResultJson{
+			CharacterId: result.character.id,
+			Name:        result.character.name,
+		}
+		resultsJson = append(resultsJson, resultJson)
+	}
 	respBody := PostGachaDrawResponse{
-		Results: results,
+		Results: resultsJson,
 	}
 	if err := encodeResponse(w, respBody); err != nil {
-		log.Println("ERROR encodeResponse fail:", err)
+		log.Println("ERROR encodeResponse failed:", err)
 		if err := tx.Rollback(); err != nil {
-			log.Println("ERROR Rollback error:", err)
+			log.Println("ERROR tx.Rollback failed:", err)
 		}
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(500)
 		return
 	}
 
 	if err := tx.Commit(); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		log.Println("ERROR Return 500:", err)
+		log.Println("ERROR tx.Commit failed:", err)
+		w.WriteHeader(500)
 		return
 	}
 }

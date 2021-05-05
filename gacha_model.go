@@ -15,32 +15,30 @@ type gachaResult struct {
 	createdAt time.Time
 }
 
-func draw(tx *sql.Tx, userId int, times int) ([]ResultJson, error) {
-	var results []ResultJson
-
-	for i := 0; i < times; i++ {
-		rand.Seed(time.Now().UnixNano())
-		characterId, err := decideCharacterId()
-		if err != nil {
-			return nil, fmt.Errorf("decideCharacterId failed: %w", err)
-		}
-		characterLevel := decideCharacterLevel()
-		characterExperience := calculateExperience(characterLevel)
-		character, err := getCharacterById(characterId)
-		if err != nil {
-			return nil, fmt.Errorf("getCharacterById failed: %w", err)
-		}
-
-		results = append(results, ResultJson{
-			CharacterId: characterId,
-			Name:        character.name,
-		})
-
-		if err := insertResult(tx, userId, characterId, characterLevel, characterExperience); err != nil {
-			return nil, fmt.Errorf("insertResult fiald: %w", err)
-		}
+func (gachaResult gachaResult) insert(tx *sql.Tx) error {
+	const insertSql = "INSERT INTO gacha_results (user_id, character_id, level) VALUES ($1, $2, $3)"
+	if _, err := tx.Exec(insertSql, gachaResult.user.id, gachaResult.character.id, gachaResult.level); err != nil {
+		return fmt.Errorf("tx.Exec failed: %w", err)
 	}
-	return results, nil
+	return nil
+}
+
+type UserOwnCharacter struct {
+	id         int
+	user       *User
+	character  *Character
+	level      int
+	experience int
+	createdAt  time.Time
+	updatedAt  time.Time
+}
+
+func (userOwnCharacter UserOwnCharacter) insert(tx *sql.Tx) error {
+	const stmt = `INSERT INTO user_ownership_characters (user_id, character_id, level, experience) VALUES ($1, $2, $3, $4)`
+	if _, err := tx.Exec(stmt, userOwnCharacter.user.id, userOwnCharacter.character.id, userOwnCharacter.level, userOwnCharacter.level); err != nil {
+		return fmt.Errorf("tx.Exec failed: %w", err)
+	}
+	return nil
 }
 
 func decideRarity() int {
@@ -83,14 +81,45 @@ func decideCharacterLevel() int {
 	return rand.Intn(10) + 1
 }
 
-func insertResult(tx *sql.Tx, userId, characterId, characterLevel, characterExperience int) error {
-	const insertSql = "INSERT INTO gacha_results (user_id, character_id, level) VALUES ($1, $2, $3)"
-	if _, err := tx.Exec(insertSql, userId, characterId, characterLevel); err != nil {
-		return fmt.Errorf("tx.Exec faild: %w", err)
+func decideGachaResults(user User, times int) ([]gachaResult, error) {
+	results := make([]gachaResult, 0, times)
+
+	for i := 0; i < times; i++ {
+		rand.Seed(time.Now().UnixNano())
+
+		characterId, err := decideCharacterId()
+		if err != nil {
+			return nil, fmt.Errorf("decideCharacterId failed: %w", err)
+		}
+		character, err := getCharacterById(characterId)
+		if err != nil {
+			return nil, fmt.Errorf("getCharacterById failed: %w", err)
+		}
+		level := decideCharacterLevel()
+
+		results = append(results, gachaResult{
+			user:      &user,
+			character: &character,
+			level:     level,
+		})
 	}
-	const createSql = "INSERT INTO user_ownership_characters (user_id, character_id, level, experience) VALUES ($1, $2, $3, $4)"
-	if _, err := tx.Exec(createSql, userId, characterId, characterLevel, characterExperience); err != nil {
-		return fmt.Errorf("tx.Exec faild: %w", err)
+	return results, nil
+}
+
+func storeGachaResults(tx *sql.Tx, results []gachaResult) error {
+	for _, result := range results {
+		userOwnCharacter := UserOwnCharacter{
+			user:       result.user,
+			character:  result.character,
+			level:      result.level,
+			experience: calculateExperience(result.level),
+		}
+		if err := result.insert(tx); err != nil {
+			return fmt.Errorf("result.insert failed: %w", err)
+		}
+		if err := userOwnCharacter.insert(tx); err != nil {
+			return fmt.Errorf("userOwnCharacter.insert failed: %w", err)
+		}
 	}
 	return nil
 }

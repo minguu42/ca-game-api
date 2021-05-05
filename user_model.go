@@ -13,16 +13,6 @@ type User struct {
 	updatedAt   time.Time
 }
 
-type UserOwnCharacter struct {
-	id         int
-	user       *User
-	character  *Character
-	level      int
-	experience int
-	createdAt  time.Time
-	updatedAt  time.Time
-}
-
 func (user User) insert() error {
 	const sql = `INSERT INTO users (name, digest_token) VALUES ($1, $2);`
 	if _, err := db.Exec(sql, user.name, user.digestToken); err != nil {
@@ -31,7 +21,7 @@ func (user User) insert() error {
 	return nil
 }
 
-func(user User) update() error {
+func (user User) update() error {
 	const sql = `UPDATE users SET name = $1 WHERE digest_token = $2`
 	if _, err := db.Exec(sql, user.name, user.digestToken); err != nil {
 		return fmt.Errorf("db.Exec failed: %w", err)

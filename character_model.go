@@ -7,11 +7,11 @@ import (
 )
 
 type Character struct {
-	id      int
-	name    string
-	rarity  int
-	basePower   int
-	calorie int
+	id        int
+	name      string
+	rarity    int
+	basePower int
+	calorie   int
 }
 
 func getCharacterById(id int) (Character, error) {

@@ -10,7 +10,7 @@ import (
 
 func TestPostGachaDraw(t *testing.T) {
 	reqBody := strings.NewReader(`{"times": 3}`)
-	r := httptest.NewRequest("POST", "/gacha/draw", reqBody)
+	r := httptest.NewRequest("POST", "/gacha/decideGachaResults", reqBody)
 	r.Header.Set("x-token", "ceKeMPeYr0eF3K5e4Lfjfe")
 	w := httptest.NewRecorder()
 
