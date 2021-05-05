@@ -31,6 +31,7 @@ services:
       - 5432:5432
     volumes:
       - pg-data:/var/lib/postgresql/data
+      - ./build/setup.sql:/docker-entrypoint-initdb.d/setup.sql
   db-test:
     image: postgres:12.6
     environment:
@@ -43,10 +44,8 @@ services:
     ports:
       - 15432:5432
     volumes:
-      - pg-test-data:/var/lib/postgresql/data
+      - ./build/setup_test.sql:/docker-entrypoint-initdb.d/setup_test.sql
 
 volumes:
   pg-data:
-    driver: local
-  pg-test-data:
     driver: local
