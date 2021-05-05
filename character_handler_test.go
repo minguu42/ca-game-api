@@ -3,7 +3,10 @@ package ca_game_api
 import (
 	"encoding/json"
 	"io"
+	"log"
 	"net/http/httptest"
+	"strconv"
+	"strings"
 	"testing"
 )
 
@@ -68,5 +71,61 @@ func TestGetCharacterList(t *testing.T) {
 	}
 	if body.Characters[1].Power != 400 {
 		t.Errorf("2nd character's power should be 400, but %v", body.Characters[0].Power)
+	}
+}
+
+var materialUserCharacterId int
+
+func setupPutCharacterCompose() {
+	if err := db.QueryRow(`
+INSERT INTO user_ownership_characters (user_id, character_id, level, experience)
+VALUES (1, 30000002, 1, 100)
+RETURNING id
+`).Scan(&materialUserCharacterId); err != nil {
+		log.Println("setupPutCharacterCompose failed: ", err)
+	}
+}
+
+func TestPutCharacterCompose(t *testing.T) {
+	reqBody := strings.NewReader(`
+{
+  "baseUserCharacterID": 1,
+  "materialUserCharacterID":` + strconv.Itoa(materialUserCharacterId) + `
+}
+`)
+	r := httptest.NewRequest("PUT", "/character/compose", reqBody)
+	r.Header.Set("x-token", "ceKeMPeYr0eF3K5e4Lfjfe")
+	w := httptest.NewRecorder()
+
+	PutCharacterCompose(w, r)
+
+	resp := w.Result()
+
+	bytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		t.Errorf("io.ReadAll failed: %v", err)
+	}
+	var body PutCharacterComposeResponse
+	if err := json.Unmarshal(bytes, &body); err != nil {
+		t.Errorf("json.Unmarshal failed: %v", err)
+	}
+
+	if resp.StatusCode != 200 {
+		t.Errorf("Response code should be 200, but %v", resp.StatusCode)
+	}
+	if body.UserCharacterId != 1 {
+		t.Errorf("userCharacterID should be 1, but %v", body.UserCharacterId)
+	}
+	if body.CharacterId != 50000002 {
+		t.Errorf("characterID should be 50000002, but %v", body.CharacterId)
+	}
+	if body.Name != "super_rare_character2" {
+		t.Errorf("name should be super_rare_character2, but %v", body.Name)
+	}
+	if body.Level <= 0 {
+		t.Errorf("level should be positive number, but %v", body.Level)
+	}
+	if body.Power == 0 {
+		t.Errorf("power does not exist")
 	}
 }

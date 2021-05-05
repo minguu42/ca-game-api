@@ -61,10 +61,12 @@ type PutCharacterComposeRequest struct {
 }
 
 type PutCharacterComposeResponse struct {
-	UserCharacterId string `json:"userCharacterID"`
-	CharacterId     string `json:"characterID"`
+	UserCharacterId int    `json:"userCharacterID"`
+	CharacterId     int    `json:"characterID"`
 	Name            string `json:"name"`
 	Level           int    `json:"level"`
+	Experience      int    `json:"experience"`
+	Power           int    `json:"power"`
 }
 
 func PutCharacterCompose(w http.ResponseWriter, r *http.Request) {
