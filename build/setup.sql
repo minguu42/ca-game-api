@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS characters (
     calorie int NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS user_ownership_characters (
+CREATE TABLE IF NOT EXISTS user_characters (
     id serial PRIMARY KEY,
     user_id int REFERENCES users,
     character_id int REFERENCES characters,
@@ -45,8 +45,8 @@ BEFORE UPDATE ON users
 FOR EACH ROW
 EXECUTE PROCEDURE trigger_set_timestamp();
 
-CREATE TRIGGER set_timestamp_on_user_ownership_characters
-    BEFORE UPDATE ON user_ownership_characters
+CREATE TRIGGER set_timestamp_on_user_characters
+    BEFORE UPDATE ON user_characters
     FOR EACH ROW
 EXECUTE PROCEDURE trigger_set_timestamp();
 

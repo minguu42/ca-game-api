@@ -46,7 +46,7 @@ type UserCharacter struct {
 }
 
 func getUserCharacterById(id int) (UserCharacter, error) {
-	const query = `SELECT id, user_id, character_id, level, experience, created_at, updated_at FROM user_ownership_characters WHERE id = $1`
+	const query = `SELECT id, user_id, character_id, level, experience, created_at, updated_at FROM user_characters WHERE id = $1`
 	row := db.QueryRow(query, id)
 	var userCharacter UserCharacter
 	var userId int
@@ -76,7 +76,7 @@ func getUserCharactersByToken(token string) ([]UserCharacter, error) {
 
 	const query = `
 SELECT UOC.id, C.id, UOC.level, UOC.experience
-FROM user_ownership_characters AS UOC
+FROM user_characters AS UOC
 INNER JOIN users AS U ON UOC.user_id = U.id
 INNER JOIN characters AS C ON UOC.character_id = C.id
 WHERE U.digest_token = $1
@@ -105,7 +105,7 @@ WHERE U.digest_token = $1
 }
 
 func (userCharacter UserCharacter) insert(tx *sql.Tx) error {
-	const query = `INSERT INTO user_ownership_characters (user_id, character_id, level, experience) VALUES ($1, $2, $3, $4)`
+	const query = `INSERT INTO user_characters (user_id, character_id, level, experience) VALUES ($1, $2, $3, $4)`
 	if _, err := tx.Exec(query, userCharacter.user.id, userCharacter.character.id, userCharacter.level, userCharacter.level); err != nil {
 		return fmt.Errorf("tx.Exec failed: %w", err)
 	}
@@ -113,7 +113,7 @@ func (userCharacter UserCharacter) insert(tx *sql.Tx) error {
 }
 
 func (userCharacter UserCharacter) update(tx *sql.Tx) error {
-	const query = `UPDATE user_ownership_characters SET level = $2, experience = $3 WHERE id = $1`
+	const query = `UPDATE user_characters SET level = $2, experience = $3 WHERE id = $1`
 	if _, err := tx.Exec(query, userCharacter.id, userCharacter.level, userCharacter.experience); err != nil {
 		return fmt.Errorf("tx.Exec failed: %w", err)
 	}
@@ -121,7 +121,7 @@ func (userCharacter UserCharacter) update(tx *sql.Tx) error {
 }
 
 func (userCharacter UserCharacter) delete(tx *sql.Tx) error {
-	const query = `DELETE FROM user_ownership_characters WHERE id = $1`
+	const query = `DELETE FROM user_characters WHERE id = $1`
 	if _, err := tx.Exec(query, userCharacter.id); err != nil {
 		return fmt.Errorf("tx.Exec failed: %w", err)
 	}

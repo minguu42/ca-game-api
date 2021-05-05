@@ -54,7 +54,7 @@ func getUserById(id int) (User, error) {
 func selectUserRanking() ([]UserRankingJson, error) {
 	const sql = `
 SELECT U.name, SUM(UOC.level * C.base_power) AS sumPower
-FROM user_ownership_characters AS UOC
+FROM user_characters AS UOC
 INNER JOIN users AS U ON UOC.user_id = U.id
 INNER JOIN characters AS C ON UOC.character_id = C.id
 GROUP BY U.id

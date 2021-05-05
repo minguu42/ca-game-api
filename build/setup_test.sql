@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS characters (
     calorie int NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS user_ownership_characters (
+CREATE TABLE IF NOT EXISTS user_characters (
     id serial PRIMARY KEY,
     user_id int REFERENCES users,
     character_id int REFERENCES characters,
@@ -45,8 +45,8 @@ BEFORE UPDATE ON users
 FOR EACH ROW
 EXECUTE PROCEDURE trigger_set_timestamp();
 
-CREATE TRIGGER set_timestamp_on_user_ownership_characters
-BEFORE UPDATE ON user_ownership_characters
+CREATE TRIGGER set_timestamp_on_user_characters
+BEFORE UPDATE ON user_characters
 FOR EACH ROW
 EXECUTE PROCEDURE trigger_set_timestamp();
 
@@ -95,7 +95,7 @@ INSERT INTO users (name, digest_token) VALUES ('test1', '71a6f9c1007c60601a6d67e
 
 -- GetUserRanking, GetCharacterList のためのキャラクター. Rank1. test1, Rank2. test3, Rank3. test4 となる.
 -- GetUserRanking のため test3 の sumPower は 500 で固定する.
-INSERT INTO user_ownership_characters (user_id, character_id, level, experience) VALUES (1, 50000002, 1, 100),
+INSERT INTO user_characters (user_id, character_id, level, experience) VALUES (1, 50000002, 1, 100),
                                                                                         (1, 40000002, 1, 100),
                                                                                         (1, 50000002, 1, 100),
                                                                                         (3, 50000002, 1, 100),
