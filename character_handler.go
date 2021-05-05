@@ -27,9 +27,9 @@ func GetCharacterList(w http.ResponseWriter, r *http.Request) {
 
 	xToken := r.Header.Get("x-token")
 
-	userOwnCharacters, err := getUserOwnCharactersByToken(xToken)
+	userOwnCharacters, err := getUserCharactersByToken(xToken)
 	if err != nil {
-		log.Println("ERROR getUserOwnCharactersByToken failed:", err)
+		log.Println("ERROR getUserCharactersByToken failed:", err)
 		w.WriteHeader(500)
 		return
 	}
@@ -110,26 +110,29 @@ func PutCharacterCompose(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tx, newLevel, err := composeCharacter(baseUserCharacterId, materialUserCharacterId)
+	tx, err := db.Begin()
 	if err != nil {
-		log.Println("ERROR composeCharacter failed:", err)
-		if tx != nil {
-			if err := tx.Rollback(); err != nil {
-				log.Println("ERROR tx.Rollback failed:", err)
-			}
-		}
-		w.WriteHeader(http.StatusInternalServerError)
+		log.Println("ERROR db.Begin failed:", err)
+		w.WriteHeader(500)
 		return
 	}
 
-	respBody, err := createPutCharacterComposeResponse(baseUserCharacterId, newLevel)
-	if err != nil {
-		log.Println("ERROR createPutCharacterComposeResponse failed:", err)
+	if err := baseUserCharacter.compose(tx, materialUserCharacter); err != nil {
+		log.Println("baseUserCharacter.compose failed:", err)
 		if err := tx.Rollback(); err != nil {
 			log.Println("ERROR tx.Rollback failed:", err)
 		}
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(500)
 		return
+	}
+
+	respBody := PutCharacterComposeResponse{
+		UserCharacterId: baseUserCharacter.id,
+		CharacterId:     baseUserCharacter.character.id,
+		Name:            baseUserCharacter.character.name,
+		Level:           calculateLevel(baseUserCharacter.experience),
+		Experience:      baseUserCharacter.experience,
+		Power:           calculatePower(baseUserCharacter),
 	}
 	if err := encodeResponse(w, respBody); err != nil {
 		log.Println("ERROR encodeResponse failed:", err)
