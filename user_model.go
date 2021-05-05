@@ -32,8 +32,8 @@ func (user User) update() error {
 func getUserByToken(token string) (User, error) {
 	digestToken := hash(token)
 
-	const sql = `SELECT id, name, digest_token, created_at, updated_at FROM users WHERE digest_token = $1`
-	row := db.QueryRow(sql, digestToken)
+	const query = `SELECT id, name, digest_token, created_at, updated_at FROM users WHERE digest_token = $1`
+	row := db.QueryRow(query, digestToken)
 	var user User
 	if err := row.Scan(&user.id, &user.name, &user.digestToken, &user.createdAt, &user.updatedAt); err != nil {
 		return user, fmt.Errorf("row.Scan failed: %w", err)
@@ -41,25 +41,14 @@ func getUserByToken(token string) (User, error) {
 	return user, nil
 }
 
-func selectUserId(token string) (int, error) {
-	const selectSql = `SELECT id FROM users WHERE digest_token = $1`
-	digestToken := hash(token)
-	row := db.QueryRow(selectSql, digestToken)
-	var id int
-	if err := row.Scan(&id); err != nil {
-		return 0, fmt.Errorf("row.Scan failed: %w", err)
+func getUserById(id int) (User, error) {
+	const query = `SELECT id, name, digest_token, created_at, updated_at FROM users WHERE id = $1`
+	row := db.QueryRow(query, id)
+	var user User
+	if err := row.Scan(&user.id, &user.name, &user.digestToken, &user.createdAt, &user.updatedAt); err != nil {
+		return user, fmt.Errorf("row.Scan failed: %w", err)
 	}
-	return id, nil
-}
-
-func selectUserIdByUserCharacterId(userCharacterId int) (int, error) {
-	const selectSql = `SELECT user_id FROM user_ownership_characters WHERE id = $1`
-	row := db.QueryRow(selectSql, userCharacterId)
-	var id int
-	if err := row.Scan(&id); err != nil {
-		return 0, fmt.Errorf("row.Scan failed: %w", err)
-	}
-	return id, nil
+	return user, nil
 }
 
 func selectUserRanking() ([]UserRankingJson, error) {

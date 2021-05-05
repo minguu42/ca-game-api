@@ -1,6 +1,7 @@
 package ca_game_api
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 )
@@ -70,42 +71,42 @@ type PutCharacterComposeResponse struct {
 }
 
 func PutCharacterCompose(w http.ResponseWriter, r *http.Request) {
-	if isStatusMethodInvalid(r, http.MethodPut) {
-		w.WriteHeader(http.StatusMethodNotAllowed)
+	if isStatusMethodInvalid(r, "PUT") {
+		w.WriteHeader(405)
 		return
 	}
 
-	xToken := r.Header.Get("x-token")
-	var jsonRequest PutCharacterComposeRequest
-	if err := decodeRequest(r, &jsonRequest); err != nil {
-		log.Println("ERROR decodeRequest fail:", err)
-		w.WriteHeader(http.StatusBadRequest)
+	var reqBody PutCharacterComposeRequest
+	if err := decodeRequest(r, &reqBody); err != nil {
+		log.Println("ERROR decodeRequest failed:", err)
+		w.WriteHeader(400)
 		return
 	}
-	baseUserCharacterId := jsonRequest.BaseUserCharacterId
-	materialUserCharacterId := jsonRequest.MaterialUserCharacterId
+	token := r.Header.Get("x-token")
+	baseUserCharacterId := reqBody.BaseUserCharacterId
+	materialUserCharacterId := reqBody.MaterialUserCharacterId
 
-	userId, err := selectUserId(xToken)
+	user, err := getUserByToken(token)
 	if err != nil {
-		log.Println("ERROR selectUserId failed:", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Println("ERROR getUserByToken failed:", err)
+		w.WriteHeader(403)
 		return
 	}
-	baseUserId, err := selectUserIdByUserCharacterId(baseUserCharacterId)
+	baseUserCharacter, err := getUserCharacterById(baseUserCharacterId)
 	if err != nil {
-		log.Println("ERROR selectUserIdByUserCharacterId failed:", err)
-		w.WriteHeader(http.StatusBadRequest)
+		log.Println("ERROR getUserCharacterById failed:", err)
+		w.WriteHeader(400)
 		return
 	}
-	materialUserId, err := selectUserIdByUserCharacterId(materialUserCharacterId)
+	materialUserCharacter, err := getUserCharacterById(materialUserCharacterId)
 	if err != nil {
-		log.Println("ERROR selectUserIdByUserCharacterId failed:", err)
-		w.WriteHeader(http.StatusBadRequest)
+		log.Println("ERROR getUserCharacterById failed:", err)
+		w.WriteHeader(400)
 		return
 	}
-	if (userId != baseUserId) || (userId != materialUserId) {
+	if (user.id != baseUserCharacter.user.id) || (user.id != materialUserCharacter.user.id) {
 		log.Println("ERROR User does not own the character")
-		w.WriteHeader(http.StatusBadRequest)
+		w.WriteHeader(403)
 		return
 	}
 
@@ -121,7 +122,7 @@ func PutCharacterCompose(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jsonResponse, err := createPutCharacterComposeResponse(baseUserCharacterId, newLevel)
+	respBody, err := createPutCharacterComposeResponse(baseUserCharacterId, newLevel)
 	if err != nil {
 		log.Println("ERROR createPutCharacterComposeResponse failed:", err)
 		if err := tx.Rollback(); err != nil {
@@ -130,7 +131,7 @@ func PutCharacterCompose(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	if err := encodeResponse(w, jsonResponse); err != nil {
+	if err := encodeResponse(w, respBody); err != nil {
 		log.Println("ERROR encodeResponse failed:", err)
 		if err := tx.Rollback(); err != nil {
 			log.Println("ERROR tx.Rollback failed:", err)

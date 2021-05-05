@@ -45,6 +45,29 @@ type UserCharacter struct {
 	updatedAt  time.Time
 }
 
+func getUserCharacterById(id int) (UserCharacter, error) {
+	const query = `SELECT id, user_id, character_id, level, experience, created_at, updated_at FROM user_ownership_characters WHERE id = $1`
+	row := db.QueryRow(query, id)
+	var userCharacter UserCharacter
+	var userId int
+	var characterId int
+	if err := row.Scan(&userCharacter.id, &userId, &characterId, &userCharacter.level, &userCharacter.experience, &userCharacter.createdAt, &userCharacter.updatedAt); err != nil {
+		return userCharacter, fmt.Errorf("row.Scan failed: %w", err)
+	}
+
+	user, err := getUserById(userId)
+	if err != nil {
+		return userCharacter, fmt.Errorf("getUserById failed: %w", err)
+	}
+	character, err := getCharacterById(characterId)
+	if err != nil {
+		return userCharacter, fmt.Errorf("getCharacterById failed: %w", err)
+	}
+	userCharacter.user = &user
+	userCharacter.character = &character
+	return userCharacter, nil
+}
+
 func (userCharacter UserCharacter) insert(tx *sql.Tx) error {
 	const query = `INSERT INTO user_ownership_characters (user_id, character_id, level, experience) VALUES ($1, $2, $3, $4)`
 	if _, err := tx.Exec(query, userCharacter.user.id, userCharacter.character.id, userCharacter.level, userCharacter.level); err != nil {
