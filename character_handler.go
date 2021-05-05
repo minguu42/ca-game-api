@@ -6,8 +6,8 @@ import (
 )
 
 type CharacterJson struct {
-	UserCharacterId int `json:"userCharacterID"`
-	CharacterId     int `json:"characterID"`
+	UserCharacterId int    `json:"userCharacterID"`
+	CharacterId     int    `json:"characterID"`
 	Name            string `json:"name"`
 	Level           int    `json:"level"`
 	Experience      int    `json:"experience"`
@@ -19,25 +19,38 @@ type GetCharacterListResponse struct {
 }
 
 func GetCharacterList(w http.ResponseWriter, r *http.Request) {
-	if isStatusMethodInvalid(r, http.MethodGet) {
-		w.WriteHeader(http.StatusMethodNotAllowed)
+	if isStatusMethodInvalid(r, "GET") {
+		w.WriteHeader(405)
 		return
 	}
 
 	xToken := r.Header.Get("x-token")
 
-	characters, err := selectCharacterList(xToken)
+	userOwnCharacters, err := getUserOwnCharactersByToken(xToken)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		log.Println("ERROR getUserOwnCharactersByToken failed:", err)
+		w.WriteHeader(500)
 		return
 	}
 
-	jsonResponse := GetCharacterListResponse{
-		Characters: characters,
+	charactersJson := make([]CharacterJson, 0, len(userOwnCharacters))
+	for _, userOwnCharacter := range userOwnCharacters {
+		characterJson := CharacterJson{
+			UserCharacterId: userOwnCharacter.id,
+			CharacterId:     userOwnCharacter.character.id,
+			Name:            userOwnCharacter.character.name,
+			Level:           userOwnCharacter.level,
+			Experience:      userOwnCharacter.experience,
+			Power:           calculatePower(userOwnCharacter),
+		}
+		charactersJson = append(charactersJson, characterJson)
 	}
-	if err := encodeResponse(w, jsonResponse); err != nil {
-		log.Println("ERROR encodeResponse fail:", err)
-		w.WriteHeader(http.StatusInternalServerError)
+	respBody := GetCharacterListResponse{
+		Characters: charactersJson,
+	}
+	if err := encodeResponse(w, respBody); err != nil {
+		log.Println("ERROR encodeResponse failed:", err)
+		w.WriteHeader(500)
 		return
 	}
 }

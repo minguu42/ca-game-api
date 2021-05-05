@@ -34,32 +34,39 @@ func countCharactersByRarity(rarity int) (int, error) {
 	return count, nil
 }
 
-func selectCharacterList(token string) ([]CharacterJson, error) {
-	var characters []CharacterJson
-	const selectSql = `
-SELECT UOC.id, C.id, C.name, UOC.level
+func getUserOwnCharactersByToken(token string) ([]UserOwnCharacter, error) {
+	user, err := getUserByToken(token)
+	if err != nil {
+		return nil, fmt.Errorf("getUserByToken failed: %w", err)
+	}
+
+	rows, err := db.Query(`
+SELECT UOC.id, C.id, UOC.level, UOC.experience
 FROM user_ownership_characters AS UOC
 INNER JOIN users AS U ON UOC.user_id = U.id
 INNER JOIN characters AS C ON UOC.character_id = C.id
 WHERE U.digest_token = $1
-`
-	digestToken := hash(token)
-	if _, err := selectUserId(token); err != nil {
-		return nil, fmt.Errorf("selectUserId faild: %w", err)
-	}
-
-	rows, err := db.Query(selectSql, digestToken)
+`, user.digestToken)
 	if err != nil {
-		return nil, fmt.Errorf("db.Query faild: %w", err)
+		return nil, fmt.Errorf("db.Query failed: %w", err)
 	}
+	var userOwnCharacters []UserOwnCharacter
 	for rows.Next() {
-		var c CharacterJson
-		if err := rows.Scan(&c.UserCharacterId, &c.CharacterId, &c.Name, &c.Level); err != nil {
-			return nil, fmt.Errorf("rows.Scan faild: %w", err)
+		var userOwnCharacter UserOwnCharacter
+		var characterId int
+		if err := rows.Scan(&userOwnCharacter.id, &characterId, &userOwnCharacter.level, &userOwnCharacter.experience); err != nil {
+			return nil, fmt.Errorf("rows.Scan failed: %w", err)
 		}
-		characters = append(characters, c)
+		character, err := getCharacterById(characterId)
+		if err != nil {
+			return nil, fmt.Errorf("getCharacterById failed: %w", err)
+		}
+
+		userOwnCharacter.user = &user
+		userOwnCharacter.character = &character
+		userOwnCharacters = append(userOwnCharacters, userOwnCharacter)
 	}
-	return characters, nil
+	return userOwnCharacters, nil
 }
 
 func selectCalorieByUserCharacterId(userCharacterId int) (int, error) {
@@ -93,6 +100,10 @@ func calculateExperience(level int) int {
 
 func calculateLevel(experience int) int {
 	return int(math.Floor(math.Sqrt(float64(experience)) / 10.0))
+}
+
+func calculatePower(userOwnCharacter UserOwnCharacter) int {
+	return userOwnCharacter.level * userOwnCharacter.character.basePower
 }
 
 func composeCharacter(baseUserCharacterId, materialUserCharacterId int) (*sql.Tx, int, error) {
