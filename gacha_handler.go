@@ -1,6 +1,7 @@
 package ca_game_api
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 )
@@ -9,58 +10,87 @@ type PostGachaDrawRequest struct {
 	Times int `json:"times"`
 }
 
+type ResultJson struct {
+	CharacterId int    `json:"characterID"`
+	Name        string `json:"name"`
+}
+
 type PostGachaDrawResponse struct {
-	Results []Result `json:"results"`
+	Results []ResultJson `json:"results"`
 }
 
 func PostGachaDraw(w http.ResponseWriter, r *http.Request) {
-	if isStatusMethodInvalid(r, http.MethodPost) {
-		w.WriteHeader(http.StatusMethodNotAllowed)
+	if isStatusMethodInvalid(r, "POST") {
+		w.WriteHeader(405)
 		return
 	}
 
-	xToken := r.Header.Get("x-token")
-	var jsonRequest PostGachaDrawRequest
-	if err := decodeRequest(r, &jsonRequest); err != nil {
-		log.Println("ERROR decodeRequest fail:", err)
-		w.WriteHeader(http.StatusBadRequest)
+	token := r.Header.Get("x-token")
+	var reqBody PostGachaDrawRequest
+	if err := decodeRequest(r, &reqBody); err != nil {
+		log.Println("ERROR decodeRequest failed:", err)
+		w.WriteHeader(400)
 		return
 	}
-	times := jsonRequest.Times
+	times := reqBody.Times
 
 	if times <= 0 {
-		w.WriteHeader(http.StatusBadRequest)
-		log.Println("ERROR Return 403: Times is 0 or negative number")
+		w.WriteHeader(400)
+		log.Println("ERROR Times should be positive number")
 		return
 	}
-
-	results, err, tx := draw(xToken, times)
+	user, err := getUserByToken(token)
 	if err != nil {
-		if tx != nil {
-			if err := tx.Rollback(); err != nil {
-				log.Println("ERROR Rollback error:", err)
-			}
-		}
-		w.WriteHeader(http.StatusInternalServerError)
+		log.Println("ERROR getUserByToken failed:", err)
+		w.WriteHeader(403)
 		return
 	}
 
-	jsonResponse := PostGachaDrawResponse{
-		Results: results,
+	results, err := decideGachaResults(user, times)
+	if err != nil {
+		fmt.Println("ERROR decideGachaResults failed:", err)
+		w.WriteHeader(500)
+		return
 	}
-	if err := encodeResponse(w, jsonResponse); err != nil {
-		log.Println("ERROR encodeResponse fail:", err)
+
+	tx, err := db.Begin()
+	if err != nil {
+		log.Println("ERROR db.Begin failed:", err)
+		w.WriteHeader(500)
+		return
+	}
+	if err := storeGachaResults(tx, results); err != nil {
+		log.Println("ERROR storeGachaResults failed:", err)
 		if err := tx.Rollback(); err != nil {
-			log.Println("ERROR Rollback error:", err)
+			log.Println("ERROR tx.Rollback failed:", err)
 		}
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(500)
+		return
+	}
+
+	resultsJson := make([]ResultJson, 0, len(results))
+	for _, result := range results {
+		resultJson := ResultJson{
+			CharacterId: result.character.id,
+			Name:        result.character.name,
+		}
+		resultsJson = append(resultsJson, resultJson)
+	}
+	respBody := PostGachaDrawResponse{
+		Results: resultsJson,
+	}
+	if err := encodeResponse(w, respBody); err != nil {
+		log.Println("ERROR encodeResponse failed:", err)
+		if err := tx.Rollback(); err != nil {
+			log.Println("ERROR tx.Rollback failed:", err)
+		}
+		w.WriteHeader(500)
 		return
 	}
 
 	if err := tx.Commit(); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		log.Println("ERROR Return 500:", err)
+		log.Println("ERROR tx.Commit failed:", err)
+		w.WriteHeader(500)
 		return
 	}
-	log.Println("INFO Commit gacha result")
 }

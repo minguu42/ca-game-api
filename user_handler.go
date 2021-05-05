@@ -1,6 +1,7 @@
 package ca_game_api
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 )
@@ -14,41 +15,40 @@ type PostUserResponse struct {
 }
 
 func PostUser(w http.ResponseWriter, r *http.Request) {
-	if isStatusMethodInvalid(r, http.MethodPost) {
-		w.WriteHeader(http.StatusMethodNotAllowed)
+	if isStatusMethodInvalid(r, "POST") {
+		w.WriteHeader(405)
 		return
 	}
 
-	var jsonRequest PostUserRequest
-	if err := decodeRequest(r, &jsonRequest); err != nil {
+	var reqBody PostUserRequest
+	if err := decodeRequest(r, &reqBody); err != nil {
 		log.Println("ERROR decodeRequest failed:", err)
-		w.WriteHeader(http.StatusBadRequest)
+		w.WriteHeader(400)
 		return
 	}
 
 	token, err := generateRandomString(22)
 	if err != nil {
 		log.Println("ERROR generateRandomString failed:", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(500)
 		return
 	}
 
 	var user User
-	user.name = jsonRequest.Name
+	user.name = reqBody.Name
 	user.digestToken = hash(token)
-
-	if err := insertUser(user); err != nil {
-		log.Println("ERROR insertUser failed:", err)
-		w.WriteHeader(http.StatusBadRequest)
+	if err := user.insert(); err != nil {
+		log.Println("ERROR user.insert failed:", err)
+		w.WriteHeader(400)
 		return
 	}
 
-	jsonResponse := PostUserResponse{
+	respBody := PostUserResponse{
 		Token: token,
 	}
-	if err := encodeResponse(w, jsonResponse); err != nil {
+	if err := encodeResponse(w, respBody); err != nil {
 		log.Println("ERROR encodeResponse failed:", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(500)
 		return
 	}
 }
@@ -58,26 +58,26 @@ type GetUserResponse struct {
 }
 
 func GetUser(w http.ResponseWriter, r *http.Request) {
-	if isStatusMethodInvalid(r, http.MethodGet) {
-		w.WriteHeader(http.StatusMethodNotAllowed)
+	if isStatusMethodInvalid(r, "GET") {
+		w.WriteHeader(405)
 		return
 	}
 
 	token := r.Header.Get("x-token")
 
-	user, err := selectUserByToken(token)
+	user, err := getUserByToken(token)
 	if err != nil {
-		log.Println("ERROR selectUserByToken failed:", err)
+		log.Println("ERROR getUserByToken failed:", err)
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
-	jsonResponse := GetUserResponse{
+	respBody := GetUserResponse{
 		Name: user.name,
 	}
-	if err := encodeResponse(w, jsonResponse); err != nil {
+	if err := encodeResponse(w, respBody); err != nil {
 		log.Println("ERROR encodeResponse failed:", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(500)
 		return
 	}
 }
@@ -87,53 +87,65 @@ type PutUserRequest struct {
 }
 
 func PutUser(w http.ResponseWriter, r *http.Request) {
-	if isStatusMethodInvalid(r, http.MethodPut) {
-		w.WriteHeader(http.StatusMethodNotAllowed)
+	if isStatusMethodInvalid(r, "PUT") {
+		w.WriteHeader(405)
 		return
 	}
 
 	token := r.Header.Get("x-token")
-	var jsonRequest PutUserRequest
-	if err := decodeRequest(r, &jsonRequest); err != nil {
+	var reqBody PutUserRequest
+	if err := decodeRequest(r, &reqBody); err != nil {
 		log.Println("ERROR decodeRequest failed:", err)
-		w.WriteHeader(http.StatusBadRequest)
+		w.WriteHeader(400)
 		return
 	}
 
 	var user User
-	user.name = jsonRequest.Name
+	user.name = reqBody.Name
 	user.digestToken = hash(token)
 
-	if err := updateUser(user); err != nil {
+	if err := user.update(); err != nil {
 		log.Println("ERROR updateUser failed:", err)
-		w.WriteHeader(http.StatusBadRequest)
+		w.WriteHeader(400)
 		return
 	}
+}
+
+type UserRankingJson struct {
+	Name     string `json:"name"`
+	SumPower int    `json:"sumPower"`
 }
 
 type GetUserRankingResponse struct {
-	UserRankings []UserInfo `json:"userRankings"`
+	Users []UserRankingJson `json:"users"`
 }
 
 func GetUserRanking(w http.ResponseWriter, r *http.Request) {
-	if isStatusMethodInvalid(r, http.MethodGet) {
-		w.WriteHeader(http.StatusMethodNotAllowed)
+	if isStatusMethodInvalid(r, "GET") {
+		w.WriteHeader(405)
 		return
 	}
 
-	userRankings, err := selectUserRanking()
+	token := r.Header.Get("x-token")
+	if _, err := getUserByToken(token); err != nil {
+		fmt.Println("ERROR getUserByToken failed:", err)
+		w.WriteHeader(403)
+		return
+	}
+
+	rankings, err := selectUserRanking()
 	if err != nil {
-		log.Println("ERROR selectUserRanking error:", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		log.Println("ERROR selectUserRanking failed:", err)
+		w.WriteHeader(500)
 		return
 	}
 
 	jsonResponse := GetUserRankingResponse{
-		UserRankings: userRankings,
+		Users: rankings,
 	}
 	if err := encodeResponse(w, jsonResponse); err != nil {
-		log.Println("ERROR encodeResponse fail:", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		log.Println("ERROR encodeResponse failed:", err)
+		w.WriteHeader(500)
 		return
 	}
 }

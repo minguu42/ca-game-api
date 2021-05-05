@@ -10,15 +10,14 @@ CREATE TABLE IF NOT EXISTS characters (
     id int PRIMARY KEY,
     name varchar(255) NOT NULL,
     rarity int NOT NULL,
-    power int NOT NULL,
+    base_power int NOT NULL,
     calorie int NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS user_ownership_characters (
+CREATE TABLE IF NOT EXISTS user_characters (
     id serial PRIMARY KEY,
     user_id int REFERENCES users,
     character_id int REFERENCES characters,
-    level int NOT NULL,
     experience int NOT NULL,
     created_at timestamp NOT NULL DEFAULT NOW(),
     updated_at timestamp NOT NULL DEFAULT NOW()
@@ -28,7 +27,7 @@ CREATE TABLE IF NOT EXISTS gacha_results (
     id serial PRIMARY KEY,
     user_id int REFERENCES users,
     character_id int REFERENCES characters,
-    level int NOT NULL,
+    experience int NOT NULL,
     created_at timestamp NOT NULL DEFAULT NOW()
 );
 
@@ -45,8 +44,8 @@ BEFORE UPDATE ON users
 FOR EACH ROW
 EXECUTE PROCEDURE trigger_set_timestamp();
 
-CREATE TRIGGER set_timestamp_on_user_ownership_characters
-BEFORE UPDATE ON user_ownership_characters
+CREATE TRIGGER set_timestamp_on_user_characters
+BEFORE UPDATE ON user_characters
 FOR EACH ROW
 EXECUTE PROCEDURE trigger_set_timestamp();
 
@@ -81,13 +80,24 @@ INSERT INTO characters VALUES (30000001, 'normal_character1', 3, 1, 10000),
                               (50000009, 'super_rare_character9', 5, 560, 2000),
                               (50000010, 'super_rare_character10', 5, 600, 2000);
 
-INSERT INTO users (name, digest_token) VALUES ('test user', '71a6f9c1007c60601a6d67e7f79d4550602b34ced90cdac86bd340f293bf0247'),
-                                              ('test user2', '541d9abc4b06e838e471ff564c24585a6ddc5280c9478f2e6e85b2eb7ed979a9'),
-                                              ('test user3', 'dj9fq2j9u9feq3nfq8fjqf98qfjdb0jqq0db09da38fa3i98qh4vnmz8zqq2ue90'),
-                                              ('test user4', 'q34avo2q3avj9q28t4nq39vm9uz98qnq984j91oaoj9zu9q3ujvq9832j932q8ud'),
-                                              ('test user5', 'jdoije928jf9eqj1fnqz9duq921ejf6qwure2qi9jf7qc4xz98qw2urf98j9eqf1');
+/*
+test1 はGetUser, GetUserRanking, PostGachaDraw で使用するユーザ. x-token は ceKeMPeYr0eF3K5e4Lfjfe である.
+test2 は PutUser で名前変更用ユーザ. 名前はテスト実行時にランダムな文字列に変わる. x-token は yypKkCsMXx2MBBVorFQBsQ である.
+test3 は GetCharacterList で使用するユーザ. x-token は UGjoBQOXIjVHMWT7wpH5Ow である.
+test3, test4, test5 は GetUserRanking で使用するユーザ.
+*/
+INSERT INTO users (name, digest_token) VALUES ('test1', '71a6f9c1007c60601a6d67e7f79d4550602b34ced90cdac86bd340f293bf0247'),
+                                              ('test2', '541d9abc4b06e838e471ff564c24585a6ddc5280c9478f2e6e85b2eb7ed979a9'),
+                                              ('test3', '3a80da5cb241be83d0275219c728c9e40cb8f17a433d776dbdb51741a7b49bce'),
+                                              ('test4', 'q34avo2q3avj9q28t4nq39vm9uz98qnq984j91oaoj9zu9q3ujvq9832j932q8ud'),
+                                              ('test5', 'jdoije928jf9eqj1fnqz9duq921ejf6qwure2qi9jf7qc4xz98qw2urf98j9eqf1');
 
-INSERT INTO user_ownership_characters (user_id, character_id, level, experience) VALUES (1, 50000004, 1, 0),
-                                                                                        (3, 50000002, 1, 0),
-                                                                                        (4, 40000002, 1, 0),
-                                                                                        (5, 30000002, 1, 0);
+-- GetUserRanking, GetCharacterList のためのキャラクター. Rank1. test1, Rank2. test3, Rank3. test4 となる.
+-- GetUserRanking のため test3 の sumPower は 500 で固定する.
+INSERT INTO user_characters (user_id, character_id, experience) VALUES (1, 50000002, 100),
+                                                                       (1, 40000002, 100),
+                                                                       (1, 50000002, 100),
+                                                                       (3, 50000002, 100),
+                                                                       (3, 30000002, 400),
+                                                                       (4, 40000002, 100),
+                                                                       (5, 30000002, 100);

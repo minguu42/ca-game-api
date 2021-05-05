@@ -4,59 +4,23 @@ import (
 	"database/sql"
 	"fmt"
 	"math/rand"
-	"strconv"
 	"time"
 )
 
-type Result struct {
-	CharacterId string `json:"characterID"`
-	Name        string `json:"name"`
+type gachaResult struct {
+	id        int
+	user      *User
+	character *Character
+	experience     int
+	createdAt time.Time
 }
 
-func draw(xToken string, times int) ([]Result, error, *sql.Tx) {
-	var results []Result
-
-	userId, err := selectUserId(xToken)
-	if err != nil {
-		return nil, fmt.Errorf("selectUserid faild: %w", err), nil
+func (gachaResult gachaResult) insert(tx *sql.Tx) error {
+	const insertSql = "INSERT INTO gacha_results (user_id, character_id, experience) VALUES ($1, $2, $3)"
+	if _, err := tx.Exec(insertSql, gachaResult.user.id, gachaResult.character.id, gachaResult.experience); err != nil {
+		return fmt.Errorf("tx.Exec failed: %w", err)
 	}
-
-	rarity3SumNum, err := countPerRarity(3)
-	if err != nil {
-		return nil, fmt.Errorf("countPerRarity faild: %w", err), nil
-	}
-	rarity4SumNum, err := countPerRarity(4)
-	if err != nil {
-		return nil, fmt.Errorf("countPerRarity faild: %w", err), nil
-	}
-	rarity5SumNum, err := countPerRarity(5)
-	if err != nil {
-		return nil, fmt.Errorf("countPerRarity faild: %w", err), nil
-	}
-
-	tx, err := db.Begin()
-	if err != nil {
-		return nil, fmt.Errorf("db.Begin faild: %w", err), nil
-	}
-	for i := 0; i < times; i++ {
-		rand.Seed(time.Now().UnixNano())
-		characterId := decideOutputCharacterId(rarity3SumNum, rarity4SumNum, rarity5SumNum)
-		characterLevel := decideCharacterLevel()
-		characterExperience := calculateExperience(characterLevel)
-		name, err := selectCharacterName(characterId)
-		if err != nil {
-			return nil, fmt.Errorf("selectCharacterName faild: %w", err), tx
-		}
-		results = append(results, Result{
-			CharacterId: strconv.Itoa(characterId),
-			Name:        name,
-		})
-
-		if err := insertResult(tx, userId, characterId, characterLevel, characterExperience); err != nil {
-			return nil, fmt.Errorf("insertResult fiald: %w", err), tx
-		}
-	}
-	return results, nil, tx
+	return nil
 }
 
 func decideRarity() int {
@@ -69,31 +33,74 @@ func decideRarity() int {
 	}
 }
 
-func decideOutputCharacterId(rarity3SumNum, rarity4SumNum, rarity5SumNum int) int {
+func decideCharacterId() (int, error) {
+	rarity3Num, err := countCharactersByRarity(3)
+	if err != nil {
+		return 0, fmt.Errorf("countCharactersByRarity failed: %w", err)
+	}
+	rarity4Num, err := countCharactersByRarity(4)
+	if err != nil {
+		return 0, fmt.Errorf("countCharactersByRarity failed: %w", err)
+	}
+	rarity5Num, err := countCharactersByRarity(5)
+	if err != nil {
+		return 0, fmt.Errorf("countCharactersByRarity failed: %w", err)
+	}
+
 	var characterId int
 	switch rarity := decideRarity(); rarity {
 	case 3:
-		characterId = rand.Intn(rarity3SumNum) + 30000001
+		characterId = rand.Intn(rarity3Num) + 30000001
 	case 4:
-		characterId = rand.Intn(rarity4SumNum) + 40000001
+		characterId = rand.Intn(rarity4Num) + 40000001
 	case 5:
-		characterId = rand.Intn(rarity5SumNum) + 50000001
+		characterId = rand.Intn(rarity5Num) + 50000001
 	}
-	return characterId
+	return characterId, nil
 }
 
-func decideCharacterLevel() int {
-	return rand.Intn(10) + 1
+func decideCharacterExperience() int {
+	return ((rand.Intn(10) + 1) ^ 2) * 100
 }
 
-func insertResult(tx *sql.Tx, userId, characterId, characterLevel, characterExperience int) error {
-	const insertSql = "INSERT INTO gacha_results (user_id, character_id, level) VALUES ($1, $2, $3)"
-	if _, err := tx.Exec(insertSql, userId, characterId, characterLevel); err != nil {
-		return fmt.Errorf("tx.Exec faild: %w", err)
+func decideGachaResults(user User, times int) ([]gachaResult, error) {
+	results := make([]gachaResult, 0, times)
+
+	for i := 0; i < times; i++ {
+		rand.Seed(time.Now().UnixNano())
+
+		characterId, err := decideCharacterId()
+		if err != nil {
+			return nil, fmt.Errorf("decideCharacterId failed: %w", err)
+		}
+		character, err := getCharacterById(characterId)
+		if err != nil {
+			return nil, fmt.Errorf("getCharacterById failed: %w", err)
+		}
+		experience := decideCharacterExperience()
+
+		results = append(results, gachaResult{
+			user:       &user,
+			character:  &character,
+			experience: experience,
+		})
 	}
-	const createSql = "INSERT INTO user_ownership_characters (user_id, character_id, level, experience) VALUES ($1, $2, $3, $4)"
-	if _, err := tx.Exec(createSql, userId, characterId, characterLevel, characterExperience); err != nil {
-		return fmt.Errorf("tx.Exec faild: %w", err)
+	return results, nil
+}
+
+func storeGachaResults(tx *sql.Tx, results []gachaResult) error {
+	for _, result := range results {
+		userOwnCharacter := UserCharacter{
+			user:       result.user,
+			character:  result.character,
+			experience: result.experience,
+		}
+		if err := result.insert(tx); err != nil {
+			return fmt.Errorf("result.insert failed: %w", err)
+		}
+		if err := userOwnCharacter.insert(tx); err != nil {
+			return fmt.Errorf("userOwnCharacter.insert failed: %w", err)
+		}
 	}
 	return nil
 }

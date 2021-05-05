@@ -2,92 +2,76 @@ package ca_game_api
 
 import (
 	"fmt"
+	"time"
 )
 
 type User struct {
 	id          int
 	name        string
 	digestToken string
-	createdAt   string
-	updatedAt   string
+	createdAt   time.Time
+	updatedAt   time.Time
 }
 
-type UserInfo struct {
-	Id       string `json:"userID"`
-	Name     string `json:"name"`
-	SumPower string `json:"sumPower"`
+func (user User) insert() error {
+	const sql = `INSERT INTO users (name, digest_token) VALUES ($1, $2);`
+	if _, err := db.Exec(sql, user.name, user.digestToken); err != nil {
+		return fmt.Errorf("db.Exec failed: %v", err)
+	}
+	return nil
 }
 
-func insertUser(user User) error {
-	const createSql = `INSERT INTO users (name, digest_token) VALUES ($1, $2);`
-	if _, err := db.Exec(createSql, user.name, user.digestToken); err != nil {
+func (user User) update() error {
+	const sql = `UPDATE users SET name = $1 WHERE digest_token = $2`
+	if _, err := db.Exec(sql, user.name, user.digestToken); err != nil {
 		return fmt.Errorf("db.Exec failed: %w", err)
 	}
 	return nil
 }
 
-func selectUserByToken(token string) (User, error) {
-	const selectSql = `SELECT * FROM users WHERE digest_token = $1`
+func getUserByToken(token string) (User, error) {
 	digestToken := hash(token)
 
+	const query = `SELECT id, name, digest_token, created_at, updated_at FROM users WHERE digest_token = $1`
+	row := db.QueryRow(query, digestToken)
 	var user User
-	row := db.QueryRow(selectSql, digestToken)
 	if err := row.Scan(&user.id, &user.name, &user.digestToken, &user.createdAt, &user.updatedAt); err != nil {
 		return user, fmt.Errorf("row.Scan failed: %w", err)
 	}
 	return user, nil
 }
 
-func selectUserId(token string) (int, error) {
-	const selectSql = `SELECT id FROM users WHERE digest_token = $1`
-	digestToken := hash(token)
-	row := db.QueryRow(selectSql, digestToken)
-	var id int
-	if err := row.Scan(&id); err != nil {
-		return 0, fmt.Errorf("row.Scan failed: %w", err)
+func getUserById(id int) (User, error) {
+	const query = `SELECT id, name, digest_token, created_at, updated_at FROM users WHERE id = $1`
+	row := db.QueryRow(query, id)
+	var user User
+	if err := row.Scan(&user.id, &user.name, &user.digestToken, &user.createdAt, &user.updatedAt); err != nil {
+		return user, fmt.Errorf("row.Scan failed: %w", err)
 	}
-	return id, nil
+	return user, nil
 }
 
-func selectUserIdByUserCharacterId(userCharacterId int) (int, error) {
-	const selectSql = `SELECT user_id FROM user_ownership_characters WHERE id = $1`
-	row := db.QueryRow(selectSql, userCharacterId)
-	var id int
-	if err := row.Scan(&id); err != nil {
-		return 0, fmt.Errorf("row.Scan failed: %w", err)
-	}
-	return id, nil
-}
-
-func updateUser(user User) error {
-	const updateSql = `UPDATE users SET name = $1 WHERE digest_token = $2`
-	if _, err := db.Exec(updateSql, user.name, user.digestToken); err != nil {
-		return fmt.Errorf("db.Exec failed: %w", err)
-	}
-	return nil
-}
-
-func selectUserRanking() ([]UserInfo, error) {
-	var users []UserInfo
-	const selectSql = `
-SELECT U.id, U.name, SUM(UOC.level * C.power) AS sumPower
-FROM user_ownership_characters AS UOC
+func selectUserRanking() ([]UserRankingJson, error) {
+	const sql = `
+SELECT U.name, SUM(UOC.experience * C.base_power) AS sumPower
+FROM user_characters AS UOC
 INNER JOIN users AS U ON UOC.user_id = U.id
 INNER JOIN characters AS C ON UOC.character_id = C.id
 GROUP BY U.id
 ORDER BY sumPower DESC
 LIMIT 3
 `
-	rows, err := db.Query(selectSql)
+	var rankings []UserRankingJson
+	rows, err := db.Query(sql)
 	if err != nil {
-		return nil, fmt.Errorf("db.Query faild: %w", err)
+		return nil, fmt.Errorf("db.Query failed: %w", err)
 	}
 	for rows.Next() {
-		var user UserInfo
-		if err := rows.Scan(&user.Id, &user.Name, &user.SumPower); err != nil {
-			return nil, fmt.Errorf("rows.Scan faild: %w", err)
+		var ranking UserRankingJson
+		if err := rows.Scan(&ranking.Name, &ranking.SumPower); err != nil {
+			return nil, fmt.Errorf("rows.Scan failed: %w", err)
 		}
-		users = append(users, user)
+		rankings = append(rankings, ranking)
 	}
-	return users, nil
+	return rankings, nil
 }
