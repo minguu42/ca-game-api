@@ -40,7 +40,7 @@ func GetCharacterList(w http.ResponseWriter, r *http.Request) {
 			UserCharacterId: userOwnCharacter.id,
 			CharacterId:     userOwnCharacter.character.id,
 			Name:            userOwnCharacter.character.name,
-			Level:           userOwnCharacter.level,
+			Level:           calculateLevel(userOwnCharacter.experience),
 			Experience:      userOwnCharacter.experience,
 			Power:           calculatePower(userOwnCharacter),
 		}

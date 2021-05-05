@@ -78,8 +78,8 @@ var materialUserCharacterId int
 
 func setupPutCharacterCompose() {
 	if err := db.QueryRow(`
-INSERT INTO user_characters (user_id, character_id, level, experience)
-VALUES (1, 30000002, 1, 100)
+INSERT INTO user_characters (user_id, character_id, experience)
+VALUES (1, 30000002, 100)
 RETURNING id
 `).Scan(&materialUserCharacterId); err != nil {
 		log.Println("setupPutCharacterCompose failed: ", err)

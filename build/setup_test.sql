@@ -18,7 +18,6 @@ CREATE TABLE IF NOT EXISTS user_characters (
     id serial PRIMARY KEY,
     user_id int REFERENCES users,
     character_id int REFERENCES characters,
-    level int NOT NULL,
     experience int NOT NULL,
     created_at timestamp NOT NULL DEFAULT NOW(),
     updated_at timestamp NOT NULL DEFAULT NOW()
@@ -28,7 +27,7 @@ CREATE TABLE IF NOT EXISTS gacha_results (
     id serial PRIMARY KEY,
     user_id int REFERENCES users,
     character_id int REFERENCES characters,
-    level int NOT NULL,
+    experience int NOT NULL,
     created_at timestamp NOT NULL DEFAULT NOW()
 );
 
@@ -95,10 +94,10 @@ INSERT INTO users (name, digest_token) VALUES ('test1', '71a6f9c1007c60601a6d67e
 
 -- GetUserRanking, GetCharacterList のためのキャラクター. Rank1. test1, Rank2. test3, Rank3. test4 となる.
 -- GetUserRanking のため test3 の sumPower は 500 で固定する.
-INSERT INTO user_characters (user_id, character_id, level, experience) VALUES (1, 50000002, 1, 100),
-                                                                                        (1, 40000002, 1, 100),
-                                                                                        (1, 50000002, 1, 100),
-                                                                                        (3, 50000002, 1, 100),
-                                                                                        (3, 30000002, 2, 400),
-                                                                                        (4, 40000002, 1, 100),
-                                                                                        (5, 30000002, 1, 100);
+INSERT INTO user_characters (user_id, character_id, experience) VALUES (1, 50000002, 100),
+                                                                       (1, 40000002, 100),
+                                                                       (1, 50000002, 100),
+                                                                       (3, 50000002, 100),
+                                                                       (3, 30000002, 400),
+                                                                       (4, 40000002, 100),
+                                                                       (5, 30000002, 100);

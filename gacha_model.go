@@ -11,13 +11,13 @@ type gachaResult struct {
 	id        int
 	user      *User
 	character *Character
-	level     int
+	experience     int
 	createdAt time.Time
 }
 
 func (gachaResult gachaResult) insert(tx *sql.Tx) error {
-	const insertSql = "INSERT INTO gacha_results (user_id, character_id, level) VALUES ($1, $2, $3)"
-	if _, err := tx.Exec(insertSql, gachaResult.user.id, gachaResult.character.id, gachaResult.level); err != nil {
+	const insertSql = "INSERT INTO gacha_results (user_id, character_id, experience) VALUES ($1, $2, $3)"
+	if _, err := tx.Exec(insertSql, gachaResult.user.id, gachaResult.character.id, gachaResult.experience); err != nil {
 		return fmt.Errorf("tx.Exec failed: %w", err)
 	}
 	return nil
@@ -59,8 +59,8 @@ func decideCharacterId() (int, error) {
 	return characterId, nil
 }
 
-func decideCharacterLevel() int {
-	return rand.Intn(10) + 1
+func decideCharacterExperience() int {
+	return ((rand.Intn(10) + 1) ^ 2) * 100
 }
 
 func decideGachaResults(user User, times int) ([]gachaResult, error) {
@@ -77,12 +77,12 @@ func decideGachaResults(user User, times int) ([]gachaResult, error) {
 		if err != nil {
 			return nil, fmt.Errorf("getCharacterById failed: %w", err)
 		}
-		level := decideCharacterLevel()
+		experience := decideCharacterExperience()
 
 		results = append(results, gachaResult{
-			user:      &user,
-			character: &character,
-			level:     level,
+			user:       &user,
+			character:  &character,
+			experience: experience,
 		})
 	}
 	return results, nil
@@ -93,8 +93,7 @@ func storeGachaResults(tx *sql.Tx, results []gachaResult) error {
 		userOwnCharacter := UserCharacter{
 			user:       result.user,
 			character:  result.character,
-			level:      result.level,
-			experience: calculateExperience(result.level),
+			experience: result.experience,
 		}
 		if err := result.insert(tx); err != nil {
 			return fmt.Errorf("result.insert failed: %w", err)

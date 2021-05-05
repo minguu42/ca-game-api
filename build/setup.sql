@@ -18,7 +18,6 @@ CREATE TABLE IF NOT EXISTS user_characters (
     id serial PRIMARY KEY,
     user_id int REFERENCES users,
     character_id int REFERENCES characters,
-    level int NOT NULL,
     experience int NOT NULL,
     created_at timestamp NOT NULL DEFAULT NOW(),
     updated_at timestamp NOT NULL DEFAULT NOW()
@@ -28,7 +27,7 @@ CREATE TABLE IF NOT EXISTS gacha_results (
     id serial PRIMARY KEY,
     user_id int REFERENCES users,
     character_id int REFERENCES characters,
-    level int NOT NULL,
+    experience int NOT NULL,
     created_at timestamp NOT NULL DEFAULT NOW()
 );
 
