@@ -85,6 +85,11 @@ func PutCharacterCompose(w http.ResponseWriter, r *http.Request) {
 	token := r.Header.Get("x-token")
 	baseUserCharacterId := reqBody.BaseUserCharacterId
 	materialUserCharacterId := reqBody.MaterialUserCharacterId
+	if baseUserCharacterId == materialUserCharacterId {
+		log.Println("ERROR cannot compose same character")
+		w.WriteHeader(400)
+		return
+	}
 
 	user, err := getUserByToken(token)
 	if err != nil {
