@@ -135,7 +135,7 @@ func GetUserRanking(w http.ResponseWriter, r *http.Request) {
 
 	rankings, err := selectUserRanking()
 	if err != nil {
-		log.Println("ERROR selectUserRanking error:", err)
+		log.Println("ERROR selectUserRanking failed:", err)
 		w.WriteHeader(500)
 		return
 	}
@@ -144,7 +144,7 @@ func GetUserRanking(w http.ResponseWriter, r *http.Request) {
 		Users: rankings,
 	}
 	if err := encodeResponse(w, jsonResponse); err != nil {
-		log.Println("ERROR encodeResponse fail:", err)
+		log.Println("ERROR encodeResponse failed:", err)
 		w.WriteHeader(500)
 		return
 	}

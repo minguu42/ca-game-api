@@ -138,7 +138,7 @@ func TestGetUserRanking(t *testing.T) {
 	if body.Users[2].Name != "test4" {
 		t.Errorf("3rd user name should be test4, but %v", body.Users[2].Name)
 	}
-	if body.Users[1].SumPower != 500 {
-		t.Errorf("test3's sumPower should be 500, but %v", body.Users[1].SumPower)
+	if body.Users[1].SumPower != 900 {
+		t.Errorf("test3's sumPower should be 900, but %v", body.Users[1].SumPower)
 	}
 }
