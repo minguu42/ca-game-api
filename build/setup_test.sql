@@ -82,21 +82,23 @@ INSERT INTO characters VALUES (30000001, 'normal_character1', 3, 1, 10000),
                               (50000010, 'super_rare_character10', 5, 600, 2000);
 
 /*
-test1 はGetUser, GetUserRanking, PostGachaDraw, GetCharacter で使用するユーザ. x-token は ceKeMPeYr0eF3K5e4Lfjfe である.
+test1 はGetUser, GetUserRanking, PostGachaDraw で使用するユーザ. x-token は ceKeMPeYr0eF3K5e4Lfjfe である.
 test2 は PutUser で名前変更用ユーザ. 名前はテスト実行時にランダムな文字列に変わる. x-token は yypKkCsMXx2MBBVorFQBsQ である.
+test3 は GetCharacterList で使用するユーザ. x-token は UGjoBQOXIjVHMWT7wpH5Ow である.
 test3, test4, test5 は GetUserRanking で使用するユーザ.
 */
 INSERT INTO users (name, digest_token) VALUES ('test1', '71a6f9c1007c60601a6d67e7f79d4550602b34ced90cdac86bd340f293bf0247'),
                                               ('test2', '541d9abc4b06e838e471ff564c24585a6ddc5280c9478f2e6e85b2eb7ed979a9'),
-                                              ('test3', 'dj9fq2j9u9feq3nfq8fjqf98qfjdb0jqq0db09da38fa3i98qh4vnmz8zqq2ue90'),
+                                              ('test3', '3a80da5cb241be83d0275219c728c9e40cb8f17a433d776dbdb51741a7b49bce'),
                                               ('test4', 'q34avo2q3avj9q28t4nq39vm9uz98qnq984j91oaoj9zu9q3ujvq9832j932q8ud'),
                                               ('test5', 'jdoije928jf9eqj1fnqz9duq921ejf6qwure2qi9jf7qc4xz98qw2urf98j9eqf1');
 
 -- GetUserRanking, GetCharacterList のためのキャラクター. Rank1. test1, Rank2. test3, Rank3. test4 となる.
 -- GetUserRanking のため test3 の sumPower は 500 で固定する.
-INSERT INTO user_ownership_characters (user_id, character_id, level, experience) VALUES (1, 50000002, 1, 0),
-                                                                                        (1, 40000002, 1, 0),
-                                                                                        (1, 50000002, 1, 0),
-                                                                                        (3, 50000002, 1, 0),
-                                                                                        (4, 40000002, 1, 0),
-                                                                                        (5, 30000002, 1, 0);
+INSERT INTO user_ownership_characters (user_id, character_id, level, experience) VALUES (1, 50000002, 1, 100),
+                                                                                        (1, 40000002, 1, 100),
+                                                                                        (1, 50000002, 1, 100),
+                                                                                        (3, 50000002, 1, 100),
+                                                                                        (3, 30000002, 2, 400),
+                                                                                        (4, 40000002, 1, 100),
+                                                                                        (5, 30000002, 1, 100);
