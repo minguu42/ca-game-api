@@ -23,24 +23,6 @@ func (gachaResult gachaResult) insert(tx *sql.Tx) error {
 	return nil
 }
 
-type UserOwnCharacter struct {
-	id         int
-	user       *User
-	character  *Character
-	level      int
-	experience int
-	createdAt  time.Time
-	updatedAt  time.Time
-}
-
-func (userOwnCharacter UserOwnCharacter) insert(tx *sql.Tx) error {
-	const stmt = `INSERT INTO user_ownership_characters (user_id, character_id, level, experience) VALUES ($1, $2, $3, $4)`
-	if _, err := tx.Exec(stmt, userOwnCharacter.user.id, userOwnCharacter.character.id, userOwnCharacter.level, userOwnCharacter.level); err != nil {
-		return fmt.Errorf("tx.Exec failed: %w", err)
-	}
-	return nil
-}
-
 func decideRarity() int {
 	if num := rand.Intn(1000) + 1; num >= 900 {
 		return 5
@@ -108,7 +90,7 @@ func decideGachaResults(user User, times int) ([]gachaResult, error) {
 
 func storeGachaResults(tx *sql.Tx, results []gachaResult) error {
 	for _, result := range results {
-		userOwnCharacter := UserOwnCharacter{
+		userOwnCharacter := UserCharacter{
 			user:       result.user,
 			character:  result.character,
 			level:      result.level,

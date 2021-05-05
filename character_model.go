@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"math"
+	"time"
 )
 
 type Character struct {
@@ -15,8 +16,8 @@ type Character struct {
 }
 
 func getCharacterById(id int) (Character, error) {
-	const selectSql = "SELECT id, name, rarity, base_power, calorie FROM characters WHERE id = $1"
-	row := db.QueryRow(selectSql, id)
+	const query = "SELECT id, name, rarity, base_power, calorie FROM characters WHERE id = $1"
+	row := db.QueryRow(query, id)
 	var character Character
 	if err := row.Scan(&character.id, &character.name, &character.rarity, &character.basePower, &character.calorie); err != nil {
 		return character, fmt.Errorf("row.Scan failed: %w", err)
@@ -25,34 +26,53 @@ func getCharacterById(id int) (Character, error) {
 }
 
 func countCharactersByRarity(rarity int) (int, error) {
-	const selectSql = "SELECT COUNT(*) FROM characters WHERE rarity = $1"
+	const query = "SELECT COUNT(*) FROM characters WHERE rarity = $1"
 	var count int
-	row := db.QueryRow(selectSql, rarity)
+	row := db.QueryRow(query, rarity)
 	if err := row.Scan(&count); err != nil {
 		return 0, fmt.Errorf("row.Scan faild: %w", err)
 	}
 	return count, nil
 }
 
-func getUserOwnCharactersByToken(token string) ([]UserOwnCharacter, error) {
+type UserCharacter struct {
+	id         int
+	user       *User
+	character  *Character
+	level      int
+	experience int
+	createdAt  time.Time
+	updatedAt  time.Time
+}
+
+func (userCharacter UserCharacter) insert(tx *sql.Tx) error {
+	const query = `INSERT INTO user_ownership_characters (user_id, character_id, level, experience) VALUES ($1, $2, $3, $4)`
+	if _, err := tx.Exec(query, userCharacter.user.id, userCharacter.character.id, userCharacter.level, userCharacter.level); err != nil {
+		return fmt.Errorf("tx.Exec failed: %w", err)
+	}
+	return nil
+}
+
+func getUserOwnCharactersByToken(token string) ([]UserCharacter, error) {
 	user, err := getUserByToken(token)
 	if err != nil {
 		return nil, fmt.Errorf("getUserByToken failed: %w", err)
 	}
 
-	rows, err := db.Query(`
+	const query = `
 SELECT UOC.id, C.id, UOC.level, UOC.experience
 FROM user_ownership_characters AS UOC
 INNER JOIN users AS U ON UOC.user_id = U.id
 INNER JOIN characters AS C ON UOC.character_id = C.id
 WHERE U.digest_token = $1
-`, user.digestToken)
+`
+	rows, err := db.Query(query, user.digestToken)
 	if err != nil {
 		return nil, fmt.Errorf("db.Query failed: %w", err)
 	}
-	var userOwnCharacters []UserOwnCharacter
+	var userCharacters []UserCharacter
 	for rows.Next() {
-		var userOwnCharacter UserOwnCharacter
+		var userOwnCharacter UserCharacter
 		var characterId int
 		if err := rows.Scan(&userOwnCharacter.id, &characterId, &userOwnCharacter.level, &userOwnCharacter.experience); err != nil {
 			return nil, fmt.Errorf("rows.Scan failed: %w", err)
@@ -64,9 +84,9 @@ WHERE U.digest_token = $1
 
 		userOwnCharacter.user = &user
 		userOwnCharacter.character = &character
-		userOwnCharacters = append(userOwnCharacters, userOwnCharacter)
+		userCharacters = append(userCharacters, userOwnCharacter)
 	}
-	return userOwnCharacters, nil
+	return userCharacters, nil
 }
 
 func selectCalorieByUserCharacterId(userCharacterId int) (int, error) {
@@ -102,8 +122,8 @@ func calculateLevel(experience int) int {
 	return int(math.Floor(math.Sqrt(float64(experience)) / 10.0))
 }
 
-func calculatePower(userOwnCharacter UserOwnCharacter) int {
-	return userOwnCharacter.level * userOwnCharacter.character.basePower
+func calculatePower(userCharacter UserCharacter) int {
+	return userCharacter.level * userCharacter.character.basePower
 }
 
 func composeCharacter(baseUserCharacterId, materialUserCharacterId int) (*sql.Tx, int, error) {
