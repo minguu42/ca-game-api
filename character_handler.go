@@ -6,8 +6,8 @@ import (
 )
 
 type CharacterJson struct {
-	UserCharacterId string `json:"userCharacterID"`
-	CharacterId     string `json:"characterID"`
+	UserCharacterId int `json:"userCharacterID"`
+	CharacterId     int `json:"characterID"`
 	Name            string `json:"name"`
 	Level           int    `json:"level"`
 	Experience      int    `json:"experience"`
