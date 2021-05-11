@@ -13,7 +13,7 @@ services:
     volumes:
       - .:/go/src/app
     ports:
-      - 8000:8000
+      - ${PORT}:${PORT}
     depends_on:
       - db
       - db-test
