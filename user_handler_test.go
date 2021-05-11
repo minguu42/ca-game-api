@@ -15,7 +15,7 @@ import (
 
 func TestMain(m *testing.M) {
 	var err error
-	db, err = sql.Open("postgres", "postgres://test:password@localhost:15432/ca_game_api_db_test?sslmode=disable")
+	db, err = sql.Open("postgres", "postgres://test:password@localhost:15432/test_db?sslmode=disable")
 	if err != nil {
 		log.Fatal(err)
 	}
