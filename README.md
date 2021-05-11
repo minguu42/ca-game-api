@@ -2,119 +2,104 @@
 
 ## 概要
 
-TechTrainのMISSIONである[オンライン版　CA Tech Dojo サーバサイド (Go)編](https://techbowl.co.jp/techtrain/missions/12)に取り組んだものです。
-ランキングや合成機能は自分のオリジナルの機能として追加で作成しました。
+TechTrainのMISSIONである[オンライン版　CA Tech Dojo サーバサイド (Go)編](https://techbowl.co.jp/techtrain/missions/12)に取り組んだものです. 
+ミッション達成後にレスポンスボディの JSON のフィールドやデータベースに変更を加えています. 
+オリジナルの機能としてユーザランキングやキャラクター合成機能を追加しました. 
 
 ## 実行手順
 
 1. `.env`ファイルを作成する
 
-環境変数を指定するための`.env`ファイルをプロジェクトルートディレクトリに作成してください。
-以下の`<>`で囲われた部分を適切な値に変更し、作成してください。
+環境変数を指定するための`.env`ファイルをプロジェクトルートディレクトリに作成してください.
+以下の`<>`で囲われた部分は適切な値に置き換えてください.
 
 ```env
-DRIVER=mysql
-DATASOURCE=<ユーザ名>:<ユーザのパスワード>@(mysql-container:3306)/ca_game_api_db
-MYSQL_ROOT_PASSWORD=<上とは異なる任意のパスワード>
-MYSQL_DATABASE=ca_game_api_db
-MYSQL_USER=<上と等しいユーザ名>
-MYSQL_PASSWORD=<上と等しいユーザのパスワード>
+PORT=8080
+
+DATABASE_URL=postgres://<username>:<password>@ca-game-api-db:5432/<dbname>?sslmode=disable
+POSTGRES_PASSWORD=<password>
+POSTGRES_USER=<username>
+POSTGRES_DB=<dbname>
 ```
 
 2. APIを起動する
 
-```bash
-$ docker-compose up -d
+以下のコマンドを実行し, 起動します.
 
-# （初回のみ、2回目以降は行わない）テーブルとキャラクターを作成する
-$ docker exec -i mysql-container sh -c 'exec mysql -u <上と等しいユーザ名> -D ca_game_api_db -p"<上と等しいユーザのパスワード>"' < setup.sql
-$ docker exec -i ca-game-api-db sh -c 'exec psql -U minguu -d ca_game_api_db -w' < build/setup.sql
-$ docker exec -i ca-game-api-db-test sh -c 'exec psql -U test -d ca_game_api_db_test -w' < build/setup_test.sql
+```bash
+$ docker compose up -d
+```
+
+3. テストを実行し, 確認する
+
+上記のコマンドでテスト用データベースのコンテナも起動します.
+以下のコマンドでテストを実行します.
+
+```bash
+$ go test .
+ok      github.com/minguu42/ca-game-api 0.831s
 ```
 
 ## 動作例
 
-動作例は全てローカルで、cURLでリクエストを行い、確認した動作を載せています。
+動作例は全てローカルで, cURLでリクエストを行い, 確認した動作を載せています.
 
 ### ユーザを作成する
 
-ユーザ名を指定し、ユーザを作成できます。
-`name`の値は適切な値に変更してください。
-レスポンスとして、JSON形式でユーザ固有の認証トークンが返ります。
-ユーザ名は重複できず、既に存在する場合は、`400 Bad Request`が返ります。
+ユーザ名を指定しユーザを作成できます.
+レスポンスとして認証トークンが返されます.
 
 ```bash
-$ curl -i -X POST "http://localhost:8000/user/create" -H  "accept: application/json" -H  "Content-Type: application/json" -d "{  \"name\": \"minguu\"}"
-HTTP/1.1 200 OK
-Date: Sat, 06 Mar 2021 10:33:06 GMT
-Content-Length: 40
-Content-Type: text/plain; charset=utf-8
-
+$ curl -X POST "http://localhost:8080/user/create" -H  "accept: application/json" -H  "Content-Type: application/json" -d "{  \"name\": \"minguu\"}"
 {
-  "token": "ceKeMPeYr0eF3K5e4Lfjfe"
+  "token": "2JMZe9atOCkE8q0YH5s-Wr"
 }
 ```
 
 ### ユーザを確認する
 
-認証トークンで、ユーザ名を確認します。
-`x-token`の値は適切な値に変更してください。
-レスポンスとして、JSON形式でユーザ名が返ります。
-トークンが適切でない場合は、`401 Unauthorized`を返します。
+認証トークンでユーザ名を確認できます.
+レスポンスとしてユーザ名が返されます.
 
 ```bash
-$ curl -i -X GET "http://localhost:8000/user/get" -H  "accept: application/json" -H  "x-token: ceKeMPeYr0eF3K5e4Lfjfe"
-HTTP/1.1 200 OK
-Date: Sat, 06 Mar 2021 10:34:15 GMT
-Content-Length: 23
-Content-Type: text/plain; charset=utf-8
-
+$ curl -X GET "http://localhost:8080/user/get" -H  "accept: application/json" -H  "x-token: 2JMZe9atOCkE8q0YH5s-Wr"
 {
-  "name": "minguu"
+  "name": "minguu2"
 }
 ```
 
 ### ユーザ名を変更する
 
-認証トークンで、ユーザ名を変更します。
-`x-token`, `name`の値は適切な値に変更してください。
-現在と同一の名前を指定しても、そのまま`200 OK`で返します。
-指定した名前が既に存在する場合は、`400 Bad Request`を返します。
+認証トークンでユーザ名を変更できます.
 
 ```bash
-$ curl -i -X PUT "http://localhost:8000/user/update" -H  "accept: application/json" -H  "x-token: ceKeMPeYr0eF3K5e4Lfjfe" -H  "Content-Type: application/json" -d "{  \"name\": \"newMinguu\"}"
-HTTP/1.1 200 OK
-Date: Sat, 06 Mar 2021 10:38:46 GMT
-Content-Length: 0
+$ curl -X PUT "http://localhost:8080/user/update" -H  "accept: application/json" -H  "x-token: 2JMZe9atOCkE8q0YH5s-Wr" -H  "Content-Type: application/json" -d "{  \"name\": \"new_minguu\"}"
+$ curl -X GET "http://localhost:8080/user/get" -H  "accept: application/json" -H  "x-token: 2JMZe9atOCkE8q0YH5s-Wr" 
+{
+  "name": "new_minguu"
+}
 ```
 
 ### ガチャを回す
 
-認証トークンと回数を指定し、ガチャを回し、キャラクターを取得します。
-`x-token`、`times`の値は適切な値に変更してください。
-レスポンスとして、JSON形式でガチャの結果が返ります。
-回数が正の整数でない場合は`400 Bad Request`を返します。
+認証トークンで回数を指定してガチャを回し, キャラクターを取得できます.
+レスポンスとしてガチャの結果が返されます.
 
 ```bash
-$ curl -i -X POST "http://localhost:8000/gacha/draw" -H  "accept: application/json" -H  "x-token: ceKeMPeYr0eF3K5e4Lfjfe" -H  "Content-Type: application/json" -d "{  \"times\": 3}"
-HTTP/1.1 200 OK
-Date: Sat, 06 Mar 2021 10:40:30 GMT
-Content-Length: 259
-Content-Type: text/plain; charset=utf-8
-
+$ curl -X POST "http://localhost:8080/gacha/draw" -H  "accept: application/json" -H  "x-token: 2JMZe9atOCkE8q0YH5s-Wr" -H  "Content-Type: application/json" -d "{  \"times\": 3}"
 {
   "results": [
     {
-      "characterID": "40000010",
-      "name": "rare_character10"
+      "characterID": 30000006,
+      "name": "normal_character6"
     },
     {
-      "characterID": "30000004",
-      "name": "normal_character4"
+      "characterID": 30000001,
+      "name": "normal_character1"
     },
     {
-      "characterID": "40000006",
-      "name": "rare_character6"
+      "characterID": 30000002,
+      "name": "normal_character2"
     }
   ]
 }
@@ -122,37 +107,36 @@ Content-Type: text/plain; charset=utf-8
 
 ### ユーザ所持キャラクターを一覧取得する
 
-認証トークンで、ユーザが所持しているキャラクターを一覧で取得します。
-`x-token`の値は適切な値に変更してください。
-レスポンスとして、JSON形式で所有しているキャラクター一覧が返ります。
-キャラクタを所有していないユーザの場合は、 ステータス行は`200 OK`で、 レスポンスボディは`{"characters": null}`で返します。
+認証トークンで所持しているキャラクターを一覧で取得できます.
+レスポンスとして所有しているキャラクター一覧が返されます.
 
 ```bash
-$ curl -i -X GET "http://localhost:8000/character/list" -H  "accept: application/json" -H  "x-token: ceKeMPeYr0eF3K5e4Lfjfe"
-HTTP/1.1 200 OK
-Date: Sat, 06 Mar 2021 10:42:47 GMT
-Content-Length: 407
-Content-Type: text/plain; charset=utf-8
-
+$ curl -X GET "http://localhost:8080/character/list" -H  "accept: application/json" -H  "x-token: 2JMZe9atOCkE8q0YH5s-Wr"
 {
   "characters": [
     {
-      "userCharacterID": "1",
-      "characterID": "40000010",
-      "name": "rare_character10",
-      "level": 3
+      "userCharacterID": 1,
+      "characterID": 30000006,
+      "name": "normal_character6",
+      "level": 2,
+      "experience": 700,
+      "power": 410
     },
     {
-      "userCharacterID": "2",
-      "characterID": "30000004",
-      "name": "normal_character4",
-      "level": 2
+      "userCharacterID": 2,
+      "characterID": 30000001,
+      "name": "normal_character1",
+      "level": 1,
+      "experience": 100,
+      "power": 1
     },
     {
-      "userCharacterID": "3",
-      "characterID": "40000006",
-      "name": "rare_character6",
-      "level": 10
+      "userCharacterID": 3,
+      "characterID": 30000002,
+      "name": "normal_character2",
+      "level": 2,
+      "experience": 400,
+      "power": 400
     }
   ]
 }
@@ -160,34 +144,25 @@ Content-Type: text/plain; charset=utf-8
 
 ### ユーザのランキングを取得する
 
-ユーザのランキングを取得します。
-レスポンスとして、JSON形式でユーザのランキングが返ります。
-ユーザのランキングは、合計値の高い方から3人のユーザを返します。
-ユーザのランキングは、ユーザの所有しているキャラクターのレベルとキャラクター固有のパワーの合計値で決定します。
+認証トークンでユーザのランキングを取得できます.
+レスポンスとしてユーザのランキングが返されます.
+ユーザのランキングはユーザの所有しているキャラクターのレベルとキャラクター固有のパワーの合計値で決定し, 高い方から3人のユーザが返されます.
 
 ```bash
-$ curl -i -X GET "http://localhost:8000/ranking/user" -H  "accept: application/json"                                                                            
-HTTP/1.1 200 OK
-Date: Sat, 06 Mar 2021 10:48:59 GMT
-Content-Length: 274
-Content-Type: text/plain; charset=utf-8
-
+$ curl -X 'GET' 'http://localhost:8080/user/ranking' -H 'accept: application/json' -H 'x-token: 2JMZe9atOCkE8q0YH5s-Wr'                         
 {
-  "userRankings": [
+  "users": [
     {
-      "userID": "3",
-      "name": "user2",
-      "sumPower": "5420"
+      "name": "example",
+      "sumPower": 300000
     },
     {
-      "userID": "2",
-      "name": "user1",
-      "sumPower": "5380"
-    },
-    {
-      "userID": "1",
       "name": "minguu",
-      "sumPower": "4740"
+      "sumPower": 223600
+    },
+    {
+      "name": "example2",
+      "sumPower": 204000
     }
   ]
 }
@@ -195,38 +170,18 @@ Content-Type: text/plain; charset=utf-8
 
 ### キャラクターを合成する
 
-認証トークン、ベースとなるキャラクターのID、合成されるキャラクターのIDで、キャラクターを合成します。
-キャラクターを合成することでキャラクターのレベルを上げることができます。
-`x-token`、`baseUserCharacterID`、`materialUserCharacterID`の値は適切な値に変更してください。
-レスポンスとして、JSON形式で合成後のキャラクターが返ります。
-所有していないキャラクターを指定した場合は、`400 Bad Request`を返します。
+認証トークン, ベースとなるキャラクターのID, 合成されるキャラクターのIDでキャラクターを合成できます. 
+レスポンスとして合成後のキャラクターが返されます.
+キャラクターを合成することでキャラクターのレベルを上げられます.
 
 ```bash
-$ curl -i -X PUT "http://localhost:8080/character/compose" -H  "accept: application/json" -H  "x-token: -nRs7IX1H2dRiPttorkAL5" -H  "Content-Type: application/json" -d "{  \"baseUserCharacterID\": 4,  \"materialUserCharacterID\": 5}"
-HTTP/1.1 200 OK
-Date: Sat, 06 Mar 2021 10:53:34 GMT
-Content-Length: 103
-Content-Type: text/plain; charset=utf-8
-
+$ curl -X PUT "http://localhost:8080/character/compose" -H  "accept: application/json" -H  "x-token: 2JMZe9atOCkE8q0YH5s-Wr" -H  "Content-Type: application/json" -d "{  \"baseUserCharacterID\": 1,  \"materialUserCharacterID\": 2}"
 {
-  "userCharacterID": "4",
-  "characterID": "30000009",
-  "name": "normal_character9",
-  "level": 4
+  "userCharacterID": 1,
+  "characterID": 30000006,
+  "name": "normal_character6",
+  "level": 2,
+  "experience": 700,
+  "power": 410
 }
 ```
-
-
-curl -i -X POST "http://localhost:8000/user/create" -H  "accept: application/json" -H  "Content-Type: application/json" -d "{  \"name\": \"minguu\"}"
-
-curl -i -X GET "http://localhost:8000/user/get" -H  "accept: application/json" -H  "x-token: yypKkCsMXx2MBBVorFQBsQ"
-
-curl -i -X PUT "http://localhost:8000/user/update" -H  "accept: application/json" -H  "x-token: yypKkCsMXx2MBBVorFQBsQ" -H  "Content-Type: application/json" -d "{  \"name\": \"newMinguu\"}"
-
-curl -i -X POST "http://localhost:8000/gacha/draw" -H  "accept: application/json" -H  "x-token: yypKkCsMXx2MBBVorFQBsQ" -H  "Content-Type: application/json" -d "{  \"times\": 3}"
-
-curl -i -X GET "http://localhost:8000/character/list" -H  "accept: application/json" -H  "x-token: yypKkCsMXx2MBBVorFQBsQ"
-
-curl -i -X GET "http://localhost:8000/ranking/user" -H  "accept: application/json"
-
-curl -i -X PUT "http://localhost:8000/character/compose" -H  "accept: application/json" -H  "x-token: yypKkCsMXx2MBBVorFQBsQ" -H  "Content-Type: application/json" -d "{  \"baseUserCharacterID\": 4,  \"materialUserCharacterID\": 5}"
