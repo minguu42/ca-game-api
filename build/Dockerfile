@@ -1,7 +1,7 @@
 FROM golang:1.16.0-buster
 
 WORKDIR /go/src/app
-COPY .. .
+COPY . .
 
 RUN go get -d -v ./...
 
