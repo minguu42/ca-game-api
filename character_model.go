@@ -138,10 +138,6 @@ func (userCharacter UserCharacter) compose(tx *sql.Tx, materialUserCharacter Use
 	return nil
 }
 
-func calculateExperience(level int) int {
-	return (level ^ 2) * 100
-}
-
 func calculateLevel(experience int) int {
 	return int(math.Floor(math.Sqrt(float64(experience)) / 10.0))
 }
