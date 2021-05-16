@@ -6,7 +6,7 @@ func TestGenerateRandomString(t *testing.T) {
 	type args struct {
 		n int
 	}
-	tests := []struct{
+	tests := []struct {
 		name string
 		args args
 		want int

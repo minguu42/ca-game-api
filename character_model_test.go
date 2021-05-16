@@ -51,7 +51,7 @@ func TestCalculateLevel(t *testing.T) {
 func TestCalculatePower(t *testing.T) {
 	type args struct {
 		experience int
-		basePower int
+		basePower  int
 	}
 	tests := []struct {
 		name string
@@ -62,7 +62,7 @@ func TestCalculatePower(t *testing.T) {
 			name: "experience = 100, basePower = 200",
 			args: args{
 				experience: 100,
-				basePower: 200,
+				basePower:  200,
 			},
 			want: 200,
 		},
@@ -70,7 +70,7 @@ func TestCalculatePower(t *testing.T) {
 			name: "experience = 400, basePower = 300",
 			args: args{
 				experience: 400,
-				basePower: 300,
+				basePower:  300,
 			},
 			want: 600,
 		},
@@ -78,7 +78,7 @@ func TestCalculatePower(t *testing.T) {
 			name: "experience = 899, basePower = 400",
 			args: args{
 				experience: 899,
-				basePower: 400,
+				basePower:  400,
 			},
 			want: 800,
 		},

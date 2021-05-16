@@ -8,11 +8,11 @@ import (
 )
 
 type gachaResult struct {
-	id        int
-	user      *User
-	character *Character
-	experience     int
-	createdAt time.Time
+	id         int
+	user       *User
+	character  *Character
+	experience int
+	createdAt  time.Time
 }
 
 func (gachaResult gachaResult) insert(tx *sql.Tx) error {
