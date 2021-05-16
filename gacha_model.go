@@ -59,8 +59,8 @@ func decideCharacterId() (int, error) {
 	return characterId, nil
 }
 
-func decideCharacterExperience() int {
-	return ((rand.Intn(10) + 1) ^ 2) * 100
+func calculateCharacterExperience(level int) int {
+	return (level ^ 2) * 100
 }
 
 func decideGachaResults(user User, times int) ([]gachaResult, error) {
@@ -77,7 +77,7 @@ func decideGachaResults(user User, times int) ([]gachaResult, error) {
 		if err != nil {
 			return nil, fmt.Errorf("getCharacterById failed: %w", err)
 		}
-		experience := decideCharacterExperience()
+		experience := calculateCharacterExperience(rand.Intn(10) + 1)
 
 		results = append(results, gachaResult{
 			user:       &user,
