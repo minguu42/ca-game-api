@@ -142,6 +142,6 @@ func calculateLevel(experience int) int {
 	return int(math.Floor(math.Sqrt(float64(experience)) / 10.0))
 }
 
-func calculatePower(userCharacter UserCharacter) int {
-	return calculateLevel(userCharacter.experience) * userCharacter.character.basePower
+func calculatePower(experience, basePower int) int {
+	return calculateLevel(experience) * basePower
 }

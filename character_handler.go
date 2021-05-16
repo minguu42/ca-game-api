@@ -42,7 +42,7 @@ func GetCharacterList(w http.ResponseWriter, r *http.Request) {
 			Name:            userOwnCharacter.character.name,
 			Level:           calculateLevel(userOwnCharacter.experience),
 			Experience:      userOwnCharacter.experience,
-			Power:           calculatePower(userOwnCharacter),
+			Power:           calculatePower(userOwnCharacter.experience, userOwnCharacter.character.basePower),
 		}
 		charactersJson = append(charactersJson, characterJson)
 	}
@@ -137,7 +137,7 @@ func PutCharacterCompose(w http.ResponseWriter, r *http.Request) {
 		Name:            baseUserCharacter.character.name,
 		Level:           calculateLevel(baseUserCharacter.experience),
 		Experience:      baseUserCharacter.experience,
-		Power:           calculatePower(baseUserCharacter),
+		Power:           calculatePower(baseUserCharacter.experience, baseUserCharacter.character.basePower),
 	}
 	if err := encodeResponse(w, respBody); err != nil {
 		log.Println("ERROR encodeResponse failed:", err)
