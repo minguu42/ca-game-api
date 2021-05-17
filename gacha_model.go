@@ -60,7 +60,7 @@ func decideCharacterId() (int, error) {
 }
 
 func calculateCharacterExperience(level int) int {
-	return (level ^ 2) * 100
+	return level * level * 100
 }
 
 func decideGachaResults(user User, times int) ([]gachaResult, error) {
