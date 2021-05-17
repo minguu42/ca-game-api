@@ -15,7 +15,7 @@ type PostUserResponse struct {
 }
 
 func PostUser(w http.ResponseWriter, r *http.Request) {
-	if isStatusMethodInvalid(r, "POST") {
+	if isRequestMethodInvalid(r, "POST") {
 		w.WriteHeader(405)
 		return
 	}
@@ -58,7 +58,7 @@ type GetUserResponse struct {
 }
 
 func GetUser(w http.ResponseWriter, r *http.Request) {
-	if isStatusMethodInvalid(r, "GET") {
+	if isRequestMethodInvalid(r, "GET") {
 		w.WriteHeader(405)
 		return
 	}
@@ -87,7 +87,7 @@ type PutUserRequest struct {
 }
 
 func PutUser(w http.ResponseWriter, r *http.Request) {
-	if isStatusMethodInvalid(r, "PUT") {
+	if isRequestMethodInvalid(r, "PUT") {
 		w.WriteHeader(405)
 		return
 	}
@@ -121,7 +121,7 @@ type GetUserRankingResponse struct {
 }
 
 func GetUserRanking(w http.ResponseWriter, r *http.Request) {
-	if isStatusMethodInvalid(r, "GET") {
+	if isRequestMethodInvalid(r, "GET") {
 		w.WriteHeader(405)
 		return
 	}

@@ -20,7 +20,7 @@ type PostGachaDrawResponse struct {
 }
 
 func PostGachaDraw(w http.ResponseWriter, r *http.Request) {
-	if isStatusMethodInvalid(r, "POST") {
+	if isRequestMethodInvalid(r, "POST") {
 		w.WriteHeader(405)
 		return
 	}
