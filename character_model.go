@@ -103,7 +103,7 @@ WHERE U.digest_token = $1
 	return userCharacters, nil
 }
 
-func (userCharacter UserCharacter) insert(tx *sql.Tx) error {
+func (userCharacter *UserCharacter) insert(tx *sql.Tx) error {
 	const query = `INSERT INTO user_characters (user_id, character_id, experience) VALUES ($1, $2, $3)`
 	if _, err := tx.Exec(query, userCharacter.user.id, userCharacter.character.id, userCharacter.experience); err != nil {
 		return fmt.Errorf("tx.Exec failed: %w", err)
@@ -111,7 +111,7 @@ func (userCharacter UserCharacter) insert(tx *sql.Tx) error {
 	return nil
 }
 
-func (userCharacter UserCharacter) update(tx *sql.Tx) error {
+func (userCharacter *UserCharacter) update(tx *sql.Tx) error {
 	const query = `UPDATE user_characters SET experience = $2 WHERE id = $1`
 	if _, err := tx.Exec(query, userCharacter.id, userCharacter.experience); err != nil {
 		return fmt.Errorf("tx.Exec failed: %w", err)
@@ -119,7 +119,7 @@ func (userCharacter UserCharacter) update(tx *sql.Tx) error {
 	return nil
 }
 
-func (userCharacter UserCharacter) delete(tx *sql.Tx) error {
+func (userCharacter *UserCharacter) delete(tx *sql.Tx) error {
 	const query = `DELETE FROM user_characters WHERE id = $1`
 	if _, err := tx.Exec(query, userCharacter.id); err != nil {
 		return fmt.Errorf("tx.Exec failed: %w", err)
@@ -127,7 +127,7 @@ func (userCharacter UserCharacter) delete(tx *sql.Tx) error {
 	return nil
 }
 
-func (userCharacter UserCharacter) compose(tx *sql.Tx, materialUserCharacter UserCharacter) error {
+func (userCharacter *UserCharacter) compose(tx *sql.Tx, materialUserCharacter UserCharacter) error {
 	userCharacter.experience = userCharacter.experience + materialUserCharacter.character.calorie
 	if err := userCharacter.update(tx); err != nil {
 		return fmt.Errorf("userCharacter.update failed: %w", err)
