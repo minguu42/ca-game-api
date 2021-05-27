@@ -96,10 +96,10 @@ func storeGachaResults(tx *sql.Tx, results []gachaResult) error {
 			experience: result.experience,
 		}
 		if err := result.insert(tx); err != nil {
-			return fmt.Errorf("result.insert failed: %w", err)
+			return fmt.Errorf("result.insertUser failed: %w", err)
 		}
 		if err := userOwnCharacter.insert(tx); err != nil {
-			return fmt.Errorf("userOwnCharacter.insert failed: %w", err)
+			return fmt.Errorf("userOwnCharacter.insertUser failed: %w", err)
 		}
 	}
 	return nil

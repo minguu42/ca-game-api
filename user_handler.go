@@ -34,13 +34,9 @@ func PostUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var user User
-	user.name = reqBody.Name
-	user.digestToken = hash(token)
-	if err := user.insert(); err != nil {
-		log.Println("ERROR user.insert failed:", err)
+	if err := insertUser(reqBody.Name, hash(token)); err != nil {
+		fmt.Println("ERROR insertUser")
 		w.WriteHeader(400)
-		return
 	}
 
 	respBody := PostUserResponse{

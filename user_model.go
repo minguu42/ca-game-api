@@ -2,24 +2,7 @@ package ca_game_api
 
 import (
 	"fmt"
-	"time"
 )
-
-type User struct {
-	id          int
-	name        string
-	digestToken string
-	createdAt   time.Time
-	updatedAt   time.Time
-}
-
-func (user User) insert() error {
-	const sql = `INSERT INTO users (name, digest_token) VALUES ($1, $2);`
-	if _, err := db.Exec(sql, user.name, user.digestToken); err != nil {
-		return fmt.Errorf("db.Exec failed: %v", err)
-	}
-	return nil
-}
 
 func (user User) update() error {
 	const sql = `UPDATE users SET name = $1 WHERE digest_token = $2`
