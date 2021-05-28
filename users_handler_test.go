@@ -32,62 +32,148 @@ func TestMain(m *testing.M) {
 }
 
 func TestPostUser(t *testing.T) {
-	name, err := generateRandomString(8)
-	if err != nil {
-		t.Errorf("generateRandomString failed: %v", err)
-	}
-	reqBody := strings.NewReader(`{"name":"` + name + `"}`)
-	r := httptest.NewRequest("POST", "/user/post", reqBody)
-	w := httptest.NewRecorder()
+	t.Run("OK", func(t *testing.T) {
+		name, err := generateRandomString(8)
+		if err != nil {
+			t.Errorf("generateRandomString failed: %v", err)
+		}
+		reqBody := strings.NewReader(`{"name":"` + name + `"}`)
+		r := httptest.NewRequest("POST", "/user/post", reqBody)
+		w := httptest.NewRecorder()
 
-	PostUser(w, r)
+		PostUser(w, r)
 
-	resp := w.Result()
+		resp := w.Result()
 
-	bytes, err := io.ReadAll(resp.Body)
-	if err != nil {
-		t.Errorf("io.ReadAll failed: %v", err)
-	}
-	var body PostUserResponse
-	if err := json.Unmarshal(bytes, &body); err != nil {
-		t.Errorf("json.Unmarshal failed: %v", err)
-	}
+		bytes, err := io.ReadAll(resp.Body)
+		if err != nil {
+			t.Errorf("io.ReadAll failed: %v", err)
+		}
+		var body PostUserResponse
+		if err := json.Unmarshal(bytes, &body); err != nil {
+			t.Errorf("json.Unmarshal failed: %v", err)
+		}
 
-	if resp.StatusCode != 200 {
-		t.Errorf("Response code should be 200, but %v", w.Code)
-	}
-	if body.Token == "" {
-		t.Errorf("Token does not exist")
-	}
-	if len(body.Token) != 22 {
-		t.Errorf("Token length should be 22, but %v", len(body.Token))
-	}
+		if resp.StatusCode != 200 {
+			t.Errorf("Status code should be 200, but %v", w.Code)
+		}
+		if body.Token == "" {
+			t.Errorf("Token does not exist")
+		}
+		if len(body.Token) != 22 {
+			t.Errorf("Token length should be 22, but %v", len(body.Token))
+		}
+	})
+
+	t.Run("Bad request method", func(t *testing.T) {
+		r1 := httptest.NewRequest("GET", "/user/create", nil)
+		w1 := httptest.NewRecorder()
+		r2 := httptest.NewRequest("PUT", "/user/create", nil)
+		w2 := httptest.NewRecorder()
+		r3 := httptest.NewRequest("DELETE", "/user/create", nil)
+		w3 := httptest.NewRecorder()
+
+		PostUser(w1, r1)
+		PostUser(w2, r2)
+		PostUser(w3, r3)
+
+		resp1 := w1.Result()
+		resp2 := w2.Result()
+		resp3 := w3.Result()
+
+		if resp1.StatusCode != 405 {
+			t.Errorf("Status code should be 405, but %v", resp1.StatusCode)
+		}
+		if resp2.StatusCode != 405 {
+			t.Errorf("Status code should be 405, but %v", resp2.StatusCode)
+		}
+		if resp3.StatusCode != 405 {
+			t.Errorf("Status code should be 405, but %v", resp3.StatusCode)
+		}
+	})
+
+	t.Run("Bad request body", func(t *testing.T) {
+		reqBody := strings.NewReader(`{}`)
+		r := httptest.NewRequest("POST", "/character/compose", reqBody)
+		w := httptest.NewRecorder()
+
+		PostUser(w, r)
+
+		resp := w.Result()
+
+		if resp.StatusCode != 400 {
+			t.Errorf("Status code should be 400, but %v", resp.StatusCode)
+		}
+	})
 }
 
 func TestGetUser(t *testing.T) {
-	r := httptest.NewRequest("GET", "/user/get", nil)
-	r.Header.Set("x-token", "ceKeMPeYr0eF3K5e4Lfjfe")
-	w := httptest.NewRecorder()
+	t.Run("OK", func(t *testing.T) {
+		r := httptest.NewRequest("GET", "/user/get", nil)
+		r.Header.Set("x-token", "ceKeMPeYr0eF3K5e4Lfjfe")
+		w := httptest.NewRecorder()
 
-	GetUser(w, r)
+		GetUser(w, r)
 
-	resp := w.Result()
+		resp := w.Result()
 
-	bytes, err := io.ReadAll(resp.Body)
-	if err != nil {
-		t.Errorf("io.ReadAll failed: %v", err)
-	}
-	var body GetUserResponse
-	if err := json.Unmarshal(bytes, &body); err != nil {
-		t.Errorf("json.Unmarshal failed: %v", err)
-	}
+		bytes, err := io.ReadAll(resp.Body)
+		if err != nil {
+			t.Errorf("io.ReadAll failed: %v", err)
+		}
+		var body GetUserResponse
+		if err := json.Unmarshal(bytes, &body); err != nil {
+			t.Errorf("json.Unmarshal failed: %v", err)
+		}
 
-	if resp.StatusCode != 200 {
-		t.Errorf("Response code should be 200, but %v", w.Code)
-	}
-	if body.Name != "test1" {
-		t.Errorf("Name should be test1, but %v", body.Name)
-	}
+		if resp.StatusCode != 200 {
+			t.Errorf("Status code should be 200, but %v", w.Code)
+		}
+		if body.Name != "test1" {
+			t.Errorf("Name should be test1, but %v", body.Name)
+		}
+	})
+
+	t.Run("Bad request method", func(t *testing.T) {
+		r1 := httptest.NewRequest("POST", "/user/get", nil)
+		w1 := httptest.NewRecorder()
+		r2 := httptest.NewRequest("PUT", "/user/get", nil)
+		w2 := httptest.NewRecorder()
+		r3 := httptest.NewRequest("DELETE", "/user/get", nil)
+		w3 := httptest.NewRecorder()
+
+		GetUser(w1, r1)
+		GetUser(w2, r2)
+		GetUser(w3, r3)
+
+		resp1 := w1.Result()
+		resp2 := w2.Result()
+		resp3 := w3.Result()
+
+		if resp1.StatusCode != 405 {
+			t.Errorf("Status code should be 405, but %v", resp1.StatusCode)
+		}
+		if resp2.StatusCode != 405 {
+			t.Errorf("Status code should be 405, but %v", resp2.StatusCode)
+		}
+		if resp3.StatusCode != 405 {
+			t.Errorf("Status code should be 405, but %v", resp3.StatusCode)
+		}
+	})
+
+	t.Run("Bad request parameters", func(t *testing.T) {
+		r := httptest.NewRequest("GET", "/user/get", nil)
+		r.Header.Set("x-token", "xxxxxxxxxxxxxxxxxxxxxx")
+		w := httptest.NewRecorder()
+
+		GetUser(w, r)
+
+		resp := w.Result()
+
+		if resp.StatusCode != 403 {
+			t.Errorf("Status code should be 403, but %v", resp.StatusCode)
+		}
+	})
 }
 
 func TestPutUser(t *testing.T) {
@@ -105,7 +191,7 @@ func TestPutUser(t *testing.T) {
 	resp := w.Result()
 
 	if resp.StatusCode != 200 {
-		t.Errorf("Response code should be 200, but %v", resp.StatusCode)
+		t.Errorf("Status code should be 200, but %v", resp.StatusCode)
 	}
 }
 
@@ -128,7 +214,7 @@ func TestGetUserRanking(t *testing.T) {
 	}
 
 	if resp.StatusCode != 200 {
-		t.Errorf("Response code should be 200, but %v", resp.StatusCode)
+		t.Errorf("Status code should be 200, but %v", resp.StatusCode)
 	}
 	if len(body.Users) != 3 {
 		t.Errorf("Ranking up to 3rd, but response body include %v users", len(body.Users))

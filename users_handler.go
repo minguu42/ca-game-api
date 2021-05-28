@@ -37,6 +37,7 @@ func PostUser(w http.ResponseWriter, r *http.Request) {
 	if err := insertUser(reqBody.Name, hash(token)); err != nil {
 		fmt.Println("ERROR insertUser")
 		w.WriteHeader(400)
+		return
 	}
 
 	respBody := PostUserResponse{
@@ -64,7 +65,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 	user, err := getUserByDigestToken(hash(token))
 	if err != nil {
 		log.Println("ERROR getUserByDigestToken failed:", err)
-		w.WriteHeader(http.StatusUnauthorized)
+		w.WriteHeader(403)
 		return
 	}
 
