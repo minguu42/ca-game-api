@@ -13,18 +13,10 @@ type User struct {
 	updatedAt   time.Time
 }
 
-func (user User) insert() error {
-	const sql = `INSERT INTO users (name, digest_token) VALUES ($1, $2);`
-	if _, err := db.Exec(sql, user.name, user.digestToken); err != nil {
+func insertUser(name, digestToken string) error {
+	const query = `INSERT INTO users (name, digest_token) VALUES ($1, $2);`
+	if _, err := db.Exec(query, name, digestToken); err != nil {
 		return fmt.Errorf("db.Exec failed: %v", err)
-	}
-	return nil
-}
-
-func (user User) update() error {
-	const sql = `UPDATE users SET name = $1 WHERE digest_token = $2`
-	if _, err := db.Exec(sql, user.name, user.digestToken); err != nil {
-		return fmt.Errorf("db.Exec failed: %w", err)
 	}
 	return nil
 }
@@ -36,7 +28,7 @@ func getUserByToken(token string) (User, error) {
 	row := db.QueryRow(query, digestToken)
 	var user User
 	if err := row.Scan(&user.id, &user.name, &user.digestToken, &user.createdAt, &user.updatedAt); err != nil {
-		return user, fmt.Errorf("row.Scan failed: %w", err)
+		return User{}, fmt.Errorf("row.Scan failed: %w", err)
 	}
 	return user, nil
 }
@@ -46,13 +38,21 @@ func getUserById(id int) (User, error) {
 	row := db.QueryRow(query, id)
 	var user User
 	if err := row.Scan(&user.id, &user.name, &user.digestToken, &user.createdAt, &user.updatedAt); err != nil {
-		return user, fmt.Errorf("row.Scan failed: %w", err)
+		return User{}, fmt.Errorf("row.Scan failed: %w", err)
 	}
 	return user, nil
 }
 
+func (user User) update() error {
+	const query = `UPDATE users SET name = $1 WHERE digest_token = $2`
+	if _, err := db.Exec(query, user.name, user.digestToken); err != nil {
+		return fmt.Errorf("db.Exec failed: %w", err)
+	}
+	return nil
+}
+
 func selectUserRanking() ([]UserRankingJson, error) {
-	const sql = `
+	const query = `
 SELECT U.name, SUM(UOC.experience * C.base_power) AS sumPower
 FROM user_characters AS UOC
 INNER JOIN users AS U ON UOC.user_id = U.id
@@ -62,7 +62,7 @@ ORDER BY sumPower DESC
 LIMIT 3
 `
 	var rankings []UserRankingJson
-	rows, err := db.Query(sql)
+	rows, err := db.Query(query)
 	if err != nil {
 		return nil, fmt.Errorf("db.Query failed: %w", err)
 	}

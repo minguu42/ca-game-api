@@ -3,37 +3,8 @@ package ca_game_api
 import (
 	"database/sql"
 	"fmt"
-	"math"
 	"time"
 )
-
-type Character struct {
-	id        int
-	name      string
-	rarity    int
-	basePower int
-	calorie   int
-}
-
-func getCharacterById(id int) (Character, error) {
-	const query = "SELECT id, name, rarity, base_power, calorie FROM characters WHERE id = $1"
-	row := db.QueryRow(query, id)
-	var character Character
-	if err := row.Scan(&character.id, &character.name, &character.rarity, &character.basePower, &character.calorie); err != nil {
-		return character, fmt.Errorf("row.Scan failed: %w", err)
-	}
-	return character, nil
-}
-
-func countCharactersByRarity(rarity int) (int, error) {
-	const query = "SELECT COUNT(*) FROM characters WHERE rarity = $1"
-	var count int
-	row := db.QueryRow(query, rarity)
-	if err := row.Scan(&count); err != nil {
-		return 0, fmt.Errorf("row.Scan faild: %w", err)
-	}
-	return count, nil
-}
 
 type UserCharacter struct {
 	id         int
@@ -42,6 +13,14 @@ type UserCharacter struct {
 	experience int
 	createdAt  time.Time
 	updatedAt  time.Time
+}
+
+func (userCharacter *UserCharacter) insert(tx *sql.Tx) error {
+	const query = `INSERT INTO user_characters (user_id, character_id, experience) VALUES ($1, $2, $3)`
+	if _, err := tx.Exec(query, userCharacter.user.id, userCharacter.character.id, userCharacter.experience); err != nil {
+		return fmt.Errorf("tx.Exec failed: %w", err)
+	}
+	return nil
 }
 
 func getUserCharacterById(id int) (UserCharacter, error) {
@@ -103,14 +82,6 @@ WHERE U.digest_token = $1
 	return userCharacters, nil
 }
 
-func (userCharacter *UserCharacter) insert(tx *sql.Tx) error {
-	const query = `INSERT INTO user_characters (user_id, character_id, experience) VALUES ($1, $2, $3)`
-	if _, err := tx.Exec(query, userCharacter.user.id, userCharacter.character.id, userCharacter.experience); err != nil {
-		return fmt.Errorf("tx.Exec failed: %w", err)
-	}
-	return nil
-}
-
 func (userCharacter *UserCharacter) update(tx *sql.Tx) error {
 	const query = `UPDATE user_characters SET experience = $2 WHERE id = $1`
 	if _, err := tx.Exec(query, userCharacter.id, userCharacter.experience); err != nil {
@@ -136,12 +107,4 @@ func (userCharacter *UserCharacter) compose(tx *sql.Tx, materialUserCharacter Us
 		return fmt.Errorf("materialUserCharacter.delete failed: %w", err)
 	}
 	return nil
-}
-
-func calculateLevel(experience int) int {
-	return int(math.Floor(math.Sqrt(float64(experience)) / 10.0))
-}
-
-func calculatePower(experience, basePower int) int {
-	return calculateLevel(experience) * basePower
 }
