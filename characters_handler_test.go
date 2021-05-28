@@ -224,7 +224,7 @@ func TestPutCharacterCompose(t *testing.T) {
 	t.Run("Bad request body", func(t *testing.T) {
 		reqBody := strings.NewReader(`
 {
-  "baseUserCharacterID": 1,
+  "baseUserCharacterID": 1
 }
 `)
 		r := httptest.NewRequest("PUT", "/character/compose", reqBody)
