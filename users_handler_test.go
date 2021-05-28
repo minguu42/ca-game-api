@@ -19,11 +19,15 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	setupPutCharacterCompose()
+
 	code := m.Run()
+
 	if err := db.Close(); err != nil {
 		log.Fatal(err)
 	}
+
 	os.Exit(code)
 }
 
