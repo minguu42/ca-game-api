@@ -86,14 +86,14 @@ func PutCharacterCompose(w http.ResponseWriter, r *http.Request) {
 	baseUserCharacterId := reqBody.BaseUserCharacterId
 	materialUserCharacterId := reqBody.MaterialUserCharacterId
 	if baseUserCharacterId == materialUserCharacterId {
-		log.Println("ERROR cannot compose same character")
+		log.Println("ERROR cannot composeUserCharacter same character")
 		w.WriteHeader(400)
 		return
 	}
 
-	user, err := getUserByToken(token)
+	user, err := getUserByDigestToken(hash(token))
 	if err != nil {
-		fmt.Println("ERROR getUserByToken failed:", err)
+		fmt.Println("ERROR getUserByDigestToken failed:", err)
 		w.WriteHeader(403)
 		return
 	}
@@ -122,8 +122,8 @@ func PutCharacterCompose(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := baseUserCharacter.compose(tx, materialUserCharacter); err != nil {
-		log.Println("baseUserCharacter.compose failed:", err)
+	if err := composeUserCharacter(tx, baseUserCharacter, materialUserCharacter); err != nil {
+		log.Println("baseUserCharacter.composeUserCharacter failed:", err)
 		if err := tx.Rollback(); err != nil {
 			log.Println("ERROR tx.Rollback failed:", err)
 		}

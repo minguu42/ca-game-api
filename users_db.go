@@ -21,11 +21,10 @@ func insertUser(name, digestToken string) error {
 	return nil
 }
 
-func getUserByToken(token string) (User, error) {
-	digestToken := hash(token)
-
+func getUserByDigestToken(digestToken string) (User, error) {
 	const query = `SELECT id, name, digest_token, created_at, updated_at FROM users WHERE digest_token = $1`
 	row := db.QueryRow(query, digestToken)
+
 	var user User
 	if err := row.Scan(&user.id, &user.name, &user.digestToken, &user.createdAt, &user.updatedAt); err != nil {
 		return User{}, fmt.Errorf("row.Scan failed: %w", err)
@@ -36,6 +35,7 @@ func getUserByToken(token string) (User, error) {
 func getUserById(id int) (User, error) {
 	const query = `SELECT id, name, digest_token, created_at, updated_at FROM users WHERE id = $1`
 	row := db.QueryRow(query, id)
+
 	var user User
 	if err := row.Scan(&user.id, &user.name, &user.digestToken, &user.createdAt, &user.updatedAt); err != nil {
 		return User{}, fmt.Errorf("row.Scan failed: %w", err)
@@ -43,7 +43,7 @@ func getUserById(id int) (User, error) {
 	return user, nil
 }
 
-func (user User) update() error {
+func updateUser(user User) error {
 	const query = `UPDATE users SET name = $1 WHERE digest_token = $2`
 	if _, err := db.Exec(query, user.name, user.digestToken); err != nil {
 		return fmt.Errorf("db.Exec failed: %w", err)
