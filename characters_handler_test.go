@@ -93,7 +93,7 @@ func TestPutCharacterCompose(t *testing.T) {
   "materialUserCharacterID":` + strconv.Itoa(materialUserCharacterId) + `
 }
 `)
-	r := httptest.NewRequest("PUT", "/character/compose", reqBody)
+	r := httptest.NewRequest("PUT", "/character/composeUserCharacter", reqBody)
 	r.Header.Set("x-token", "ceKeMPeYr0eF3K5e4Lfjfe")
 	w := httptest.NewRecorder()
 

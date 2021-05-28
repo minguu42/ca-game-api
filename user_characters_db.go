@@ -90,21 +90,10 @@ func updateUserCharacter(tx *sql.Tx, userCharacter UserCharacter) error {
 	return nil
 }
 
-func (userCharacter *UserCharacter) delete(tx *sql.Tx) error {
+func deleteUserCharacter(tx *sql.Tx, id int) error {
 	const query = `DELETE FROM user_characters WHERE id = $1`
-	if _, err := tx.Exec(query, userCharacter.id); err != nil {
+	if _, err := tx.Exec(query, id); err != nil {
 		return fmt.Errorf("tx.Exec failed: %w", err)
-	}
-	return nil
-}
-
-func (userCharacter *UserCharacter) compose(tx *sql.Tx, materialUserCharacter UserCharacter) error {
-	userCharacter.experience = userCharacter.experience + materialUserCharacter.character.calorie
-	if err := updateUserCharacter(tx, *userCharacter); err != nil {
-		return fmt.Errorf("userCharacter.updateUser failed: %w", err)
-	}
-	if err := materialUserCharacter.delete(tx); err != nil {
-		return fmt.Errorf("materialUserCharacter.delete failed: %w", err)
 	}
 	return nil
 }

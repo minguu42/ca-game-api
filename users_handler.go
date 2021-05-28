@@ -97,7 +97,7 @@ func PutUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user := User{
-		name: reqBody.Name,
+		name:        reqBody.Name,
 		digestToken: hash(token),
 	}
 	if err := updateUser(user); err != nil {
