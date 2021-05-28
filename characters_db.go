@@ -22,6 +22,7 @@ func getCharacterById(id int) (Character, error) {
 
 func countCharactersByRarity(rarity int) (int, error) {
 	const query = "SELECT COUNT(*) FROM characters WHERE rarity = $1"
+
 	var count int
 	row := db.QueryRow(query, rarity)
 	if err := row.Scan(&count); err != nil {
