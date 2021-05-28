@@ -76,21 +76,35 @@ func TestGetCharacterList(t *testing.T) {
 	})
 
 	t.Run("Bad request method", func(t *testing.T) {
-		r := httptest.NewRequest("POST", "/character/list", nil)
-		w := httptest.NewRecorder()
+		r1 := httptest.NewRequest("POST", "/character/list", nil)
+		w1 := httptest.NewRecorder()
+		r2 := httptest.NewRequest("PUT", "/character/list", nil)
+		w2 := httptest.NewRecorder()
+		r3 := httptest.NewRequest("DELETE", "/character/list", nil)
+		w3 := httptest.NewRecorder()
 
-		GetCharacterList(w, r)
+		GetCharacterList(w1, r1)
+		GetCharacterList(w2, r2)
+		GetCharacterList(w3, r3)
 
-		resp := w.Result()
+		resp1 := w1.Result()
+		resp2 := w2.Result()
+		resp3 := w3.Result()
 
-		if resp.StatusCode != 405 {
-			t.Errorf("Status code should be 403, but %v", resp.StatusCode)
+		if resp1.StatusCode != 405 {
+			t.Errorf("Status code should be 405, but %v", resp1.StatusCode)
+		}
+		if resp2.StatusCode != 405 {
+			t.Errorf("Status code should be 405, but %v", resp2.StatusCode)
+		}
+		if resp3.StatusCode != 405 {
+			t.Errorf("Status code should be 405, but %v", resp3.StatusCode)
 		}
 	})
 
 	t.Run("Bad request parameters", func(t *testing.T) {
 		r := httptest.NewRequest("GET", "/character/list", nil)
-		r.Header.Set("x-token", "xxxxxxxxIjVHMWT7wpH5Ow")
+		r.Header.Set("x-token", "xxxxxxxxxxxxxxxxxxxxxxx")
 		w := httptest.NewRecorder()
 
 		GetCharacterList(w, r)
@@ -116,45 +130,113 @@ RETURNING id
 }
 
 func TestPutCharacterCompose(t *testing.T) {
-	reqBody := strings.NewReader(`
+	t.Run("OK", func(t *testing.T) {
+		reqBody := strings.NewReader(`
 {
   "baseUserCharacterID": 1,
   "materialUserCharacterID":` + strconv.Itoa(materialUserCharacterId) + `
 }
 `)
-	r := httptest.NewRequest("PUT", "/character/composeUserCharacter", reqBody)
-	r.Header.Set("x-token", "ceKeMPeYr0eF3K5e4Lfjfe")
-	w := httptest.NewRecorder()
+		r := httptest.NewRequest("PUT", "/character/compose", reqBody)
+		r.Header.Set("x-token", "ceKeMPeYr0eF3K5e4Lfjfe")
+		w := httptest.NewRecorder()
 
-	PutCharacterCompose(w, r)
+		PutCharacterCompose(w, r)
 
-	resp := w.Result()
+		resp := w.Result()
 
-	bytes, err := io.ReadAll(resp.Body)
-	if err != nil {
-		t.Errorf("io.ReadAll failed: %v", err)
-	}
-	var body PutCharacterComposeResponse
-	if err := json.Unmarshal(bytes, &body); err != nil {
-		t.Errorf("json.Unmarshal failed: %v", err)
-	}
+		bytes, err := io.ReadAll(resp.Body)
+		if err != nil {
+			t.Errorf("io.ReadAll failed: %v", err)
+		}
+		var body PutCharacterComposeResponse
+		if err := json.Unmarshal(bytes, &body); err != nil {
+			t.Errorf("json.Unmarshal failed: %v", err)
+		}
 
-	if resp.StatusCode != 200 {
-		t.Errorf("Status code should be 200, but %v", resp.StatusCode)
-	}
-	if body.UserCharacterId != 1 {
-		t.Errorf("userCharacterID should be 1, but %v", body.UserCharacterId)
-	}
-	if body.CharacterId != 50000002 {
-		t.Errorf("characterID should be 50000002, but %v", body.CharacterId)
-	}
-	if body.Name != "super_rare_character2" {
-		t.Errorf("name should be super_rare_character2, but %v", body.Name)
-	}
-	if body.Level <= 0 {
-		t.Errorf("level should be positive number, but %v", body.Level)
-	}
-	if body.Power == 0 {
-		t.Errorf("power does not exist")
-	}
+		if resp.StatusCode != 200 {
+			t.Errorf("Status code should be 200, but %v", resp.StatusCode)
+		}
+		if body.UserCharacterId != 1 {
+			t.Errorf("userCharacterID should be 1, but %v", body.UserCharacterId)
+		}
+		if body.CharacterId != 50000002 {
+			t.Errorf("characterID should be 50000002, but %v", body.CharacterId)
+		}
+		if body.Name != "super_rare_character2" {
+			t.Errorf("name should be super_rare_character2, but %v", body.Name)
+		}
+		if body.Level <= 0 {
+			t.Errorf("level should be positive number, but %v", body.Level)
+		}
+		if body.Power == 0 {
+			t.Errorf("power does not exist")
+		}
+	})
+
+	t.Run("Bad request method", func(t *testing.T) {
+		r1 := httptest.NewRequest("GET", "/character/compose", nil)
+		w1 := httptest.NewRecorder()
+		r2 := httptest.NewRequest("POST", "/character/compose", nil)
+		w2 := httptest.NewRecorder()
+		r3 := httptest.NewRequest("DELETE", "/character/compose", nil)
+		w3 := httptest.NewRecorder()
+
+		PutCharacterCompose(w1, r1)
+		PutCharacterCompose(w2, r2)
+		PutCharacterCompose(w3, r3)
+
+		resp1 := w1.Result()
+		resp2 := w2.Result()
+		resp3 := w3.Result()
+
+		if resp1.StatusCode != 405 {
+			t.Errorf("Status code should be 405, but %v", resp1.StatusCode)
+		}
+		if resp2.StatusCode != 405 {
+			t.Errorf("Status code should be 405, but %v", resp2.StatusCode)
+		}
+		if resp3.StatusCode != 405 {
+			t.Errorf("Status code should be 405, but %v", resp3.StatusCode)
+		}
+	})
+
+	t.Run("Bad request parameters", func(t *testing.T) {
+		reqBody := strings.NewReader(`
+{
+  "baseUserCharacterID": 1,
+  "materialUserCharacterID":` + strconv.Itoa(materialUserCharacterId) + `
+}
+`)
+		r := httptest.NewRequest("PUT", "/character/compose", reqBody)
+		r.Header.Set("x-token", "xxxxxxxxxxxxxxxxxxxxxx")
+		w := httptest.NewRecorder()
+
+		PutCharacterCompose(w, r)
+
+		resp := w.Result()
+
+		if resp.StatusCode != 403 {
+			t.Errorf("Status code should be 403, but %v", resp.StatusCode)
+		}
+	})
+
+	t.Run("Bad request body", func(t *testing.T) {
+		reqBody := strings.NewReader(`
+{
+  "baseUserCharacterID": 1,
+}
+`)
+		r := httptest.NewRequest("PUT", "/character/compose", reqBody)
+		r.Header.Set("x-token", "ceKeMPeYr0eF3K5e4Lfjfe")
+		w := httptest.NewRecorder()
+
+		PutCharacterCompose(w, r)
+
+		resp := w.Result()
+
+		if resp.StatusCode != 400 {
+			t.Errorf("Status code should be 400, but %v", resp.StatusCode)
+		}
+	})
 }
