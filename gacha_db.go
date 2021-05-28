@@ -24,16 +24,12 @@ func insertResult(tx *sql.Tx, result gachaResult) error {
 
 func insertGachaResults(tx *sql.Tx, results []gachaResult) error {
 	for _, result := range results {
-		userCharacter := UserCharacter{
-			user:       result.user,
-			character:  result.character,
-			experience: result.experience,
-		}
 		if err := insertResult(tx, result); err != nil {
 			return fmt.Errorf("insertUser failed: %w", err)
 		}
-		if err := userCharacter.insert(tx); err != nil {
-			return fmt.Errorf("insertUser failed: %w", err)
+
+		if err := insertUserCharacter(tx, result.user.id, result.character.id, result.experience); err != nil {
+			return fmt.Errorf("insertUserCharacter failed: %w", err)
 		}
 	}
 	return nil
