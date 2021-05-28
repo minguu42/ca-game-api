@@ -14,26 +14,26 @@ type gachaResult struct {
 	createdAt  time.Time
 }
 
-func (gachaResult gachaResult) insert(tx *sql.Tx) error {
+func insertResult(tx *sql.Tx, result gachaResult) error {
 	const insertSql = "INSERT INTO gacha_results (user_id, character_id, experience) VALUES ($1, $2, $3)"
-	if _, err := tx.Exec(insertSql, gachaResult.user.id, gachaResult.character.id, gachaResult.experience); err != nil {
+	if _, err := tx.Exec(insertSql, result.user.id, result.character.id, result.experience); err != nil {
 		return fmt.Errorf("tx.Exec failed: %w", err)
 	}
 	return nil
 }
 
-func storeGachaResults(tx *sql.Tx, results []gachaResult) error {
+func insertGachaResults(tx *sql.Tx, results []gachaResult) error {
 	for _, result := range results {
-		userOwnCharacter := UserCharacter{
+		userCharacter := UserCharacter{
 			user:       result.user,
 			character:  result.character,
 			experience: result.experience,
 		}
-		if err := result.insert(tx); err != nil {
-			return fmt.Errorf("result.insertUser failed: %w", err)
+		if err := insertResult(tx, result); err != nil {
+			return fmt.Errorf("insertUser failed: %w", err)
 		}
-		if err := userOwnCharacter.insert(tx); err != nil {
-			return fmt.Errorf("userOwnCharacter.insertUser failed: %w", err)
+		if err := userCharacter.insert(tx); err != nil {
+			return fmt.Errorf("insertUser failed: %w", err)
 		}
 	}
 	return nil

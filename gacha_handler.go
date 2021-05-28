@@ -59,8 +59,8 @@ func PostGachaDraw(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(500)
 		return
 	}
-	if err := storeGachaResults(tx, results); err != nil {
-		log.Println("ERROR storeGachaResults failed:", err)
+	if err := insertGachaResults(tx, results); err != nil {
+		log.Println("ERROR insertGachaResults failed:", err)
 		if err := tx.Rollback(); err != nil {
 			log.Println("ERROR tx.Rollback failed:", err)
 		}
