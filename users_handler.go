@@ -61,9 +61,9 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 
 	token := r.Header.Get("x-token")
 
-	user, err := getUserByToken(token)
+	user, err := getUserByDigestToken(hash(token))
 	if err != nil {
-		log.Println("ERROR getUserByToken failed:", err)
+		log.Println("ERROR getUserByDigestToken failed:", err)
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -96,11 +96,11 @@ func PutUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var user User
-	user.name = reqBody.Name
-	user.digestToken = hash(token)
-
-	if err := user.update(); err != nil {
+	user := User{
+		name: reqBody.Name,
+		digestToken: hash(token),
+	}
+	if err := updateUser(user); err != nil {
 		log.Println("ERROR updateUser failed:", err)
 		w.WriteHeader(400)
 		return
@@ -123,8 +123,8 @@ func GetUserRanking(w http.ResponseWriter, r *http.Request) {
 	}
 
 	token := r.Header.Get("x-token")
-	if _, err := getUserByToken(token); err != nil {
-		fmt.Println("ERROR getUserByToken failed:", err)
+	if _, err := getUserByDigestToken(hash(token)); err != nil {
+		fmt.Println("ERROR getUserByDigestToken failed:", err)
 		w.WriteHeader(403)
 		return
 	}

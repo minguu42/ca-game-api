@@ -92,7 +92,7 @@ func TestPutUser(t *testing.T) {
 		t.Errorf("generateRandomString failed: %v", err)
 	}
 	reqBody := strings.NewReader(`{"name":"` + name + `"}`)
-	r := httptest.NewRequest("PUT", "/user/update", reqBody)
+	r := httptest.NewRequest("PUT", "/user/updateUser", reqBody)
 	r.Header.Set("x-token", "yypKkCsMXx2MBBVorFQBsQ")
 	w := httptest.NewRecorder()
 

@@ -47,9 +47,9 @@ func getUserCharacterById(id int) (UserCharacter, error) {
 }
 
 func getUserCharactersByToken(token string) ([]UserCharacter, error) {
-	user, err := getUserByToken(token)
+	user, err := getUserByDigestToken(hash(token))
 	if err != nil {
-		return nil, fmt.Errorf("getUserByToken failed: %w", err)
+		return nil, fmt.Errorf("getUserByDigestToken failed: %w", err)
 	}
 
 	const query = `
@@ -101,7 +101,7 @@ func (userCharacter *UserCharacter) delete(tx *sql.Tx) error {
 func (userCharacter *UserCharacter) compose(tx *sql.Tx, materialUserCharacter UserCharacter) error {
 	userCharacter.experience = userCharacter.experience + materialUserCharacter.character.calorie
 	if err := userCharacter.update(tx); err != nil {
-		return fmt.Errorf("userCharacter.update failed: %w", err)
+		return fmt.Errorf("userCharacter.updateUser failed: %w", err)
 	}
 	if err := materialUserCharacter.delete(tx); err != nil {
 		return fmt.Errorf("materialUserCharacter.delete failed: %w", err)

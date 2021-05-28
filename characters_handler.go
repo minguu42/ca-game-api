@@ -91,9 +91,9 @@ func PutCharacterCompose(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := getUserByToken(token)
+	user, err := getUserByDigestToken(hash(token))
 	if err != nil {
-		fmt.Println("ERROR getUserByToken failed:", err)
+		fmt.Println("ERROR getUserByDigestToken failed:", err)
 		w.WriteHeader(403)
 		return
 	}

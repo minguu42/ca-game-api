@@ -39,9 +39,9 @@ func PostGachaDraw(w http.ResponseWriter, r *http.Request) {
 		log.Println("ERROR Times should be positive number")
 		return
 	}
-	user, err := getUserByToken(token)
+	user, err := getUserByDigestToken(hash(token))
 	if err != nil {
-		log.Println("ERROR getUserByToken failed:", err)
+		log.Println("ERROR getUserByDigestToken failed:", err)
 		w.WriteHeader(403)
 		return
 	}
