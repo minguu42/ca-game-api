@@ -10,7 +10,6 @@ type Character struct {
 	calorie   int
 }
 
-
 func getCharacterById(id int) (Character, error) {
 	const query = "SELECT id, name, rarity, base_power, calorie FROM characters WHERE id = $1"
 	row := db.QueryRow(query, id)
