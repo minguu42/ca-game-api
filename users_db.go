@@ -28,7 +28,7 @@ func getUserByToken(token string) (User, error) {
 	row := db.QueryRow(query, digestToken)
 	var user User
 	if err := row.Scan(&user.id, &user.name, &user.digestToken, &user.createdAt, &user.updatedAt); err != nil {
-		return user, fmt.Errorf("row.Scan failed: %w", err)
+		return User{}, fmt.Errorf("row.Scan failed: %w", err)
 	}
 	return user, nil
 }
@@ -38,7 +38,7 @@ func getUserById(id int) (User, error) {
 	row := db.QueryRow(query, id)
 	var user User
 	if err := row.Scan(&user.id, &user.name, &user.digestToken, &user.createdAt, &user.updatedAt); err != nil {
-		return user, fmt.Errorf("row.Scan failed: %w", err)
+		return User{}, fmt.Errorf("row.Scan failed: %w", err)
 	}
 	return user, nil
 }
