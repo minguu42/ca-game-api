@@ -30,16 +30,6 @@ POSTGRES_DB=<dbname>
 $ docker compose up -d
 ```
 
-3. テストを実行し, 確認する
-
-上記のコマンドでテスト用データベースのコンテナも起動します.
-以下のコマンドでテストを実行します.
-
-```bash
-$ go test .
-ok      github.com/minguu42/ca-game-api 0.831s
-```
-
 ## 動作例
 
 動作例は全てローカルで, cURLでリクエストを行い, 確認した動作を載せています.

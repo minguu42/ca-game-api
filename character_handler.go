@@ -27,15 +27,15 @@ func GetCharacterList(w http.ResponseWriter, r *http.Request) {
 
 	xToken := r.Header.Get("x-token")
 
-	userOwnCharacters, err := getUserCharactersByToken(xToken)
+	userCharacters, err := getUserCharactersByToken(xToken)
 	if err != nil {
 		log.Println("ERROR getUserCharactersByToken failed:", err)
-		w.WriteHeader(500)
+		w.WriteHeader(400)
 		return
 	}
 
-	charactersJson := make([]CharacterJson, 0, len(userOwnCharacters))
-	for _, userOwnCharacter := range userOwnCharacters {
+	charactersJson := make([]CharacterJson, 0, len(userCharacters))
+	for _, userOwnCharacter := range userCharacters {
 		characterJson := CharacterJson{
 			UserCharacterId: userOwnCharacter.id,
 			CharacterId:     userOwnCharacter.character.id,
