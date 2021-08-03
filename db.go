@@ -10,7 +10,7 @@ var db *sql.DB
 
 func OpenDb() {
 	var err error
-	db, err = sql.Open("postgres", os.Getenv("DATABASE_URL"))
+	db, err = sql.Open("postgres", os.Getenv("DSN"))
 	if err != nil {
 		log.Fatal(err)
 	}
