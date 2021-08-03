@@ -7,10 +7,7 @@ import (
 )
 
 func isRequestMethodInvalid(r *http.Request, method string) bool {
-	if r.Method != method {
-		return true
-	}
-	return false
+	return r.Method != method
 }
 
 func decodeRequest(r *http.Request, jsonRequest interface{}) error {

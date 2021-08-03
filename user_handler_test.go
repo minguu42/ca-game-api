@@ -1,35 +1,12 @@
 package ca_game_api
 
 import (
-	"database/sql"
 	"encoding/json"
 	"io"
-	"log"
 	"net/http/httptest"
-	"os"
 	"strings"
 	"testing"
-
-	_ "github.com/lib/pq"
 )
-
-func TestMain(m *testing.M) {
-	var err error
-	db, err = sql.Open("postgres", "postgres://test:password@localhost:15432/test_db?sslmode=disable")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	setupPutCharacterCompose()
-
-	code := m.Run()
-
-	if err := db.Close(); err != nil {
-		log.Fatal(err)
-	}
-
-	os.Exit(code)
-}
 
 func TestPostUser(t *testing.T) {
 	t.Run("OK", func(t *testing.T) {
