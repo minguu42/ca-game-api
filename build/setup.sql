@@ -1,34 +1,38 @@
 CREATE TABLE IF NOT EXISTS users (
-    id serial PRIMARY KEY,
-    name varchar(255) UNIQUE NOT NULL,
-    digest_token varchar(255) NOT NULL,
-    created_at timestamp NOT NULL DEFAULT NOW(),
-    updated_at timestamp NOT NULL DEFAULT NOW()
+    id           SERIAL       PRIMARY KEY,
+    name         VARCHAR(255) NOT NULL UNIQUE,
+    digest_token VARCHAR(64)  NOT NULL,
+    created_at   TIMESTAMP    DEFAULT NOW() NOT NULL,
+    updated_at   TIMESTAMP    DEFAULT NOW() NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS characters (
-    id int PRIMARY KEY,
-    name varchar(255) NOT NULL,
-    rarity int NOT NULL,
-    base_power int NOT NULL,
-    calorie int NOT NULL
+    id         INT          PRIMARY KEY,
+    name       VARCHAR(255) NOT NULL,
+    rarity     INT          NOT NULL CHECK ( rarity BETWEEN 3 AND 5),
+    base_power INT          NOT NULL CHECK ( base_power BETWEEN 1 AND 1000),
+    calorie    INT          NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS user_characters (
-    id serial PRIMARY KEY,
-    user_id int REFERENCES users,
-    character_id int REFERENCES characters,
-    experience int NOT NULL,
-    created_at timestamp NOT NULL DEFAULT NOW(),
-    updated_at timestamp NOT NULL DEFAULT NOW()
+    id           SERIAL    PRIMARY KEY,
+    user_id      INT       NOT NULL,
+    character_id INT       NOT NULL,
+    experience   INT       NOT NULL,
+    created_at   TIMESTAMP DEFAULT NOW() NOT NULL,
+    updated_at   TIMESTAMP DEFAULT NOW() NOT NULL,
+    FOREIGN KEY (user_id)      REFERENCES users(id),
+    FOREIGN KEY (character_id) REFERENCES characters(id)
 );
 
 CREATE TABLE IF NOT EXISTS gacha_results (
-    id serial PRIMARY KEY,
-    user_id int REFERENCES users,
-    character_id int REFERENCES characters,
-    experience int NOT NULL,
-    created_at timestamp NOT NULL DEFAULT NOW()
+    id           SERIAL    PRIMARY KEY,
+    user_id      INT       NOT NULL,
+    character_id INT       NOT NULL,
+    experience   INT       NOT NULL,
+    created_at   TIMESTAMP DEFAULT NOW() NOT NULL,
+    FOREIGN KEY (user_id)      REFERENCES users(id),
+    FOREIGN KEY (character_id) REFERENCES characters(id)
 );
 
 CREATE OR REPLACE FUNCTION trigger_set_timestamp()
