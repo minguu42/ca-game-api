@@ -15,15 +15,12 @@ type PostUserResponse struct {
 }
 
 func PostUser(w http.ResponseWriter, r *http.Request) {
-	if isRequestMethodInvalid(r, "POST") {
-		w.WriteHeader(405)
+	if isRequestMethodInvalid(w, r, "POST") {
 		return
 	}
 
 	var reqBody PostUserRequest
-	if err := decodeRequest(r, &reqBody); err != nil {
-		log.Println("ERROR decodeRequest failed:", err)
-		w.WriteHeader(400)
+	if err := decodeRequest(w, r, &reqBody); err != nil {
 		return
 	}
 
@@ -35,17 +32,16 @@ func PostUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := insertUser(reqBody.Name, hash(token)); err != nil {
-		fmt.Println("ERROR insertUser")
-		w.WriteHeader(400)
+		log.Println("ERROR insertUser failed:", err)
+		w.WriteHeader(409)
 		return
 	}
 
+	w.WriteHeader(201)
 	respBody := PostUserResponse{
 		Token: token,
 	}
 	if err := encodeResponse(w, respBody); err != nil {
-		log.Println("ERROR encodeResponse failed:", err)
-		w.WriteHeader(500)
 		return
 	}
 }
@@ -55,8 +51,7 @@ type GetUserResponse struct {
 }
 
 func GetUser(w http.ResponseWriter, r *http.Request) {
-	if isRequestMethodInvalid(r, "GET") {
-		w.WriteHeader(405)
+	if isRequestMethodInvalid(w, r, "GET") {
 		return
 	}
 
@@ -73,8 +68,6 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 		Name: user.name,
 	}
 	if err := encodeResponse(w, respBody); err != nil {
-		log.Println("ERROR encodeResponse failed:", err)
-		w.WriteHeader(500)
 		return
 	}
 }
@@ -84,16 +77,13 @@ type PutUserRequest struct {
 }
 
 func PutUser(w http.ResponseWriter, r *http.Request) {
-	if isRequestMethodInvalid(r, "PUT") {
-		w.WriteHeader(405)
+	if isRequestMethodInvalid(w, r, "PUT") {
 		return
 	}
 
 	token := r.Header.Get("x-token")
 	var reqBody PutUserRequest
-	if err := decodeRequest(r, &reqBody); err != nil {
-		log.Println("ERROR decodeRequest failed:", err)
-		w.WriteHeader(400)
+	if err := decodeRequest(w, r, &reqBody); err != nil {
 		return
 	}
 
@@ -118,8 +108,7 @@ type GetUserRankingResponse struct {
 }
 
 func GetUserRanking(w http.ResponseWriter, r *http.Request) {
-	if isRequestMethodInvalid(r, "GET") {
-		w.WriteHeader(405)
+	if isRequestMethodInvalid(w, r, "GET") {
 		return
 	}
 
@@ -141,8 +130,6 @@ func GetUserRanking(w http.ResponseWriter, r *http.Request) {
 		Users: rankings,
 	}
 	if err := encodeResponse(w, jsonResponse); err != nil {
-		log.Println("ERROR encodeResponse failed:", err)
-		w.WriteHeader(500)
 		return
 	}
 }

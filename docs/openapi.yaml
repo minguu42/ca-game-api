@@ -1,18 +1,18 @@
-openapi: 3.0.0
+openapi: 3.0.3
 
 info:
   version: 1.0.0
-  title: ca-game-api
+  title: CA GAME API
   description: |
-    これはca-game-apiのAPI仕様です。
+    ca-game-api の API 仕様です.
 
-    このca-game-apiはTechTrainのミッションである[オンライン版　CA Tech Dojo サーバサイド (Go)編](https://techbowl.co.jp/techtrain/missions/12)に取り組んだ後に、OpenAPIを学習するためにオリジナル要素を加えて自分で作成したものです。
+    TechTrain のミッションである[オンライン版　CA Tech Dojo サーバサイド (Go)編](https://techbowl.co.jp/techtrain/missions/12)に取り組んだ後に, OpenAPI を学習するためにオリジナル要素を加えて自分で作成したものです.
 
-    [TechTrain MISSION Game API](https://editor.swagger.io/)を元にしています。
+    [TechTrain MISSION Game API](https://github.com/CyberAgentHack/techtrain-mission/blob/master/api-document.yaml)を元にしています.
 
 servers:
-  - description: SwaggerHub API Auto Mocking
-    url: https://virtserver.swaggerhub.com/minguu42/ca-game-api/1.0.0
+  - description: ローカルサーバ
+    url: http://localhost:8080
 
 tags:
   - name: user
@@ -29,8 +29,9 @@ paths:
       tags: 
         - user
       description: |
-        ユーザ情報を作成します。
-        ユーザの名前情報をリクエストで受け取り、ユーザIDと認証用トークンを生成し、データベースへ保存します。
+        ユーザ情報を作成します.
+        ユーザの名前情報をリクエストで受け取り, ユーザIDと認証用トークンを生成し, データベースへ保存します.
+        既に使用されているユーザ名では登録できません.
       requestBody:
         required: true
         content:
@@ -40,9 +41,10 @@ paths:
               properties:
                 name:
                   type: string
+                  description: ユーザ名
       responses:
-        '200':
-          description: A successful response.
+        '201':
+          description: 成功
           content:
             application/json:
               schema:
@@ -50,6 +52,15 @@ paths:
                 properties:
                   token:
                     type: string
+                    description: クライアント側で保存するトークン
+        "400":
+          description: リクエストが間違っている
+        "405":
+          description: リクエストメソッドが間違っている
+        "409":
+          description: ユーザ名が既に使用されている
+        "500":
+          description: サーバ側で不明なエラーが発生した
   /user/get:
     get:
       summary: ユーザ情報取得API

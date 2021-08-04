@@ -1,11 +1,15 @@
 package ca_game_api
 
 import (
+	"bytes"
 	"database/sql"
+	"encoding/json"
+	"io"
 	"log"
-	"os"
+	"net/http"
+	"net/http/httptest"
+	"os/exec"
 	"path/filepath"
-	"strings"
 	"testing"
 
 	_ "github.com/lib/pq"
@@ -23,63 +27,69 @@ func TestMain(m *testing.M) {
 		}
 	}()
 
-	setupPutCharacterCompose()
-
 	m.Run()
 }
 
-func setupTestDB() {
-	file, err := os.ReadFile(filepath.Join(".", "build", "setup.sql"))
+func setupTestDB(tb testing.TB) {
+	file := filepath.Join(".", "build", "setup.sql")
+	cmd := exec.Command("psql", "-U", "test", "-h", "localhost", "-p", "15432", "-d", "db_test", "-a", "-f", file)
+
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+
+	err := cmd.Run()
 	if err != nil {
-		log.Fatal("os.ReadFile failed:", err)
-	}
-
-	queries := strings.Split(string(file), ";")
-
-	for _, query := range queries {
-		if query == "" {
-			break
-		}
-
-		_, err := db.Exec(query)
-		if err != nil {
-			log.Fatal("db.Exec failed:", err)
-		}
+		log.Fatalf("cmd.Run failed.\n Command Output: %+v\n %+v, %v", stdout.String(), stderr.String(), err)
 	}
 
 	/*
-		test1 はGetUser, GetUserRanking, PostGachaDraw で使用するユーザ. x-token は ceKeMPeYr0eF3K5e4Lfjfe である.
-		test2 は PutUser で名前変更用ユーザ. 名前はテスト実行時にランダムな文字列に変わる. x-token は yypKkCsMXx2MBBVorFQBsQ である.
-		test3 は GetCharacterList で使用するユーザ. x-token は UGjoBQOXIjVHMWT7wpH5Ow である.
+		test user 1 の x-token は ceKeMPeYr0eF3K5e4Lfjfe
+		test user 2 の x-token は yypKkCsMXx2MBBVorFQBsQ
+		test user 3 は GetCharacterList で使用するユーザ. x-token は UGjoBQOXIjVHMWT7wpH5Ow である.
 	*/
 	const createTestUser = `
-INSERT INTO users (name, digest_token) VALUES ('test1', '71a6f9c1007c60601a6d67e7f79d4550602b34ced90cdac86bd340f293bf0247'),
-                                              ('test2', '541d9abc4b06e838e471ff564c24585a6ddc5280c9478f2e6e85b2eb7ed979a9'),
-                                              ('test3', '3a80da5cb241be83d0275219c728c9e40cb8f17a433d776dbdb51741a7b49bce'),
-                                              ('test4', 'q34avo2q3avj9q28t4nq39vm9uz98qnq984j91oaoj9zu9q3ujvq9832j932q8ud'),
-                                              ('test5', 'jdoije928jf9eqj1fnqz9duq921ejf6qwure2qi9jf7qc4xz98qw2urf98j9eqf1');
+INSERT INTO users (name, digest_token) VALUES ('test user 1', '71a6f9c1007c60601a6d67e7f79d4550602b34ced90cdac86bd340f293bf0247'),
+                                              ('test user 2', '541d9abc4b06e838e471ff564c24585a6ddc5280c9478f2e6e85b2eb7ed979a9'),
+                                              ('test user 3', '3a80da5cb241be83d0275219c728c9e40cb8f17a433d776dbdb51741a7b49bce');
 `
 	if _, err := db.Exec(createTestUser); err != nil {
-		log.Fatal("db.Exec createTestUser failed:", err)
+		tb.Fatal("db.Exec createTestUser failed:", err)
 	}
 }
 
-func shutdownTestDB() {
-	const dropUserCharactersTable = `DROP TABLE IF EXISTS user_characters`
-	const dropGachaResultsTable = `DROP TABLE IF EXISTS gacha_results`
-	const dropCharactersTable = `DROP TABLE IF EXISTS characters`
-	const dropUsersTable = `DROP TABLE IF EXISTS users`
+func shutdownTestDB(tb testing.TB) {
+	const dropUserCharactersTable = `DROP TABLE IF EXISTS user_characters;`
+	const dropGachaResultsTable = `DROP TABLE IF EXISTS gacha_results;`
+	const dropCharactersTable = `DROP TABLE IF EXISTS characters;`
+	const dropUsersTable = `DROP TABLE IF EXISTS users;`
 
 	if _, err := db.Exec(dropUserCharactersTable); err != nil {
-		log.Fatal("db.Exec dropUserCharactersTable failed:", err)
+		tb.Fatal("db.Exec dropUserCharactersTable failed:", err)
 	}
 	if _, err := db.Exec(dropGachaResultsTable); err != nil {
-		log.Fatal("db.Exec dropGachaResultsTable failed:", err)
+		tb.Fatal("db.Exec dropGachaResultsTable failed:", err)
 	}
 	if _, err := db.Exec(dropCharactersTable); err != nil {
-		log.Fatal("db.Exec dropCharactersTable failed:", err)
+		tb.Fatal("db.Exec dropCharactersTable failed:", err)
 	}
 	if _, err := db.Exec(dropUsersTable); err != nil {
-		log.Fatal("db.Exec dropUsersTable failed:", err)
+		tb.Fatal("db.Exec dropUsersTable failed:", err)
 	}
+}
+
+func generateTestResponse(tb testing.TB, w *httptest.ResponseRecorder, body interface{}) *http.Response {
+	resp := w.Result()
+
+	if body != nil {
+		bodyBytes, err := io.ReadAll(resp.Body)
+		if err != nil {
+			tb.Error("io.ReadAll failed:", err)
+		}
+		if err := json.Unmarshal(bodyBytes, body); err != nil {
+			tb.Error("json.Unmarshal failed:", err)
+		}
+	}
+
+	return resp
 }
