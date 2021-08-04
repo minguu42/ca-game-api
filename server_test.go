@@ -11,6 +11,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"testing"
+	"time"
 
 	_ "github.com/lib/pq"
 )
@@ -21,6 +22,7 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatal("open testDB failed:", err)
 	}
+	time.Sleep(time.Second * 1)
 	defer func() {
 		if err := db.Close(); err != nil {
 			log.Fatal("close testDB failed:", err)
