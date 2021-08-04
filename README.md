@@ -15,7 +15,7 @@ TechTrain の MISSION である[オンライン版　CA Tech Dojo サーバサ�
 
 ```test:.env
 PORT=8080
-DSN=postgres://<username>:<password>@ca-game-api-db:5432/<dbname>?sslmode=disable
+DSN=postgres://<username>:<password>@ca-game-api-db-dev:5432/<dbname>?sslmode=disable
 
 POSTGRES_PASSWORD=<password>
 POSTGRES_USER=<username>

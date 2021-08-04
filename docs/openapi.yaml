@@ -11,10 +11,11 @@ info:
 
     [TechTrain MISSION Game API](https://github.com/CyberAgentHack/techtrain-mission/blob/master/api-document.yaml)を元にしています.
 
-
 servers:
   - description: ローカルサーバ
     url: http://localhost:8080
+  - description: Heroku による公開サーバ
+    url: https://ca-game-api.herokuapp.com
 
 tags:
   - name: user
@@ -252,7 +253,7 @@ paths:
         "500":
           $ref: "#/components/responses/InternalServerError"
   /character/compose:
-    post:
+    put:
       summary: キャラクター合成 API
       tags:
         - character
