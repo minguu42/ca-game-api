@@ -16,20 +16,20 @@ func TestDecideRarity(t *testing.T) {
 	}
 }
 
-func TestDecideCharacterId(t *testing.T) {
-	tests := []string{"test1", "test2", "test3", "test4", "test5"}
-	for _, test := range tests {
-		t.Run(test, func(t *testing.T) {
-			got, err := decideCharacterId()
-			if err != nil {
-				t.Errorf("decideCharacterId failed: %v", err)
-			}
-			if 30000001 > got && got >= 60000000 {
-				t.Errorf("rarity should be between 30000001 and 60000000, but %v", got)
-			}
-		})
-	}
-}
+//func TestDecideCharacterId(t *testing.T) {
+//	tests := []string{"test1", "test2", "test3", "test4", "test5"}
+//	for _, test := range tests {
+//		t.Run(test, func(t *testing.T) {
+//			got, err := decideCharacterId()
+//			if err != nil {
+//				t.Errorf("decideCharacterId failed: %v", err)
+//			}
+//			if 30000001 > got && got >= 60000000 {
+//				t.Errorf("rarity should be between 30000001 and 60000000, but %v", got)
+//			}
+//		})
+//	}
+//}
 
 func TestCalculateCharacterExperience(t *testing.T) {
 	type args struct {

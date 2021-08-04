@@ -20,8 +20,7 @@ type GetCharacterListResponse struct {
 }
 
 func GetCharacterList(w http.ResponseWriter, r *http.Request) {
-	if isRequestMethodInvalid(r, "GET") {
-		w.WriteHeader(405)
+	if isRequestMethodInvalid(w, r, "GET") {
 		return
 	}
 
@@ -50,8 +49,6 @@ func GetCharacterList(w http.ResponseWriter, r *http.Request) {
 		Characters: charactersJson,
 	}
 	if err := encodeResponse(w, respBody); err != nil {
-		log.Println("ERROR encodeResponse failed:", err)
-		w.WriteHeader(500)
 		return
 	}
 }
@@ -71,15 +68,12 @@ type PutCharacterComposeResponse struct {
 }
 
 func PutCharacterCompose(w http.ResponseWriter, r *http.Request) {
-	if isRequestMethodInvalid(r, "PUT") {
-		w.WriteHeader(405)
+	if isRequestMethodInvalid(w, r, "PUT") {
 		return
 	}
 
 	var reqBody PutCharacterComposeRequest
-	if err := decodeRequest(r, &reqBody); err != nil {
-		log.Println("ERROR decodeRequest failed:", err)
-		w.WriteHeader(400)
+	if err := decodeRequest(w, r, &reqBody); err != nil {
 		return
 	}
 	token := r.Header.Get("x-token")
@@ -140,17 +134,15 @@ func PutCharacterCompose(w http.ResponseWriter, r *http.Request) {
 		Power:           calculatePower(baseUserCharacter.experience, baseUserCharacter.character.basePower),
 	}
 	if err := encodeResponse(w, respBody); err != nil {
-		log.Println("ERROR encodeResponse failed:", err)
 		if err := tx.Rollback(); err != nil {
 			log.Println("ERROR tx.Rollback failed:", err)
 		}
-		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	if err := tx.Commit(); err != nil {
 		log.Println("ERROR tx.Commit failed:", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(500)
 		return
 	}
 }
