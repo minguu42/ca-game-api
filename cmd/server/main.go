@@ -15,7 +15,7 @@ func logging(h http.HandlerFunc) http.HandlerFunc {
 		start := time.Now()
 		h(w, r)
 		end := time.Now()
-		log.Printf("INFO %v %v %v in %vμs\n", start.Format("2006/01/02 03:04:05 MST"), r.Method, r.URL, (end.Sub(start)).Microseconds())
+		log.Printf("INFO %v %v in %vμs\n", r.Method, r.URL, (end.Sub(start)).Microseconds())
 	}
 }
 

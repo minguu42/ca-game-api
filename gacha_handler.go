@@ -20,16 +20,12 @@ type PostGachaDrawResponse struct {
 }
 
 func PostGachaDraw(w http.ResponseWriter, r *http.Request) {
-	if isRequestMethodInvalid(r, "POST") {
-		w.WriteHeader(405)
+	if isRequestMethodInvalid(w, r, "POST") {
 		return
 	}
 
-	token := r.Header.Get("x-token")
 	var reqBody PostGachaDrawRequest
-	if err := decodeRequest(r, &reqBody); err != nil {
-		log.Println("ERROR decodeRequest failed:", err)
-		w.WriteHeader(400)
+	if err := decodeRequest(w, r, &reqBody); err != nil {
 		return
 	}
 	times := reqBody.Times
@@ -39,10 +35,11 @@ func PostGachaDraw(w http.ResponseWriter, r *http.Request) {
 		log.Println("ERROR Times should be positive number")
 		return
 	}
+	token := r.Header.Get("x-token")
 	user, err := getUserByDigestToken(hash(token))
 	if err != nil {
 		log.Println("ERROR getUserByDigestToken failed:", err)
-		w.WriteHeader(403)
+		w.WriteHeader(401)
 		return
 	}
 
@@ -80,11 +77,9 @@ func PostGachaDraw(w http.ResponseWriter, r *http.Request) {
 		Results: resultsJson,
 	}
 	if err := encodeResponse(w, respBody); err != nil {
-		log.Println("ERROR encodeResponse failed:", err)
 		if err := tx.Rollback(); err != nil {
 			log.Println("ERROR tx.Rollback failed:", err)
 		}
-		w.WriteHeader(500)
 		return
 	}
 

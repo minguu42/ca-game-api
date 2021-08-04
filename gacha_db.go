@@ -3,15 +3,12 @@ package ca_game_api
 import (
 	"database/sql"
 	"fmt"
-	"time"
 )
 
 type gachaResult struct {
-	id         int
 	user       *User
 	character  *Character
 	experience int
-	createdAt  time.Time
 }
 
 func insertResult(tx *sql.Tx, result gachaResult) error {

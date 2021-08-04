@@ -1,36 +1,40 @@
-openapi: 3.0.0
+openapi: 3.0.3
 
 info:
   version: 1.0.0
-  title: ca-game-api
+  title: CA GAME API
   description: |
-    これはca-game-apiのAPI仕様です。
+    ca-game-api の API 仕様です.
 
-    このca-game-apiはTechTrainのミッションである[オンライン版　CA Tech Dojo サーバサイド (Go)編](https://techbowl.co.jp/techtrain/missions/12)に取り組んだ後に、OpenAPIを学習するためにオリジナル要素を加えて自分で作成したものです。
+    TechTrain のミッションである[オンライン版　CA Tech Dojo サーバサイド (Go)編](https://techbowl.co.jp/techtrain/missions/12)に取り組んだ後に, オリジナル要素を加えて自分で作成したものです.
+    ユーザランキング情報取得 API, キャラクター合成 API がオリジナル要素になります.
 
-    [TechTrain MISSION Game API](https://editor.swagger.io/)を元にしています。
+    [TechTrain MISSION Game API](https://github.com/CyberAgentHack/techtrain-mission/blob/master/api-document.yaml)を元にしています.
 
 servers:
-  - description: SwaggerHub API Auto Mocking
-    url: https://virtserver.swaggerhub.com/minguu42/ca-game-api/1.0.0
+  - description: ローカルサーバ
+    url: http://localhost:8080
+  - description: Heroku による公開サーバ
+    url: https://ca-game-api.herokuapp.com
 
 tags:
   - name: user
-    description: ユーザ関連API
+    description: ユーザ関連 API
   - name: gacha
-    description: ガチャ関連API
+    description: ガチャ関連 API
   - name: character
-    description: キャラクター関連API
+    description: キャラクター関連 API
 
 paths:
   /user/create:
     post:
-      summary: ユーザ情報作成API
-      tags: 
+      summary: ユーザ情報作成 API
+      tags:
         - user
       description: |
-        ユーザ情報を作成します。
-        ユーザの名前情報をリクエストで受け取り、ユーザIDと認証用トークンを生成し、データベースへ保存します。
+        ユーザ情報を作成します.
+        ユーザの名前情報をリクエストで受け取り, ユーザIDと認証用トークンを生成し, データベースへ保存します.
+        既に使用されているユーザ名では登録できません.
       requestBody:
         required: true
         content:
@@ -40,9 +44,10 @@ paths:
               properties:
                 name:
                   type: string
+                  description: ユーザ名
       responses:
-        '200':
-          description: A successful response.
+        '201':
+          description: 成功
           content:
             application/json:
               schema:
@@ -50,24 +55,28 @@ paths:
                 properties:
                   token:
                     type: string
+                    description: クライアント側で保存するトークン
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowed"
+        "409":
+          description: ユーザ名が既に使用されている
+        "500":
+          $ref: "#/components/responses/InternalServerError"
   /user/get:
     get:
-      summary: ユーザ情報取得API
-      tags: 
+      summary: ユーザ情報取得 API
+      tags:
         - user
       description: |
-        ユーザ情報を取得します。
-        ユーザの認証と特定の処理はリクエストヘッダのx-tokenを読み取ってデータベースに照会をします。
+        ユーザ情報を取得します.
+        ユーザの認証と特定の処理はリクエストヘッダの x-token を読み取ってデータベースに照会をします.
       parameters:
-        - name: x-token
-          in: header
-          required: true
-          description: 認証トークン
-          schema:
-            type: string
+        - $ref: "#/components/parameters/x-token"
       responses:
         '200':
-          description: A successful response.
+          description: 成功
           content:
             application/json:
               schema:
@@ -75,20 +84,23 @@ paths:
                 properties:
                   name:
                     type: string
+                    description: ユーザ名
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowed"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
   /user/update:
     put:
-      summary: ユーザ情報更新API
+      summary: ユーザ情報更新 API
       tags:
         - user
       description: |
-        ユーザ情報の更新をします。初期実装では名前の更新を行います。
+        ユーザ情報を更新します.
+        初期実装では名前の更新を行います.
       parameters:
-        - name: x-token
-          in: header
-          required: true
-          description: 認証トークン
-          schema:
-            type: string
+        - $ref: "#/components/parameters/x-token"
       requestBody:
         required: true
         content:
@@ -98,62 +110,66 @@ paths:
               properties:
                 name:
                   type: string
+                  description: 新しいユーザ名
       responses:
         '200':
-          description: A successful response.
+          description: 成功
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowed"
+        "409":
+          description: ユーザ名が既に使用されている
+        "500":
+          $ref: "#/components/responses/InternalServerError"
   /user/ranking:
     get:
-      summary: ユーザランキング情報取得API
+      summary: ユーザランキング情報取得 API
       tags:
         - user
       description: |
-        ユーザのランキング情報を取得します。
-
-        ランキング情報には上位3位までのユーザ情報が含まれます。
+        ユーザのランキング情報を取得します.
+        ランキング情報には上位3位までのユーザ情報が含まれます.
       parameters:
-        - name: x-token
-          in: header
-          required: true
-          description: 認証トークン
-          schema:
-            type: string
+        - $ref: "#/components/parameters/x-token"
       responses:
         '200':
-          description: A successful response.
+          description: 成功
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  userRanking:
+                  users:
                     type: array
                     items:
                       type: object
                       properties:
-                        userID:
-                          type: string
                         name:
                           type: string
+                          description: ユーザ名
                         sumPower:
-                          type: string
+                          type: integer
+                          description: ユーザの所有するキャラクターの合計パワー
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowed"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
   /gacha/draw:
     post:
-      summary: ガチャ実行API
+      summary: ガチャ実行 API
       tags:
         - gacha
       description: |
-        ガチャを引いてキャラクターを取得する処理を実装します。
-        獲得したキャラクターはユーザ所持キャラクターテーブルへ保存します。
-        同じ種類のキャラクターでもユーザは複数所持することができます。
-        
-        キャラクターの確率は等倍ではなく、任意に変更できるようテーブルを設計しましょう。
-      parameters: 
-        - name: x-token
-          in: header
-          required: true
-          description: 認証トークン
-          schema:
-            type: string
+        ガチャを引いてキャラクターを取得します.
+        獲得したキャラクターはユーザ所持キャラクターテーブルへ保存します.
+        同じ種類のキャラクターでもユーザは複数所持することができます.
+      parameters:
+        - $ref: "#/components/parameters/x-token"
       requestBody:
         content:
           application/json:
@@ -162,9 +178,10 @@ paths:
               properties:
                 times:
                   type: integer
+                  description: ガチャを回す回数
       responses:
         '200':
-          description: A successful response.
+          description: 成功
           content:
             application/json:
               schema:
@@ -176,26 +193,31 @@ paths:
                       type: object
                       properties:
                         characterID:
-                          type: string
+                          type: integer
+                          description: キャラクター ID
                         name:
                           type: string
+                          description: キャラクター名
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowed"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
   /character/list:
     get:
-      summary: ユーザ所持キャラクター一覧取得API
+      summary: ユーザ所持キャラクター一覧取得 API
       tags:
         - character
       description: |
-        ユーザが所持しているキャラクター一覧情報を取得します。
-      parameters: 
-        - name: x-token
-          in: header
-          required: true
-          description: 認証トークン
-          schema:
-            type: string
+        ユーザが所持しているキャラクター一覧情報を取得します.
+      parameters:
+        - $ref: "#/components/parameters/x-token"
       responses:
         '200':
-          description: A successful response.
+          description: 成功
           content:
             application/json:
               schema:
@@ -207,27 +229,39 @@ paths:
                       type: object
                       properties:
                         userCharacterID:
-                          type: string
+                          type: integer
+                          description: ユーザ所有 ID
                         characterID:
-                          type: string
+                          type: integer
+                          description: キャラクター ID
                         name:
                           type: string
+                          description: キャラクター名
+                        level:
+                          type: integer
+                          description: キャラクターのレベル
+                        experience:
+                          type: integer
+                          description: キャラクターの経験値
+                        power:
+                          type: integer
+                          description: キャラクターのパワー
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowed"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
   /character/compose:
-    post:
-      summary: キャラクターを合成するAPI
+    put:
+      summary: キャラクター合成 API
       tags:
         - character
       description: |
-        所有しているキャラクターを合成し、キャラクターのレベルを上げます。
-        
-        合成されたキャラクターは失われます。
+        所有しているキャラクターを合成し, キャラクターのレベルを上げます.
+        合成されたキャラクターは失われます.
       parameters:
-        - name: x-token
-          in: header
-          required: true
-          description: 認証トークン
-          schema:
-            type: string
+        - $ref: "#/components/parameters/x-token"
       requestBody:
         content:
           application/json:
@@ -236,21 +270,64 @@ paths:
               properties:
                 baseUserCharacterID:
                   type: integer
+                  description: 強化するキャラクターのユーザ所有 ID
                 materialUserCharacterID:
                   type: integer
+                  description: 合成されるキャラクターのユーザ所有 ID
       responses:
         '200':
-          description: A successful response.
+          description: 成功
           content:
             application/json:
               schema:
                 type: object
                 properties:
                   userCharacterID:
-                    type: string
+                    type: integer
+                    description: ユーザ所有 ID
                   characterID:
-                    type: string
+                    type: integer
+                    description: キャラクター ID
                   name:
                     type: string
+                    description: キャラクター名
                   level:
                     type: integer
+                    description: キャラクターのレベル
+                  experience:
+                    type: integer
+                    description: キャラクターの経験値
+                  power:
+                    type: integer
+                    description: キャラクターのパワー
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowed"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+components:
+  parameters:
+    x-token:
+      name: x-token
+      description: 認証トークン
+      in: header
+      required: true
+      schema:
+        type: string
+  responses:
+    BadRequest:
+      description: リクエストが間違っている
+    MethodNotAllowed:
+      description: リクエストメソッドが間違っている
+    Unauthorized:
+      description: ユーザを認証できない
+    Forbidden:
+      description: リソースへのアクセス権限がない
+    InternalServerError:
+      description: サーバ側で不明なエラーが発生した
