@@ -2,9 +2,9 @@
 
 ## 概要
 
-TechTrainのMISSIONである[オンライン版　CA Tech Dojo サーバサイド (Go)編](https://techbowl.co.jp/techtrain/missions/12)に取り組んだものです. 
+TechTrain の MISSION である[オンライン版　CA Tech Dojo サーバサイド (Go)編](https://techbowl.co.jp/techtrain/missions/12)に取り組んだものです. 
 ミッション達成後にレスポンスボディの JSON のフィールドやデータベースに変更を加えています. 
-オリジナルの機能としてユーザランキングやキャラクター合成機能を追加しました. 
+オリジナルの機能としてユーザランキング機能, キャラクター合成機能を追加しました.
 
 ## 実行手順
 
@@ -13,10 +13,10 @@ TechTrainのMISSIONである[オンライン版　CA Tech Dojo サーバサイ�
 環境変数を指定するための`.env`ファイルをプロジェクトルートディレクトリに作成してください.
 以下の`<>`で囲われた部分は適切な値に置き換えてください.
 
-```env
+```test:.env
 PORT=8080
+DSN=postgres://<username>:<password>@ca-game-api-db:5432/<dbname>?sslmode=disable
 
-DATABASE_URL=postgres://<username>:<password>@ca-game-api-db:5432/<dbname>?sslmode=disable
 POSTGRES_PASSWORD=<password>
 POSTGRES_USER=<username>
 POSTGRES_DB=<dbname>
