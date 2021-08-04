@@ -1,3 +1,5 @@
+export PGPASSWORD=password
+
 .PHONY: dev
 dev:
 	@docker compose up api
@@ -20,3 +22,8 @@ fmt:
 lint:
 	@go vet ./...
 	@-staticcheck ./...
+
+.PHONY: docs
+docs:
+	@docker compose up -d docs
+	@open http://localhost:8000
