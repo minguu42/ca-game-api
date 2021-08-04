@@ -53,7 +53,7 @@ func updateUser(user User) error {
 
 func selectUserRanking() ([]UserRankingJson, error) {
 	const query = `
-SELECT U.name, SUM(UOC.experience * C.base_power) AS sumPower
+SELECT U.name, SUM(floor(sqrt(div(UOC.experience, 100))) * C.base_power) AS sumPower
 FROM user_characters AS UOC
 INNER JOIN users AS U ON UOC.user_id = U.id
 INNER JOIN characters AS C ON UOC.character_id = C.id

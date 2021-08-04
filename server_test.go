@@ -46,12 +46,12 @@ func setupTestDB(tb testing.TB) {
 	/*
 		test user 1 の x-token は ceKeMPeYr0eF3K5e4Lfjfe
 		test user 2 の x-token は yypKkCsMXx2MBBVorFQBsQ
-		test user 3 は GetCharacterList で使用するユーザ. x-token は UGjoBQOXIjVHMWT7wpH5Ow である.
+		test user 3 の x-token は UGjoBQOXIjVHMWT7wpH5Ow
 	*/
 	const createTestUser = `
-INSERT INTO users (name, digest_token) VALUES ('test user 1', '71a6f9c1007c60601a6d67e7f79d4550602b34ced90cdac86bd340f293bf0247'),
-                                              ('test user 2', '541d9abc4b06e838e471ff564c24585a6ddc5280c9478f2e6e85b2eb7ed979a9'),
-                                              ('test user 3', '3a80da5cb241be83d0275219c728c9e40cb8f17a433d776dbdb51741a7b49bce');
+INSERT INTO users (name, digest_token) VALUES ('test1', '71a6f9c1007c60601a6d67e7f79d4550602b34ced90cdac86bd340f293bf0247'),
+                                              ('test2', '541d9abc4b06e838e471ff564c24585a6ddc5280c9478f2e6e85b2eb7ed979a9'),
+                                              ('test3', '3a80da5cb241be83d0275219c728c9e40cb8f17a433d776dbdb51741a7b49bce');
 `
 	if _, err := db.Exec(createTestUser); err != nil {
 		tb.Fatal("db.Exec createTestUser failed:", err)
