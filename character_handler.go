@@ -1,7 +1,6 @@
 package ca_game_api
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 )
@@ -24,12 +23,18 @@ func GetCharacterList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	xToken := r.Header.Get("x-token")
+	token := r.Header.Get("x-token")
 
-	userCharacters, err := getUserCharactersByToken(xToken)
+	if _, err := getUserByDigestToken(hash(token)); err != nil {
+		w.WriteHeader(401)
+		log.Println("ERROR getUserByDigestToken failed:", err)
+		return
+	}
+
+	userCharacters, err := getUserCharactersByToken(token)
 	if err != nil {
 		log.Println("ERROR getUserCharactersByToken failed:", err)
-		w.WriteHeader(400)
+		w.WriteHeader(500)
 		return
 	}
 
@@ -76,7 +81,7 @@ func PutCharacterCompose(w http.ResponseWriter, r *http.Request) {
 	if err := decodeRequest(w, r, &reqBody); err != nil {
 		return
 	}
-	token := r.Header.Get("x-token")
+
 	baseUserCharacterId := reqBody.BaseUserCharacterId
 	materialUserCharacterId := reqBody.MaterialUserCharacterId
 	if baseUserCharacterId == materialUserCharacterId {
@@ -85,12 +90,14 @@ func PutCharacterCompose(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	token := r.Header.Get("x-token")
 	user, err := getUserByDigestToken(hash(token))
 	if err != nil {
-		fmt.Println("ERROR getUserByDigestToken failed:", err)
-		w.WriteHeader(403)
+		log.Println("ERROR getUserByDigestToken failed:", err)
+		w.WriteHeader(401)
 		return
 	}
+
 	baseUserCharacter, err := getUserCharacterById(baseUserCharacterId)
 	if err != nil {
 		log.Println("ERROR getUserCharacterById failed:", err)
@@ -103,6 +110,7 @@ func PutCharacterCompose(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(400)
 		return
 	}
+
 	if (user.id != baseUserCharacter.user.id) || (user.id != materialUserCharacter.user.id) {
 		log.Println("ERROR User does not own the character")
 		w.WriteHeader(403)
@@ -116,7 +124,8 @@ func PutCharacterCompose(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := composeUserCharacter(tx, baseUserCharacter, materialUserCharacter); err != nil {
+	newExperience, err := composeUserCharacter(tx, baseUserCharacter, materialUserCharacter)
+	if err != nil {
 		log.Println("baseUserCharacter.composeUserCharacter failed:", err)
 		if err := tx.Rollback(); err != nil {
 			log.Println("ERROR tx.Rollback failed:", err)
@@ -129,9 +138,9 @@ func PutCharacterCompose(w http.ResponseWriter, r *http.Request) {
 		UserCharacterId: baseUserCharacter.id,
 		CharacterId:     baseUserCharacter.character.id,
 		Name:            baseUserCharacter.character.name,
-		Level:           calculateLevel(baseUserCharacter.experience),
-		Experience:      baseUserCharacter.experience,
-		Power:           calculatePower(baseUserCharacter.experience, baseUserCharacter.character.basePower),
+		Level:           calculateLevel(newExperience),
+		Experience:      newExperience,
+		Power:           calculatePower(newExperience, baseUserCharacter.character.basePower),
 	}
 	if err := encodeResponse(w, respBody); err != nil {
 		if err := tx.Rollback(); err != nil {

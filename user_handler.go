@@ -1,7 +1,6 @@
 package ca_game_api
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 )
@@ -120,7 +119,7 @@ func GetUserRanking(w http.ResponseWriter, r *http.Request) {
 
 	token := r.Header.Get("x-token")
 	if _, err := getUserByDigestToken(hash(token)); err != nil {
-		fmt.Println("ERROR getUserByDigestToken failed:", err)
+		log.Println("ERROR getUserByDigestToken failed:", err)
 		w.WriteHeader(401)
 		return
 	}

@@ -11,6 +11,7 @@ info:
 
     [TechTrain MISSION Game API](https://github.com/CyberAgentHack/techtrain-mission/blob/master/api-document.yaml)を元にしています.
 
+
 servers:
   - description: ローカルサーバ
     url: http://localhost:8080
@@ -27,7 +28,7 @@ paths:
   /user/create:
     post:
       summary: ユーザ情報作成 API
-      tags: 
+      tags:
         - user
       description: |
         ユーザ情報を作成します.
@@ -65,7 +66,7 @@ paths:
   /user/get:
     get:
       summary: ユーザ情報取得 API
-      tags: 
+      tags:
         - user
       description: |
         ユーザ情報を取得します.
@@ -166,7 +167,7 @@ paths:
         ガチャを引いてキャラクターを取得します.
         獲得したキャラクターはユーザ所持キャラクターテーブルへ保存します.
         同じ種類のキャラクターでもユーザは複数所持することができます.
-      parameters: 
+      parameters:
         - $ref: "#/components/parameters/x-token"
       requestBody:
         content:
@@ -206,21 +207,16 @@ paths:
           $ref: "#/components/responses/InternalServerError"
   /character/list:
     get:
-      summary: ユーザ所持キャラクター一覧取得API
+      summary: ユーザ所持キャラクター一覧取得 API
       tags:
         - character
       description: |
-        ユーザが所持しているキャラクター一覧情報を取得します。
-      parameters: 
-        - name: x-token
-          in: header
-          required: true
-          description: 認証トークン
-          schema:
-            type: string
+        ユーザが所持しているキャラクター一覧情報を取得します.
+      parameters:
+        - $ref: "#/components/parameters/x-token"
       responses:
         '200':
-          description: A successful response.
+          description: 成功
           content:
             application/json:
               schema:
@@ -232,27 +228,39 @@ paths:
                       type: object
                       properties:
                         userCharacterID:
-                          type: string
+                          type: integer
+                          description: ユーザ所有 ID
                         characterID:
-                          type: string
+                          type: integer
+                          description: キャラクター ID
                         name:
                           type: string
+                          description: キャラクター名
+                        level:
+                          type: integer
+                          description: キャラクターのレベル
+                        experience:
+                          type: integer
+                          description: キャラクターの経験値
+                        power:
+                          type: integer
+                          description: キャラクターのパワー
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowed"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
   /character/compose:
     post:
       summary: キャラクター合成 API
       tags:
         - character
       description: |
-        所有しているキャラクターを合成し、キャラクターのレベルを上げます。
-        
-        合成されたキャラクターは失われます。
+        所有しているキャラクターを合成し, キャラクターのレベルを上げます.
+        合成されたキャラクターは失われます.
       parameters:
-        - name: x-token
-          in: header
-          required: true
-          description: 認証トークン
-          schema:
-            type: string
+        - $ref: "#/components/parameters/x-token"
       requestBody:
         content:
           application/json:
@@ -261,24 +269,46 @@ paths:
               properties:
                 baseUserCharacterID:
                   type: integer
+                  description: 強化するキャラクターのユーザ所有 ID
                 materialUserCharacterID:
                   type: integer
+                  description: 合成されるキャラクターのユーザ所有 ID
       responses:
         '200':
-          description: A successful response.
+          description: 成功
           content:
             application/json:
               schema:
                 type: object
                 properties:
                   userCharacterID:
-                    type: string
+                    type: integer
+                    description: ユーザ所有 ID
                   characterID:
-                    type: string
+                    type: integer
+                    description: キャラクター ID
                   name:
                     type: string
+                    description: キャラクター名
                   level:
                     type: integer
+                    description: キャラクターのレベル
+                  experience:
+                    type: integer
+                    description: キャラクターの経験値
+                  power:
+                    type: integer
+                    description: キャラクターのパワー
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowed"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
 
 components:
   parameters:
