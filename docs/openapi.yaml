@@ -140,7 +140,7 @@ paths:
               schema:
                 type: object
                 properties:
-                  userRanking:
+                  users:
                     type: array
                     items:
                       type: object
@@ -159,22 +159,15 @@ paths:
           $ref: "#/components/responses/InternalServerError"
   /gacha/draw:
     post:
-      summary: ガチャ実行API
+      summary: ガチャ実行 API
       tags:
         - gacha
       description: |
-        ガチャを引いてキャラクターを取得する処理を実装します。
-        獲得したキャラクターはユーザ所持キャラクターテーブルへ保存します。
-        同じ種類のキャラクターでもユーザは複数所持することができます。
-        
-        キャラクターの確率は等倍ではなく、任意に変更できるようテーブルを設計しましょう。
+        ガチャを引いてキャラクターを取得します.
+        獲得したキャラクターはユーザ所持キャラクターテーブルへ保存します.
+        同じ種類のキャラクターでもユーザは複数所持することができます.
       parameters: 
-        - name: x-token
-          in: header
-          required: true
-          description: 認証トークン
-          schema:
-            type: string
+        - $ref: "#/components/parameters/x-token"
       requestBody:
         content:
           application/json:
@@ -183,9 +176,10 @@ paths:
               properties:
                 times:
                   type: integer
+                  description: ガチャを回す回数
       responses:
         '200':
-          description: A successful response.
+          description: 成功
           content:
             application/json:
               schema:
@@ -197,9 +191,19 @@ paths:
                       type: object
                       properties:
                         characterID:
-                          type: string
+                          type: integer
+                          description: キャラクター ID
                         name:
                           type: string
+                          description: キャラクター名
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowed"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
   /character/list:
     get:
       summary: ユーザ所持キャラクター一覧取得API

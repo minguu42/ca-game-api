@@ -24,7 +24,6 @@ func PostGachaDraw(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token := r.Header.Get("x-token")
 	var reqBody PostGachaDrawRequest
 	if err := decodeRequest(w, r, &reqBody); err != nil {
 		return
@@ -36,10 +35,11 @@ func PostGachaDraw(w http.ResponseWriter, r *http.Request) {
 		log.Println("ERROR Times should be positive number")
 		return
 	}
+	token := r.Header.Get("x-token")
 	user, err := getUserByDigestToken(hash(token))
 	if err != nil {
 		log.Println("ERROR getUserByDigestToken failed:", err)
-		w.WriteHeader(403)
+		w.WriteHeader(401)
 		return
 	}
 
