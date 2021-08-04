@@ -6,10 +6,10 @@ import (
 	"time"
 )
 
-func decideRarity() int {
-	if num := rand.Intn(1000) + 1; num >= 900 {
+func decideRarity(probabilityOf5, probabilityOf4, probabilityOf3 int) int {
+	if num := rand.Intn(probabilityOf5+probabilityOf4+probabilityOf3) + 1; num <= probabilityOf5 {
 		return 5
-	} else if num >= 600 {
+	} else if num <= probabilityOf4 {
 		return 4
 	} else {
 		return 3
@@ -31,7 +31,7 @@ func decideCharacterId() (int, error) {
 	}
 
 	var characterId int
-	switch rarity := decideRarity(); rarity {
+	switch rarity := decideRarity(10, 30, 60); rarity {
 	case 3:
 		characterId = rand.Intn(rarity3Num) + 30000001
 	case 4:
