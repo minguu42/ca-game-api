@@ -6,7 +6,7 @@ TechTrain の MISSION である[オンライン版　CA Tech Dojo サーバサ�
 ミッション達成後にレスポンスボディの JSON のフィールドやデータベースに変更を加えています. 
 オリジナルの機能としてユーザランキング機能, キャラクター合成機能を追加しました.
 
-## 実行手順
+## セットアップ
 
 1. `.env`ファイルを作成する
 
@@ -30,148 +30,57 @@ POSTGRES_DB=<dbname>
 $ docker compose up -d
 ```
 
-## 動作例
+## ドキュメント
 
-動作例は全てローカルで, cURLでリクエストを行い, 確認した動作を載せています.
+実行できるエンドポイントなどは[こちら](https://minguu42.github.io/ca-game-api/)で確認できます.
 
-### ユーザを作成する
+## 開発環境
 
-ユーザ名を指定しユーザを作成できます.
-レスポンスとして認証トークンが返されます.
+- OS: Mac OS
+- プログラミング言語：Go
+- 主なライブラリ・フレームワーク：net/http, database/sql
+- データベース：PostgreSQL
+- デプロイ：Heroku
+- フォーマッタ・リンタ：gofmt, goimports, govet, staticcheck
+- テスト：testing, net/http/httptest
+- タスクランナー：GNU Make
 
-```bash
-$ curl -X POST "http://localhost:8080/user/create" -H  "accept: application/json" -H  "Content-Type: application/json" -d "{  \"name\": \"minguu\"}"
-{
-  "token": "2JMZe9atOCkE8q0YH5s-Wr"
-}
-```
-
-### ユーザを確認する
-
-認証トークンでユーザ名を確認できます.
-レスポンスとしてユーザ名が返されます.
+### ローカル実行
 
 ```bash
-$ curl -X GET "http://localhost:8080/user/get" -H  "accept: application/json" -H  "x-token: 2JMZe9atOCkE8q0YH5s-Wr"
-{
-  "name": "minguu2"
-}
+make dev
+# 終了時
+make down
 ```
 
-### ユーザ名を変更する
-
-認証トークンでユーザ名を変更できます.
+### ドキュメント
 
 ```bash
-$ curl -X PUT "http://localhost:8080/user/update" -H  "accept: application/json" -H  "x-token: 2JMZe9atOCkE8q0YH5s-Wr" -H  "Content-Type: application/json" -d "{  \"name\": \"new_minguu\"}"
-$ curl -X GET "http://localhost:8080/user/get" -H  "accept: application/json" -H  "x-token: 2JMZe9atOCkE8q0YH5s-Wr" 
-{
-  "name": "new_minguu"
-}
+make docs
 ```
 
-### ガチャを回す
+注意点：open コマンドでブラウザで所定の URL を開くようにしていますが, 環境によってうまく動きません.
 
-認証トークンで回数を指定してガチャを回し, キャラクターを取得できます.
-レスポンスとしてガチャの結果が返されます.
+### 自動整形
 
 ```bash
-$ curl -X POST "http://localhost:8080/gacha/draw" -H  "accept: application/json" -H  "x-token: 2JMZe9atOCkE8q0YH5s-Wr" -H  "Content-Type: application/json" -d "{  \"times\": 3}"
-{
-  "results": [
-    {
-      "characterID": 30000006,
-      "name": "normal_character6"
-    },
-    {
-      "characterID": 30000001,
-      "name": "normal_character1"
-    },
-    {
-      "characterID": 30000002,
-      "name": "normal_character2"
-    }
-  ]
-}
+make fmt
 ```
 
-### ユーザ所持キャラクターを一覧取得する
+注意点：goimports をインストールしている必要があります.
 
-認証トークンで所持しているキャラクターを一覧で取得できます.
-レスポンスとして所有しているキャラクター一覧が返されます.
+### 静的解析
 
 ```bash
-$ curl -X GET "http://localhost:8080/character/list" -H  "accept: application/json" -H  "x-token: 2JMZe9atOCkE8q0YH5s-Wr"
-{
-  "characters": [
-    {
-      "userCharacterID": 1,
-      "characterID": 30000006,
-      "name": "normal_character6",
-      "level": 2,
-      "experience": 700,
-      "power": 410
-    },
-    {
-      "userCharacterID": 2,
-      "characterID": 30000001,
-      "name": "normal_character1",
-      "level": 1,
-      "experience": 100,
-      "power": 1
-    },
-    {
-      "userCharacterID": 3,
-      "characterID": 30000002,
-      "name": "normal_character2",
-      "level": 2,
-      "experience": 400,
-      "power": 400
-    }
-  ]
-}
+make lint
 ```
 
-### ユーザのランキングを取得する
+注意点：staticcheck をインストールしている必要があります.
 
-認証トークンでユーザのランキングを取得できます.
-レスポンスとしてユーザのランキングが返されます.
-ユーザのランキングはユーザの所有しているキャラクターのレベルとキャラクター固有のパワーの合計値で決定し, 高い方から3人のユーザが返されます.
+### テスト
 
 ```bash
-$ curl -X 'GET' 'http://localhost:8080/user/ranking' -H 'accept: application/json' -H 'x-token: 2JMZe9atOCkE8q0YH5s-Wr'                         
-{
-  "users": [
-    {
-      "name": "example",
-      "sumPower": 300000
-    },
-    {
-      "name": "minguu",
-      "sumPower": 223600
-    },
-    {
-      "name": "example2",
-      "sumPower": 204000
-    }
-  ]
-}
+make test
 ```
 
-### キャラクターを合成する
-
-認証トークン, ベースとなるキャラクターのID, 合成されるキャラクターのIDでキャラクターを合成できます. 
-レスポンスとして合成後のキャラクターが返されます.
-キャラクターを合成することでキャラクターのレベルを上げられます.
-
-```bash
-$ curl -X PUT "http://localhost:8080/character/compose" -H  "accept: application/json" -H  "x-token: 2JMZe9atOCkE8q0YH5s-Wr" -H  "Content-Type: application/json" -d "{  \"baseUserCharacterID\": 1,  \"materialUserCharacterID\": 2}"
-{
-  "userCharacterID": 1,
-  "characterID": 30000006,
-  "name": "normal_character6",
-  "level": 2,
-  "experience": 700,
-  "power": 410
-}
-```
+注意点：psql をインストールしている必要があります.
